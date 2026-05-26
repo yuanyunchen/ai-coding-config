@@ -4,6 +4,8 @@ Cursor / Claude Code / Codex 三工具统一的 agent 配置备份与迁移仓�
 
 **配置说明见 [CLAUDE.md](./CLAUDE.md)**（目录结构、部署流程、命令一览）。
 
+**新机器 / 第一次部署见 [SETUP.md](./SETUP.md)**（安装 Cursor、Claude Code、Codex，登录账号，Parallel 等 skill 依赖）。
+
 ## 快速开始
 
 ```bash

@@ -24,6 +24,7 @@ config-links/ -> config/       本机软链（gitignore，`./agent-config links`
 agent-config                   统一 CLI 入口
 scripts/                       deploy | pull | sync | plugins | links
 config/AGENTS.md               部署到三工具的全局英文规则
+SETUP.md                       新机器首次配置（给人看；装工具、登录、Parallel、browse）
 ```
 
 ## 部署目录映射
@@ -45,34 +46,17 @@ Claude Code 只读 `CLAUDE.md`，部署目录里用 `~/.claude/CLAUDE.md` 的 `@
 
 ### 新设备首次恢复
 
-前提：已安装三工具，且 `~/.cursor` / `~/.claude` / `~/.codex` 目录存在。
+**给人配机器**：只维护 [SETUP.md](./SETUP.md)，勿在本文件重复展开安装步骤。
 
-**Claude Code 用官方 marketplace 插件**（`plugins install`）；`deploy` 不同步插件包。同步到 Cursor/Codex 用 `plugins sync`。新设备可用 `deploy --no-sync`。详见 `config/plugins/README.md`。
+前提：已安装三工具，且 `~/.cursor` / `~/.claude` / `~/.codex` 目录存在（各工具至少运行过一次）。
 
 ```bash
 git clone https://github.com/yuanyunchen/ai-coding-config.git
 cd ai-coding-config
-
-# 1) Claude Code 官方插件
-./agent-config plugins install --dry-run
-./agent-config plugins install
-
-# 2) skills/commands/agents 等（仅 Claude：加 --no-sync）
-./agent-config deploy --dry-run
-./agent-config deploy --no-sync
-
-./agent-config links              # 可选
+./agent-config deploy          # 或 deploy --no-sync 仅 Claude
 ```
 
-手动安装（与 `plugins install` 等价）：
-
-```bash
-claude plugin install code-review@claude-plugins-official
-claude plugin install code-simplifier@claude-plugins-official
-claude plugin install claude-md-management@claude-plugins-official
-claude plugin install skill-creator@claude-plugins-official
-claude plugin install ralph-loop@claude-plugins-official
-```
+`deploy` 后 SETUP 还要求（`deploy` 不会自动完成）：Cursor IDE 启用 `parallel`/`browse` 插件 → browse 目录 `npm install` → Parallel CLI 登录（见下 Gotchas）。
 
 ### 本机日常改配置
 
@@ -157,3 +141,7 @@ portable 更新：`pull` → `vendor --force` → `deploy`
 - **`plugins apply`**：以 manifest 为准写 `~/.claude/settings.json`；会删除 manifest 已移除的插件项。
 - **技能路径**：正文引用技能用 `~/.{tool}/skills/enabled/<name>/`；`sync` 会把旧式 `skills-disabled/` 改写为 `skills/disabled/`。
 - **插件文档**：只维护 `config/plugins/README.md`；`pull`/`apply` 更新其中 `<!-- installed:start -->` 段。
+- **`SETUP.md`**：新机器给人看的 checklist；agent 改首次配置流程时同步更新 SETUP，细节放 SETUP 勿堆进本文件。
+- **Parallel**：`deploy` 只同步 `parallel-*` skill；`parallel-cli` + 账号需单独配。Cursor 须先在 IDE 开 `parallel@cursor-public`，再 `/parallel-setup`；Claude/Codex 终端 `curl …/install.sh | bash` + `parallel-cli login`。
+- **Cursor 首次插件**（SETUP 清单）：`parallel`、`browse`（browse 启用后在 `config/plugins/cursor/enabled/browse__cursor-public/` 跑 `npm install`）。`continual-learning` 在 manifest 但不在标准 SETUP 流程。
+- **Codex 包名**：`npm i -g @openai/codex`（无 scope 的 `codex` 是无关包）。

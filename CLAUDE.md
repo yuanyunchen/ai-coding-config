@@ -1,64 +1,114 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working in this repository.
 
 @AGENTS.md
 
-## 工作区定位
+## 仓库定位
 
-这是改造 **cursor / claude / codex** 三个 agent 工具配置生态的工作区，不是单一应用代码库。核心产物是把三者的 commands / subagents / skills / 全局规则统一管理的脚本，外加几个相互独立的子项目（每个有自己的目标和说明文档）。
+本仓库是 **Cursor / Claude Code / Codex** 三工具的统一 agent 配置备份，用于跨设备迁移。
 
-## 工作区结构（根目录顶层）
+唯一管理脚本：**`agent-config.sh`**（所有配置操作都通过它）。
 
-```
-AGENTS.md                      中文《工作准则》，由本文件 @AGENTS.md 导入
-sync-agent-config.sh           三工具间增量同步配置（详见下）
-migrate-cursor-to-claude.sh    把已部署的 ~/.cursor 整体迁移到 ~/.claude
-config-links/                  指向真实部署目录的软链接（只读视图，别在此改文件）
-cursor-multiagent-system/      多 agent 编排系统，独立 git 仓库，看其 README.md / AGENTS.md
-frontend-skills-refactor/      前端 skill 合并实验，有自己的 CLAUDE.md（在此目录工作以它为准）
-my-search-skills/              搜索类 skill 调研与对比
-meta-skills-manage-skills/     管理 skill 的元 skill / 写作指南
-rules-system/                  规则系统设计稿
-```
-
-## 部署目录与配置映射（"原文件"在这里）
-
-脚本操作的是真实部署目录，不是工作区内的源码：
+## 目录结构
 
 ```
-~/.cursor   ~/.claude   ~/.codex
+config/              git 追踪的配置快照（真实文件，可跨设备 clone）
+config-links/        本机软链 -> ~/.claude（gitignore，运行 links 子命令创建）
+  agents/ commands/ skills/ skills-disabled/ global-AGENTS.md
+config/AGENTS.md     部署到三工具的全局规则（英文）
+AGENTS.md            本仓库工作准则（中文，本文件 @ 导入）
+agent-config.sh      唯一入口脚本
 ```
 
-| 配置类别   | cursor          | claude          | codex                       |
-|-----------|-----------------|-----------------|-----------------------------|
-| 斜杠命令   | `commands/*.md` | `commands/*.md` | `prompts/*.md`              |
-| subagents | `agents/*.md`   | `agents/*.md`   | （无此机制，跳过）            |
-| skills    | `skills/*`      | `skills/*`      | `skills/*`（`.system` 不动）  |
-| 全局规则   | `AGENTS.md`     | `AGENTS.md`     | `AGENTS.md`                 |
+## 三处配置的关系
 
-Claude Code 只读 CLAUDE.md，因此规则统一的标准做法是 **CLAUDE.md 用 `@AGENTS.md` 导入 AGENTS.md**（本文件即如此），脚本也依赖这一约定。`config-links/` 下的软链接（`agents`、`commands`、`skills`、`skills-disabled` 指向 `~/.cursor/...`，`global-AGENTS.md` 指向 `~/.claude/AGENTS.md`）是这些部署目录的只读视图。
+```
+                    ┌─────────────────┐
+  git 仓库           │  config/        │  跨设备迁移的快照（真实文件）
+                    └────────┬────────┘
+                             │ deploy / pull
+                    ┌────────▼────────┐
+  本机 canonical     │  ~/.claude/     │  默认源（agents commands skills AGENTS.md）
+                    └────────┬────────┘
+                             │ sync
+              ┌──────────────┼──────────────┐
+              ▼              ▼              ▼
+         ~/.cursor/     ~/.claude/     ~/.codex/
+         commands       commands       prompts
+         agents         agents         (无 agents)
+         skills         skills         skills
+```
 
-## 用脚本统一配置（都有副作用，先 `--dry-run`）
+| 配置类别 | cursor | claude | codex |
+|---------|--------|--------|-------|
+| 斜杠命令 | `commands/*.md` | `commands/*.md` | `prompts/*.md` |
+| subagents | `agents/*.md` | `agents/*.md` | 无 |
+| skills | `skills/*` | `skills/*` | `skills/*`（`.system` 不动） |
+| 全局规则 | `AGENTS.md` | `AGENTS.md` | `AGENTS.md` |
 
-两个脚本都写入上面的全局部署目录，跑实际写入前先 `--dry-run` 预览。
+Claude Code 只读 `CLAUDE.md`，部署时脚本会确保 `~/.claude/CLAUDE.md` 含 `@AGENTS.md` 导入。
 
-- **同步**：`sync-agent-config.sh` 以某一工具为**源**，把统一配置**增量**同步到另外两个——只新增/更新同名项，**绝不删除**目标里已有的东西。
-  ```bash
-  ./sync-agent-config.sh                 # 默认以 claude 为源（canonical），同步到 cursor + codex
-  ./sync-agent-config.sh --source cursor # 改以 cursor 为源
-  ./sync-agent-config.sh --dry-run       # 只预览，不写文件
-  ./sync-agent-config.sh --no-backup     # 覆盖前不备份
-  ```
-  只处理**启用中的 `skills/`**，不碰 `skills-disabled/`；codex 无 subagents、`skills/.system` 永不触碰。
-- **迁移**：`migrate-cursor-to-claude.sh` 一键把**已部署的** `~/.cursor` 整体迁移到 `~/.claude`（`--to <项目根>` 则装到项目）。会把禁用态 skill 一并迁到目标的 `skills-disabled/` 并保持禁用。
+**两个 AGENTS.md 不要混淆：**
+
+- `config/AGENTS.md` → 同步到 `~/.claude/AGENTS.md` 等的**全局英文规则**
+- 根目录 `AGENTS.md` → **本仓库中文工作准则**，仅供此仓库的 CLAUDE.md 使用
+
+## agent-config.sh 子命令
+
+所有写操作都支持 `--dry-run` 预览。
+
+```bash
+./agent-config.sh help                              # 总览
+
+./agent-config.sh deploy [--no-sync] [--dry-run]    # config/ -> ~/.claude -> sync 到其他工具
+./agent-config.sh pull [--source claude] [--dry-run] # 本地 -> config/（commit 前）
+./agent-config.sh sync [--source claude] [--dry-run] # 三工具互相同步（不写仓库）
+./agent-config.sh links [--cursor]                  # 创建 config-links/ 软链
+./agent-config.sh migrate [--from DIR] [--to DIR]   # ~/.cursor -> ~/.claude 一次性迁移
+```
+
+## 配置流程
+
+### 新设备（从零恢复）
+
+```bash
+git clone https://github.com/yuanyunchen/ai-coding-config.git
+cd ai-coding-config
+./agent-config.sh deploy --dry-run    # 预览
+./agent-config.sh deploy              # 写入 ~/.claude 并 sync 到 cursor + codex
+./agent-config.sh links               # 可选：创建本机 config-links/ 软链视图
+```
+
+前提：目标机器已安装三工具，且各工具至少运行过一次（存在 `~/.cursor` / `~/.claude` / `~/.codex`）。
+
+### 日常改配置
+
+```bash
+# 方式 A：直接改 ~/.claude/...（或 config-links/ 里看同一份文件）
+# 方式 B：在 Cursor 里改完后先 sync
+./agent-config.sh sync --source cursor
+
+# 拉回仓库、提交
+./agent-config.sh pull
+git diff config/
+git add -A && git commit -m "sync config" && git push
+```
+
+### 只有 Cursor、还没有 Claude 配置
+
+```bash
+./agent-config.sh migrate             # ~/.cursor -> ~/.claude
+./agent-config.sh pull                # 快照进 config/
+```
 
 ## Disable 一个 skill
 
-禁用机制 = **把 skill 目录从 `skills/` 移到同级 `skills-disabled/`**；两个工具都忽略 `skills-disabled/`（如 `~/.claude/skills-disabled/`）。Cursor 侧禁用表现为 `~/.cursor/skills/` 里的失效软链。重新启用就是移回 `skills/`。`sync-agent-config.sh` 不会同步禁用态，只有 `migrate` 脚本保留它。
+把 skill 目录从 `skills/` 移到同级 `skills-disabled/`。`sync` 不同步禁用态；`migrate` 会把 Cursor 里的失效软链恢复进 `skills-disabled/`。
 
 ## Gotchas
 
-- **根目录不是 git 仓库**；只有 `cursor-multiagent-system/` 是独立 git 仓库（remote 在 GitHub）。在根目录别假设有 git 工作流。
-- 根目录无构建 / 测试 / 格式化 / lint 工具。脚本改动靠 `--dry-run` 预览验证。
-- **插件自带的 skill 游离于本体系外**：Cursor 插件（如 `parallel`）的 skill 在 `~/.cursor/plugins/cache/<市场>/<插件>/<hash>/skills/`，**不在** `~/.cursor/skills/`——所以 `config-links/` 看不到、`sync-agent-config.sh` 也不碰。要用自己的版本盖掉插件 skill：把改写版装进受管 `~/.<tool>/skills/`（以 `~/.claude/skills/` 为 canonical 源再 sync），并把插件那份移到**插件自己的** `skills-disabled/`（脆弱：插件更新会还原，需重做）。插件依赖的 CLI 二进制（如 `parallel-cli` 在 `~/.local/share/`）独立安装，删插件不影响。
+- **`config/` 不用软链**：GitHub 上必须是真实文件；本机浏览用 `config-links/`（`./agent-config.sh links`）。
+- **插件 skill 不在本仓库**：Cursor 插件（如 parallel）的 skill 在 `~/.cursor/plugins/cache/...`，不在 `config/`。要用自己的版本：放进 `config/skills/`，`deploy` 后再 `sync`。
+- **`frontend-pipeline/.../cli/node_modules`** 未纳入版本库；需要时在目标机器 `npm install`。
+- **写操作前先 `--dry-run`**：所有子命令都支持。

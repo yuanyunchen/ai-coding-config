@@ -11,13 +11,13 @@
 #   -----------   -------------   -------------   ----------------------------
 #   斜杠命令      commands/*.md   commands/*.md   prompts/*.md
 #   subagents     agents/*.md     agents/*.md     (无对应目录 -> 跳过)
-#   skills        skills/*        skills/*        skills/*  (.system 不动)
+#   skills        skills/{enabled,disabled}/*  同上  (codex 的 skills/.system 不动)
 #   全局规则      AGENTS.md       AGENTS.md       AGENTS.md
 #
 #   - claude 额外保证 CLAUDE.md 里有 @AGENTS.md 导入（Claude 只读 CLAUDE.md）。
 #   - codex 没有 subagents 机制，故 subagents 只在 cursor <-> claude 之间同步。
 #   - codex 的 skills/.system 是官方系统 skill，永不触碰。
-#   - hooks / 插件不在同步范围（各工具机制不同；用户已声明“除了插件全部统一”）。
+#   - hook 型 Claude 插件（manifest hookPlugins）不同步；各工具单独安装。
 #
 # 增量语义（关键）：
 #   - 命令 / subagents：把 source 的文件拷到目标，同名覆盖更新，绝不删目标多出来的。
@@ -38,6 +38,8 @@ set -euo pipefail
 
 # 过时残留：不同步、不报告
 IGNORE_SKILLS=" brand-guidelines doc-coauthoring internal-comms slack-gif-creator designer-subagent "
+# hook 型 Claude 插件命令：仅 Claude marketplace，不同步到 Cursor/Codex
+IGNORE_COMMANDS=" ralph-loop.md cancel-ralph.md hookify.md configure.md list.md help.md "
 # 仅在【目标是 codex】时额外跳过的 skill：
 #   skill-creator           -> 与 codex 自带 .system/skill-creator 同名冲突
 #   webpage-content-extraction -> 依赖 cursor 专有插件 parallel-cli，codex 下不可用
@@ -81,8 +83,14 @@ rewrite_paths() {
     local path="$1" dest="$2"
     [ "$DRY_RUN" -eq 1 ] && return 0
     export REPL="~/.$dest/"
-    find "$path" -type f \( -name '*.md' -o -name '*.py' \) -print0 2>/dev/null \
-        | xargs -0 perl -pi -e 's{\Q~/.cursor/\E|\Q~/.claude/\E|\Q~/.codex/\E}{$ENV{REPL}}g' 2>/dev/null || true
+    find "$path" -type f \( -name '*.md' -o -name '*.py' -o -name '*.sh' \) -print0 2>/dev/null \
+        | xargs -0 perl -pi -e '
+            s{\Q~/.cursor/skills-disabled/\E}{~/.cursor/skills/disabled/}g;
+            s{\Q~/.claude/skills-disabled/\E}{~/.claude/skills/disabled/}g;
+            s{\Q~/.codex/skills-disabled/\E}{~/.codex/skills/disabled/}g;
+            s{(~/.(?:cursor|claude|codex)/skills)/(?!enabled/|disabled/)}{$1/enabled/}g;
+            s{\Q~/.cursor/\E|\Q~/.claude/\E|\Q~/.codex/\E}{$ENV{REPL}}g;
+        ' 2>/dev/null || true
 }
 
 echo "同步 agent 配置（增量，只加不删）"
@@ -129,6 +137,8 @@ for TGT in $TARGETS; do
         run "mkdir -p \"$TGT_CMD\""
         for f in "$SRC_CMD"/*.md; do
             [ -f "$f" ] || continue
+            base=$(basename "$f")
+            case "$IGNORE_COMMANDS" in *" $base "*) echo "  (跳过 ${base}: hook 插件，仅 Claude)"; continue ;; esac
             run "cp \"$f\" \"$TGT_CMD/$(basename "$f")\""
             rewrite_paths "$TGT_CMD/$(basename "$f")" "$TGT"
             echo "  $(basename "$f") -> $TGT_CMD/"; N=$((N+1))
@@ -154,35 +164,47 @@ for TGT in $TARGETS; do
         echo "  (codex 无 subagents 机制，跳过)"
     fi
 
-    # --- skills（增量 rsync，无 --delete；codex 的 .system 永不触碰）---
+    # --- skills（skills/enabled + skills/disabled；codex 的 skills/.system 永不触碰）---
     echo "[skills]"
     TGT_SKILLS="$TGT_BASE/skills"
-    TGT_SKILLS_REAL="$(cd "$TGT_SKILLS" 2>/dev/null && pwd -P || echo "$TGT_SKILLS")"
     N=0; BK_N=0
-    if [ -d "$SRC_BASE/skills" ]; then
-        run "mkdir -p \"$TGT_SKILLS\""
-        for entry in "$SRC_BASE/skills"/*; do
+    sync_skill_bucket() {
+        local bucket="$1"
+        local src_bucket="$SRC_BASE/skills/$bucket"
+        [ -d "$src_bucket" ] || return 0
+        run "mkdir -p \"$TGT_SKILLS/$bucket\""
+        for entry in "$src_bucket"/*; do
+            [ -e "$entry" ] || continue
             NAME=$(basename "$entry")
-            [ "$NAME" = ".system" ] && continue                       # codex 系统 skill，跳过
-            case "$IGNORE_SKILLS" in *" $NAME "*) continue ;; esac      # 过时残留
+            case "$IGNORE_SKILLS" in *" $NAME "*) continue ;; esac
             if [ "$TGT" = codex ]; then case "$CODEX_IGNORE_SKILLS" in *" $NAME "*) echo "  (跳过 ${NAME}: codex 不适用)"; continue ;; esac; fi
-            SRC_REAL="$(cd "$entry" 2>/dev/null && pwd -P || true)"     # 解析真实路径（含软链）
-            [ -z "$SRC_REAL" ] && continue                             # 失效软链，无源可同步
-            [ "$SRC_REAL" = "$TGT_SKILLS_REAL/$NAME" ] && continue      # 源就是目标本身（软链回指）
-            TARGET="$TGT_SKILLS/$NAME"
-            # 目标若是软链且实指回源（如 cursor/skills/pdf -> claude/skills/pdf），跳过，
-            # 否则 rsync 会顺着软链写回源自身。
+            SRC_REAL="$(cd "$entry" 2>/dev/null && pwd -P || true)"
+            [ -z "$SRC_REAL" ] && continue
+            TARGET="$TGT_SKILLS/$bucket/$NAME"
             TGT_REAL="$(cd "$TARGET" 2>/dev/null && pwd -P || true)"
             [ -n "$TGT_REAL" ] && [ "$TGT_REAL" = "$SRC_REAL" ] && { echo "  (跳过 ${NAME}: 目标软链已指向源)"; continue; }
             if [ -d "$TARGET" ] && [ ! -L "$TARGET" ] && [ "$DO_BACKUP" -eq 1 ]; then
-                run "mkdir -p \"$BK/skills\" && cp -R \"$TARGET\" \"$BK/skills/$NAME\""
+                run "mkdir -p \"$BK/skills/$bucket\" && cp -R \"$TARGET\" \"$BK/skills/$bucket/$NAME\""
                 BK_N=$((BK_N+1))
             fi
             run "mkdir -p \"$TARGET\""
             run "rsync -aL --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' \"$SRC_REAL/\" \"$TARGET/\""
             rewrite_paths "$TARGET" "$TGT"
-            echo "  $NAME/ -> $TARGET/"; N=$((N+1))
+            echo "  $bucket/$NAME/ -> $TARGET/"; N=$((N+1))
         done
+    }
+    if [ -d "$SRC_BASE/skills" ]; then
+        if [ -d "$SRC_BASE/skills/enabled" ] || [ -d "$SRC_BASE/skills/disabled" ]; then
+            sync_skill_bucket enabled
+            sync_skill_bucket disabled
+        else
+            echo "  (源 skills/ 无 enabled/disabled 子目录，请先 deploy 或整理 config/skills/)"
+        fi
+        if [ "$TGT" = codex ] && [ -d "$SRC_BASE/skills/.system" ]; then
+            run "mkdir -p \"$TGT_SKILLS/.system\""
+            run "rsync -aL --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' \"$SRC_BASE/skills/.system/\" \"$TGT_SKILLS/.system/\""
+            echo "  .system/ -> $TGT_SKILLS/.system/ (codex 官方)"
+        fi
     fi
     [ "$N" -eq 0 ] && echo "  (无可同步的 skill)"
     [ "$BK_N" -gt 0 ] && echo "  (覆盖前备份了 $BK_N 个同名旧 skill -> ${BK##*/}/skills/)"

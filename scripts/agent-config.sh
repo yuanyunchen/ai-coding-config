@@ -12,6 +12,7 @@
 #   sync     三工具互相同步（不写仓库）
 #   migrate  Cursor -> Claude 一次性迁移
 #   links    创建本机 config-links/ 软链
+#   plugins  Claude 插件开关 + 可移植内容提取（见 plugins -h）
 #
 # 示例：
 #   ./agent-config deploy --dry-run
@@ -35,6 +36,11 @@ case "${1:-}" in
     sync)    shift; exec "$SCRIPTS_DIR/sync.sh" "$@" ;;
     migrate) shift; exec "$SCRIPTS_DIR/migrate.sh" "$@" ;;
     links)   shift; exec "$SCRIPTS_DIR/links.sh" "$@" ;;
+    plugins)
+        case "${2:-}" in
+            install) shift 2; exec "$SCRIPTS_DIR/claude-plugins-install.sh" install "$@" ;;
+            *) shift; exec "$SCRIPTS_DIR/plugins.sh" "$@" ;;
+        esac ;;
     help|-h|--help) usage ;;
     "")
         echo "ERROR: 缺少命令"; echo ""

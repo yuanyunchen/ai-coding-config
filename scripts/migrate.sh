@@ -120,13 +120,14 @@ fi
 echo ""
 echo "[skills]"
 SKILL_COUNT=0; BACKED_UP=0; SKIPPED=0; DANGLING=""; DIS_COUNT=0; DIS_SKIP=0
-CLAUDE_SKILLS_DISABLED="$CLAUDE_BASE/skills-disabled"   # Claude 的禁用机制 = 此目录（被忽略）
+CLAUDE_SKILLS_DISABLED="$CLAUDE_BASE/skills/disabled"   # 禁用 skill（被忽略）
+CLAUDE_SKILLS_ENABLED="$CLAUDE_BASE/skills/enabled"
 CLAUDE_SKILLS_REAL="$(cd "$CLAUDE_SKILLS" 2>/dev/null && pwd -P || echo "$CLAUDE_SKILLS")"
 if [ -d "$SRC/skills" ]; then
     for entry in "$SRC/skills"/*; do
         NAME=$(basename "$entry")
         case "$IGNORE_SKILLS" in *" $NAME "*) continue ;; esac   # 跳过过时残留
-        TARGET="$CLAUDE_SKILLS/$NAME"
+        TARGET="$CLAUDE_SKILLS_ENABLED/$NAME"
         # 解析真实源路径（目录或可达软链得到实路径；失效软链得到空）
         SRC_REAL="$(cd "$entry" 2>/dev/null && pwd -P || true)"
         if [ -z "$SRC_REAL" ]; then
@@ -178,9 +179,9 @@ echo ""
 echo "[rules]"
 RULES_FILE="$CLAUDE_BASE/AGENTS.md"
 CLAUDE_MD="$CLAUDE_BASE/CLAUDE.md"
-WS_LINK="$REPO_ROOT/config-links/global-AGENTS.md"
+WS_LINK="$REPO_ROOT/config-links/AGENTS.md"
 if [ "$DRY_RUN" -eq 1 ]; then
-    echo "  [dry-run] 写 ${RULES_FILE}（若不存在）；确保 ${CLAUDE_MD} 含 @AGENTS.md；建链接 ${WS_LINK}"
+    echo "  [dry-run] 写 ${RULES_FILE}（若不存在）；确保 ${CLAUDE_MD} 含 @AGENTS.md；链 ${WS_LINK}（需先 ./agent-config links）"
 else
     if [ -f "$RULES_FILE" ]; then
         echo "  已存在，保留不覆盖: $RULES_FILE"

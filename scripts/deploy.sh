@@ -1,7 +1,6 @@
 #!/bin/bash
 ################################################################################
-# 把本仓库 config/ 快照部署到 ~/.claude（canonical），再同步到 cursor + codex。
-# 新设备 clone 本仓库后运行此脚本即可恢复 AI coding 配置。
+# 把本仓库 config/ 快照部署到 ~/.claude，插件一键 deploy，再 sync 到 cursor + codex。
 #
 # 用法：./agent-config deploy [--dry-run] [--no-sync]
 ################################################################################
@@ -19,27 +18,38 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --dry-run)  DRY_RUN=1; shift ;;
         --no-sync)  DO_SYNC=0; shift ;;
-        -h|--help)
-            sed -n '2,12p' "$0"
-            exit 0
-            ;;
+        -h|--help)  sed -n '2,8p' "$0"; exit 0 ;;
         *) echo "ERROR: 未知参数 '$1'"; exit 1 ;;
     esac
 done
 
 run() { if [ "$DRY_RUN" -eq 1 ]; then echo "  [dry-run] $*"; else eval "$*"; fi; }
+DRY_FLAG=$([ "$DRY_RUN" -eq 1 ] && echo --dry-run || true)
 
 [ -d "$CONFIG/agents" ] || { echo "ERROR: 找不到 $CONFIG/agents"; exit 1; }
 
 echo "部署 agent 配置 -> $CLAUDE"
 [ "$DRY_RUN" -eq 1 ] && echo "  (dry-run：不写任何文件)"
 
-run "mkdir -p \"$CLAUDE/agents\" \"$CLAUDE/commands\" \"$CLAUDE/skills\" \"$CLAUDE/skills-disabled\""
+run "mkdir -p \"$CLAUDE/agents\" \"$CLAUDE/commands\" \"$CLAUDE/skills/enabled\" \"$CLAUDE/skills/disabled\""
 
-for dir in agents commands skills skills-disabled; do
+for dir in agents commands; do
     echo "[$dir]"
     run "rsync -a --exclude='node_modules' --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' \"$CONFIG/$dir/\" \"$CLAUDE/$dir/\""
 done
+
+echo "[skills]"
+run "rsync -a --exclude='node_modules' --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' \"$CONFIG/skills/\" \"$CLAUDE/skills/\""
+
+CLAUDE_ONLY_COMMANDS="ralph-loop.md cancel-ralph.md hookify.md configure.md list.md help.md"
+if [ "$DRY_RUN" -eq 1 ]; then
+    echo "  [dry-run] 移除 hook 插件 vendored 命令（若 config 中已无）"
+else
+    for base in $CLAUDE_ONLY_COMMANDS; do
+        [ -f "$CONFIG/commands/$base" ] && continue
+        [ -f "$CLAUDE/commands/$base" ] && rm -f "$CLAUDE/commands/$base" && echo "  移除 $base（Claude 官方 hook 插件）"
+    done
+fi
 
 echo "[AGENTS.md + CLAUDE.md]"
 run "cp \"$CONFIG/AGENTS.md\" \"$CLAUDE/AGENTS.md\""
@@ -52,9 +62,16 @@ else
     fi
 fi
 
+if [ -f "$CONFIG/plugins/manifest.json" ]; then
+    echo "[plugins deploy]"
+    "$SCRIPTS_DIR/plugins.sh" deploy $DRY_FLAG
+    echo "[plugins install — Claude marketplace]"
+    "$SCRIPTS_DIR/claude-plugins-install.sh" install $DRY_FLAG
+fi
+
 echo ""
 if [ "$DO_SYNC" -eq 1 ]; then
-    echo "同步到 cursor + codex ..."
+    echo "同步 portable 配置到 cursor + codex ..."
     if [ "$DRY_RUN" -eq 1 ]; then
         "$SCRIPTS_DIR/sync.sh" --dry-run
     else

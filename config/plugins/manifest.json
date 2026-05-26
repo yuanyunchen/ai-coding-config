@@ -1,0 +1,67 @@
+{
+  "version": 2,
+  "claude": {
+    "enabledPlugins": {
+      "claude-md-management@claude-plugins-official": true,
+      "code-review@claude-plugins-official": true,
+      "code-simplifier@claude-plugins-official": true,
+      "feature-dev@claude-plugins-official": false,
+      "hookify@claude-plugins-official": false,
+      "learning-output-style@claude-plugins-official": false,
+      "ralph-loop@claude-plugins-official": true,
+      "session-report@claude-plugins-official": false,
+      "skill-creator@claude-plugins-official": true,
+      "superpowers@superpowers-marketplace": false
+    }
+  },
+  "cursor": {
+    "enabledPlugins": {
+      "parallel@cursor-public": true,
+      "browse@cursor-public": true,
+      "continual-learning@cursor-public": true,
+      "claude-md-management@claude-plugins-official": true,
+      "code-review@claude-plugins-official": true,
+      "code-simplifier@claude-plugins-official": true,
+      "feature-dev@claude-plugins-official": false,
+      "hookify@claude-plugins-official": false,
+      "learning-output-style@claude-plugins-official": false,
+      "ralph-loop@claude-plugins-official": false,
+      "session-report@claude-plugins-official": false,
+      "skill-creator@claude-plugins-official": true,
+      "superpowers@superpowers-marketplace": false
+    }
+  },
+  "codex": {
+    "enabledPlugins": {
+      "claude-md-management@claude-plugins-official": true,
+      "code-review@claude-plugins-official": true,
+      "code-simplifier@claude-plugins-official": true,
+      "feature-dev@claude-plugins-official": false,
+      "hookify@claude-plugins-official": false,
+      "learning-output-style@claude-plugins-official": false,
+      "ralph-loop@claude-plugins-official": false,
+      "session-report@claude-plugins-official": false,
+      "skill-creator@claude-plugins-official": true,
+      "superpowers@superpowers-marketplace": false
+    }
+  },
+  "syncPlugins": {
+    "source": "claude",
+    "targets": [
+      "cursor",
+      "codex"
+    ],
+    "notes": "portable 插件从 source 复制快照并镜像 enabledPlugins；hook 插件仅保留在 source，targets 记为 false"
+  },
+  "hookPlugins": {
+    "claude": [
+      "ralph-loop@claude-plugins-official",
+      "hookify@claude-plugins-official"
+    ],
+    "cursor": [
+      "continual-learning@cursor-public"
+    ],
+    "codex": []
+  },
+  "notes": "原始插件包分平台存于 claude/ cursor/ codex/。hookPlugins 不跨平台 sync；portable 插件 claude 侧 vendor 后进 config/ 再 sync。"
+}

@@ -1,9 +1,8 @@
 #!/bin/bash
 ################################################################################
-# 在本机创建 config-links/ 软链，指向 ~/.claude 部署目录（只读视图，别在此改文件）。
-# 与父工作区 config-links/ 同模式；config/ 仍是 git 追踪的真实快照。
+# 创建 config-links -> config/ 软链（结构完全一致，仅本机浏览用，已 gitignore）。
 #
-# 用法：./agent-config links [--cursor|--claude]
+# 用法：./agent-config links
 ################################################################################
 
 set -euo pipefail
@@ -11,39 +10,37 @@ set -euo pipefail
 SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPTS_DIR/.." && pwd)"
 LINKS="$REPO_ROOT/config-links"
-TARGET="claude"
+CONFIG="$REPO_ROOT/config"
+SKILLS="$CONFIG/skills"
 
-while [ $# -gt 0 ]; do
-    case "$1" in
-        --cursor)  TARGET="cursor"; shift ;;
-        --claude)  TARGET="claude"; shift ;;
-        -h|--help)
-            sed -n '2,10p' "$0"
-            exit 0
-            ;;
-        *) echo "ERROR: 未知参数 '$1'"; exit 1 ;;
-    esac
-done
-
-BASE="$HOME/.$TARGET"
-[ -d "$BASE" ] || { echo "ERROR: 找不到 $BASE"; exit 1; }
-
-mkdir -p "$LINKS"
-
-link() {
-    local name="$1" dest="$2"
-    if [ -e "$LINKS/$name" ] || [ -L "$LINKS/$name" ]; then
-        rm "$LINKS/$name"
-    fi
-    ln -s "$dest" "$LINKS/$name"
-    echo "  $name -> $dest"
+normalize_skills_layout() {
+    mkdir -p "$SKILLS/enabled" "$SKILLS/disabled"
+    local name
+    for name in "$SKILLS"/*; do
+        [ -e "$name" ] || continue
+        name=$(basename "$name")
+        [ "$name" = enabled ] || [ "$name" = disabled ] && continue
+        if [ -d "$SKILLS/enabled/$name" ]; then
+            rm -rf "$SKILLS/enabled/$name"
+        fi
+        mv "$SKILLS/$name" "$SKILLS/enabled/$name"
+        echo "  skills/enabled/$name"
+    done
 }
 
-echo "创建 config-links/ -> $BASE"
-link agents           "$BASE/agents"
-link commands         "$BASE/commands"
-link skills           "$BASE/skills"
-link skills-disabled  "$BASE/skills-disabled"
-link global-AGENTS.md "$BASE/AGENTS.md"
+echo "整理 config/skills/ -> enabled/ + disabled/"
+normalize_skills_layout
 
-echo "完成。浏览/编辑请改 $BASE 下原文件，改完运行 ./agent-config pull 更新 config/。"
+echo "创建 config-links -> config/"
+if [ -L "$LINKS" ]; then
+    rm -f "$LINKS"
+elif [ -e "$LINKS" ]; then
+    rm -rf "$LINKS"
+fi
+ln -sfn config "$LINKS"
+echo "  config-links -> $(cd "$REPO_ROOT" && pwd -P)/config"
+echo ""
+echo "浏览路径与 config/ 相同，例如："
+echo "  config-links/skills/enabled/"
+echo "  config-links/plugins/claude/enabled/"
+echo "  config-links/plugins/README.md"

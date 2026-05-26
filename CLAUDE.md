@@ -2,8 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-@AGENTS.md
-
 ## 仓库定位
 
 本仓库是 **Cursor / Claude Code / Codex** 三工具的统一 agent 配置备份库，用于跨设备迁移与版本管理。
@@ -25,7 +23,6 @@ config/                        git 快照（跨设备迁移）
 config-links/ -> config/       本机软链（gitignore，`./agent-config links`）
 agent-config                   统一 CLI 入口
 scripts/                       deploy | pull | sync | plugins | links
-AGENTS.md                      本仓库工作准则（本文件 @ 导入）
 config/AGENTS.md               部署到三工具的全局英文规则
 ```
 
@@ -149,7 +146,7 @@ portable 更新：`pull` → `vendor --force` → `deploy`
 
 ## Gotchas
 
-- **两个 AGENTS.md**：根目录是中文工作准则（给本仓库 CLAUDE.md）；`config/AGENTS.md` 是部署到三工具的全局英文规则。
+- **`config/AGENTS.md`**：部署到三工具的全局英文规则；`deploy`/`pull`/`sync` 会同步到各工具 `AGENTS.md`。
 - **hook 插件**：见 `manifest.json` 的 `hookPlugins`；原始包在 `config/plugins/{claude,cursor,codex}/`，不 vendor、不跨平台 sync。
 - **portable 插件**：`plugins pull` → `vendor` → `sync`；如 code-review 三工具 prompt 一致。
 - **`feature-dev` 已禁用**：manifest 中 `feature-dev@claude-plugins-official: false`。

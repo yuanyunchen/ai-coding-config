@@ -1,8 +1,8 @@
 # AI Coding Config
 
-Cursor / Claude Code / Codex 统一 agent 配置备份与跨设备迁移。
+Cursor / Claude Code / Codex 三工具统一的 agent 配置备份与迁移仓库。
 
-**配置说明见 [CLAUDE.md](CLAUDE.md)**（含目录结构、三工具映射、完整操作流程）。
+**配置说明见 [CLAUDE.md](./CLAUDE.md)**（目录结构、部署流程、命令一览）。
 
 ## 快速开始
 
@@ -10,11 +10,19 @@ Cursor / Claude Code / Codex 统一 agent 配置备份与跨设备迁移。
 # 新设备
 git clone https://github.com/yuanyunchen/ai-coding-config.git
 cd ai-coding-config
-./agent-config.sh deploy
-./agent-config.sh links
+./agent-config deploy
 
-# 日常改完配置
-./agent-config.sh pull && git add -A && git commit -m "sync config" && git push
+# 本机改完配置后
+./agent-config pull && git commit -am "sync config" && git push
 ```
 
-唯一脚本入口：`./agent-config.sh help`
+## 命令
+
+```bash
+./agent-config deploy   # config/ -> ~/.claude (+ sync)
+./agent-config pull     # ~/.claude -> config/
+./agent-config sync     # 三工具互相同步
+./agent-config migrate  # Cursor -> Claude 一次性迁移
+./agent-config links    # 创建本机 config-links/ 软链
+./agent-config help
+```

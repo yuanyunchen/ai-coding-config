@@ -64,7 +64,7 @@ if [ "$DRY_RUN" -eq 1 ]; then
     echo "  [dry-run] mkdir -p ... \"$CONFIG/plugins/claude\" ..."
 else
     mkdir -p "$CONFIG/agents" "$CONFIG/commands" \
-        "$CONFIG/skills/enabled" "$CONFIG/skills/disabled" \
+        "$CONFIG/skills" "$CONFIG/skills-disabled" \
         "$CONFIG/plugins/claude/enabled" "$CONFIG/plugins/claude/disabled" \
         "$CONFIG/plugins/cursor/enabled" "$CONFIG/plugins/cursor/disabled" \
         "$CONFIG/plugins/codex/enabled" "$CONFIG/plugins/codex/disabled"
@@ -88,17 +88,12 @@ fi
 
 if [ -d "$SRC_BASE/skills" ]; then
     echo "[skills]"
-    if [ -d "$SRC_BASE/skills/enabled" ] || [ -d "$SRC_BASE/skills/disabled" ]; then
-        rsync_pull "$CONFIG/skills/" "$SRC_BASE/skills/"
-    else
-        echo "  (源为扁平 skills/，拉回后请保持 config/skills/{enabled,disabled}/ 布局)"
-        rsync_pull "$CONFIG/skills/enabled/" "$SRC_BASE/skills/"
-    fi
+    rsync_pull "$CONFIG/skills/" "$SRC_BASE/skills/" --exclude='.system/'
 fi
 
 if [ -d "$SRC_BASE/skills-disabled" ]; then
-    echo "[skills-disabled -> skills/disabled]"
-    rsync_pull "$CONFIG/skills/disabled/" "$SRC_BASE/skills-disabled/"
+    echo "[skills-disabled]"
+    rsync_pull "$CONFIG/skills-disabled/" "$SRC_BASE/skills-disabled/"
 fi
 
 if [ -d "$SRC_BASE/scripts" ]; then
@@ -123,12 +118,38 @@ else
 fi
 
 if [ "$SOURCE" = claude ] && [ -f "$SRC_BASE/settings.json" ]; then
+    echo "[settings 个性化 pull]"
+    if [ "$DRY_RUN" -eq 1 ]; then
+        echo "  [dry-run] 抽取个性化 key -> config/claude-personal/settings.personal.json"
+    else
+        python3 "$SCRIPTS_DIR/settings-personal.py" pull "$SRC_BASE/settings.json" "$CONFIG/claude-personal/settings.personal.json"
+    fi
+
+    if [ -d "$HOME/.config/ccstatusline" ]; then
+        echo "[ccstatusline 显示 pull]"
+        if [ "$DRY_RUN" -eq 1 ]; then
+            echo "  [dry-run] rsync ~/.config/ccstatusline/ -> config/claude-personal/ccstatusline/"
+        else
+            mkdir -p "$CONFIG/claude-personal/ccstatusline"
+            rsync -a --exclude='.DS_Store' "$HOME/.config/ccstatusline/" "$CONFIG/claude-personal/ccstatusline/"
+        fi
+    fi
+
     echo "[plugins pull]"
     if [ "$DRY_RUN" -eq 1 ]; then
         "$SCRIPTS_DIR/plugins.sh" pull --dry-run
     else
         "$SCRIPTS_DIR/plugins.sh" pull
         "$SCRIPTS_DIR/plugins.sh" vendor
+    fi
+fi
+
+if [ -f "$HOME/.codex/config.toml" ]; then
+    echo "[codex config 个性化 pull]"
+    if [ "$DRY_RUN" -eq 1 ]; then
+        echo "  [dry-run] 抽取 Codex 个性化 key -> config/codex-personal/config.personal.toml"
+    else
+        python3 "$SCRIPTS_DIR/codex-personal.py" pull "$HOME/.codex/config.toml" "$CONFIG/codex-personal/config.personal.toml"
     fi
 fi
 

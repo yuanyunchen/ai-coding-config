@@ -11,7 +11,7 @@
 #   -----------   -------------   -------------   ----------------------------
 #   斜杠命令      commands/*.md   commands/*.md   prompts/*.md
 #   subagents     agents/*.md     agents/*.md     (无对应目录 -> 跳过)
-#   skills        skills/{enabled,disabled}/*  同上  (codex 的 skills/.system 不动)
+#   skills        skills/*（启用）+ skills-disabled/*（禁用，同级）  同上  (codex 的 skills/.system 不动)
 #   全局规则      AGENTS.md       AGENTS.md       AGENTS.md
 #
 #   - claude 额外保证 CLAUDE.md 里有 @AGENTS.md 导入（Claude 只读 CLAUDE.md）。
@@ -85,10 +85,8 @@ rewrite_paths() {
     export REPL="~/.$dest/"
     find "$path" -type f \( -name '*.md' -o -name '*.py' -o -name '*.sh' \) -print0 2>/dev/null \
         | xargs -0 perl -pi -e '
-            s{\Q~/.cursor/skills-disabled/\E}{~/.cursor/skills/disabled/}g;
-            s{\Q~/.claude/skills-disabled/\E}{~/.claude/skills/disabled/}g;
-            s{\Q~/.codex/skills-disabled/\E}{~/.codex/skills/disabled/}g;
-            s{(~/.(?:cursor|claude|codex)/skills)/(?!enabled/|disabled/)}{$1/enabled/}g;
+            s{(~/.(?:cursor|claude|codex)/skills)/disabled/}{${1}-disabled/}g;
+            s{(~/.(?:cursor|claude|codex)/skills)/enabled/}{$1/}g;
             s{\Q~/.cursor/\E|\Q~/.claude/\E|\Q~/.codex/\E}{$ENV{REPL}}g;
         ' 2>/dev/null || true
 }
@@ -164,50 +162,44 @@ for TGT in $TARGETS; do
         echo "  (codex 无 subagents 机制，跳过)"
     fi
 
-    # --- skills（skills/enabled + skills/disabled；codex 的 skills/.system 永不触碰）---
+    # --- skills（启用 = 扁平 skills/；禁用 = 同级 skills-disabled/；codex 的 skills/.system 永不触碰）---
     echo "[skills]"
-    TGT_SKILLS="$TGT_BASE/skills"
     N=0; BK_N=0
-    sync_skill_bucket() {
-        local bucket="$1"
-        local src_bucket="$SRC_BASE/skills/$bucket"
-        [ -d "$src_bucket" ] || return 0
-        run "mkdir -p \"$TGT_SKILLS/$bucket\""
-        for entry in "$src_bucket"/*; do
+    sync_skill_dir() {
+        local src_dir="$1" tgt_dir="$2"
+        [ -d "$src_dir" ] || return 0
+        run "mkdir -p \"$tgt_dir\""
+        local bk_sub; bk_sub="$(basename "$tgt_dir")"
+        for entry in "$src_dir"/*; do
             [ -e "$entry" ] || continue
             NAME=$(basename "$entry")
+            [ "$NAME" = ".system" ] && continue
             case "$IGNORE_SKILLS" in *" $NAME "*) continue ;; esac
             if [ "$TGT" = codex ]; then case "$CODEX_IGNORE_SKILLS" in *" $NAME "*) echo "  (跳过 ${NAME}: codex 不适用)"; continue ;; esac; fi
             SRC_REAL="$(cd "$entry" 2>/dev/null && pwd -P || true)"
             [ -z "$SRC_REAL" ] && continue
-            TARGET="$TGT_SKILLS/$bucket/$NAME"
+            TARGET="$tgt_dir/$NAME"
             TGT_REAL="$(cd "$TARGET" 2>/dev/null && pwd -P || true)"
             [ -n "$TGT_REAL" ] && [ "$TGT_REAL" = "$SRC_REAL" ] && { echo "  (跳过 ${NAME}: 目标软链已指向源)"; continue; }
             if [ -d "$TARGET" ] && [ ! -L "$TARGET" ] && [ "$DO_BACKUP" -eq 1 ]; then
-                run "mkdir -p \"$BK/skills/$bucket\" && cp -R \"$TARGET\" \"$BK/skills/$bucket/$NAME\""
+                run "mkdir -p \"$BK/$bk_sub\" && cp -R \"$TARGET\" \"$BK/$bk_sub/$NAME\""
                 BK_N=$((BK_N+1))
             fi
             run "mkdir -p \"$TARGET\""
             run "rsync -aL --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' \"$SRC_REAL/\" \"$TARGET/\""
             rewrite_paths "$TARGET" "$TGT"
-            echo "  $bucket/$NAME/ -> $TARGET/"; N=$((N+1))
+            echo "  $bk_sub/$NAME/ -> $TARGET/"; N=$((N+1))
         done
     }
-    if [ -d "$SRC_BASE/skills" ]; then
-        if [ -d "$SRC_BASE/skills/enabled" ] || [ -d "$SRC_BASE/skills/disabled" ]; then
-            sync_skill_bucket enabled
-            sync_skill_bucket disabled
-        else
-            echo "  (源 skills/ 无 enabled/disabled 子目录，请先 deploy 或整理 config/skills/)"
-        fi
-        if [ "$TGT" = codex ] && [ -d "$SRC_BASE/skills/.system" ]; then
-            run "mkdir -p \"$TGT_SKILLS/.system\""
-            run "rsync -aL --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' \"$SRC_BASE/skills/.system/\" \"$TGT_SKILLS/.system/\""
-            echo "  .system/ -> $TGT_SKILLS/.system/ (codex 官方)"
-        fi
+    sync_skill_dir "$SRC_BASE/skills" "$TGT_BASE/skills"
+    sync_skill_dir "$SRC_BASE/skills-disabled" "$TGT_BASE/skills-disabled"
+    if [ "$TGT" = codex ] && [ -d "$SRC_BASE/skills/.system" ]; then
+        run "mkdir -p \"$TGT_BASE/skills/.system\""
+        run "rsync -aL --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' \"$SRC_BASE/skills/.system/\" \"$TGT_BASE/skills/.system/\""
+        echo "  .system/ -> $TGT_BASE/skills/.system/ (codex 官方)"
     fi
     [ "$N" -eq 0 ] && echo "  (无可同步的 skill)"
-    [ "$BK_N" -gt 0 ] && echo "  (覆盖前备份了 $BK_N 个同名旧 skill -> ${BK##*/}/skills/)"
+    [ "$BK_N" -gt 0 ] && echo "  (覆盖前备份了 $BK_N 个同名旧 skill -> ${BK##*/}/)"
 done
 
 echo ""

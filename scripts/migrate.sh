@@ -120,8 +120,8 @@ fi
 echo ""
 echo "[skills]"
 SKILL_COUNT=0; BACKED_UP=0; SKIPPED=0; DANGLING=""; DIS_COUNT=0; DIS_SKIP=0
-CLAUDE_SKILLS_DISABLED="$CLAUDE_BASE/skills/disabled"   # 禁用 skill（被忽略）
-CLAUDE_SKILLS_ENABLED="$CLAUDE_BASE/skills/enabled"
+CLAUDE_SKILLS_DISABLED="$CLAUDE_BASE/skills-disabled"   # 禁用 skill（同级目录，被忽略）
+CLAUDE_SKILLS_ENABLED="$CLAUDE_BASE/skills"             # 启用 skill（扁平）
 CLAUDE_SKILLS_REAL="$(cd "$CLAUDE_SKILLS" 2>/dev/null && pwd -P || echo "$CLAUDE_SKILLS")"
 if [ -d "$SRC/skills" ]; then
     for entry in "$SRC/skills"/*; do

@@ -1,0 +1,18 @@
+model = "gpt-5.5"
+model_reasoning_effort = "medium"
+personality = "pragmatic"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+service_tier = "fast"
+
+[tui]
+status_line_use_colors = false
+status_line = ["five-hour-limit", "weekly-limit", "context-used"]
+
+[desktop]
+appearanceTheme = "system"
+usePointerCursors = true
+conversationDetailMode = "STEPS_COMMANDS"
+
+[features]
+js_repl = false

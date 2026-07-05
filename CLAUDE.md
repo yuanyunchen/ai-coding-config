@@ -72,9 +72,7 @@ cd ai-coding-config
 3b. 若改了插件开关：`./agent-config plugins sync --force`（再 pull 亦可）
 4. 提交：`git add -A && git commit -m "sync config" && git push`
 
-### 全局记忆同步（独立仓库，工作区在 `../global-memory/`）
-
-记忆内容不在本仓库。工作目录：`Agent Development/global-memory/`（`hub/` 软链 → `claude-memory/`）。
+### 全局记忆同步（`../claude-memory/`，git 与正文同目录）
 
 ```bash
 ./agent-config memory pull    # 多设备开工前

@@ -12,7 +12,7 @@ set -euo pipefail
 
 SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPTS_DIR/.." && pwd)"
-MANIFEST="$REPO_ROOT/../global-memory/manifest.json"
+MANIFEST="$REPO_ROOT/../claude-memory/manifest.json"
 
 usage() {
     sed -n '2,10p' "$0"
@@ -25,7 +25,7 @@ from pathlib import Path
 manifest_path = Path(sys.argv[1])
 manifest = json.loads(manifest_path.read_text())
 base = manifest_path.parent
-hub = manifest.get("hubRepo") or manifest.get("hubPath", "")
+hub = manifest.get("hubPath") or manifest.get("hubRepo", ".")
 hub_path = Path(os.path.expanduser(hub))
 if not hub_path.is_absolute():
     hub_path = (base / hub_path).resolve()

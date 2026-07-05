@@ -18,6 +18,14 @@ usage() {
     sed -n '2,10p' "$0"
 }
 
+repo_root() {
+    python3 - "$MANIFEST" <<'PY'
+import json, sys
+from pathlib import Path
+print(Path(sys.argv[1]).parent.resolve())
+PY
+}
+
 hub_path() {
     python3 - "$MANIFEST" <<'PY'
 import json, os, sys
@@ -25,7 +33,7 @@ from pathlib import Path
 manifest_path = Path(sys.argv[1])
 manifest = json.loads(manifest_path.read_text())
 base = manifest_path.parent
-hub = manifest.get("hubPath") or manifest.get("hubRepo", ".")
+hub = manifest.get("hubPath") or manifest.get("hubRepo", "memory")
 hub_path = Path(os.path.expanduser(hub))
 if not hub_path.is_absolute():
     hub_path = (base / hub_path).resolve()
@@ -33,15 +41,19 @@ print(hub_path)
 PY
 }
 
-require_hub() {
-    local hub
+require_repo() {
+    local repo hub
+    repo="$(repo_root)"
     hub="$(hub_path)"
-    if [ ! -d "$hub/.git" ]; then
-        echo "ERROR: 记忆枢纽未初始化或不是 git 仓库: $hub"
-        echo "新设备请先 clone 到 Agent Development/claude-memory 并软链 runtime 路径"
+    if [ ! -d "$repo/.git" ]; then
+        echo "ERROR: claude-memory 未初始化: $repo"
         exit 1
     fi
-    echo "$hub"
+    if [ ! -d "$hub" ]; then
+        echo "ERROR: 记忆目录不存在: $hub"
+        exit 1
+    fi
+    echo "$repo"
 }
 
 CMD="${1:-status}"
@@ -58,26 +70,28 @@ done
 
 case "$CMD" in
     status)
-        hub="$(require_hub)"
-        echo "hub: $hub"
-        git -C "$hub" remote -v 2>/dev/null | head -2 || true
-        git -C "$hub" status -sb
+        repo="$(require_repo)"
+        hub="$(hub_path)"
+        echo "repo: $repo"
+        echo "hub:  $hub"
+        git -C "$repo" remote -v 2>/dev/null | head -2 || true
+        git -C "$repo" status -sb
         ;;
     pull)
-        hub="$(require_hub)"
-        echo "[memory pull] $hub"
-        git -C "$hub" pull --rebase
+        repo="$(require_repo)"
+        echo "[memory pull] $repo"
+        git -C "$repo" pull --rebase
         ;;
     push)
-        hub="$(require_hub)"
-        echo "[memory push] $hub"
-        if git -C "$hub" diff --quiet && git -C "$hub" diff --cached --quiet && [ -z "$(git -C "$hub" ls-files --others --exclude-standard)" ]; then
+        repo="$(require_repo)"
+        echo "[memory push] $repo"
+        if git -C "$repo" diff --quiet && git -C "$repo" diff --cached --quiet && [ -z "$(git -C "$repo" ls-files --others --exclude-standard)" ]; then
             echo "  (无改动，跳过 commit/push)"
             exit 0
         fi
-        git -C "$hub" add -A
-        git -C "$hub" commit -m "$MSG"
-        git -C "$hub" push
+        git -C "$repo" add -A
+        git -C "$repo" commit -m "$MSG"
+        git -C "$repo" push
         ;;
     *)
         echo "ERROR: 未知子命令 '$CMD'"

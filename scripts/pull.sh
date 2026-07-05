@@ -2,6 +2,7 @@
 ################################################################################
 # 把本地已部署的配置拉回本仓库 config/ 快照（与 deploy-config.sh 方向相反）。
 # 默认以 ~/.claude 为 canonical 源；改完配置后运行此脚本再 git commit / push。
+# agents/commands/skills/skills-disabled/scripts 使用 rsync --delete，使 config/ 与源目录镜像一致。
 #
 # 用法：./agent-config pull [--source cursor|claude|codex] [--dry-run]
 ################################################################################
@@ -42,18 +43,18 @@ run() { if [ "$DRY_RUN" -eq 1 ]; then echo "  [dry-run] $*"; else "$@"; fi; }
 rsync_pull() {
     local dest="$1"; shift
     if [ "$DRY_RUN" -eq 1 ]; then
-        echo "  [dry-run] rsync -aL ${RSYNC_EXCLUDE[*]} $* \"$dest\""
+        echo "  [dry-run] rsync -aL --delete ${RSYNC_EXCLUDE[*]} $* \"$dest\""
     else
-        rsync -aL "${RSYNC_EXCLUDE[@]}" "$@" "$dest"
+        rsync -aL --delete "${RSYNC_EXCLUDE[@]}" "$@" "$dest"
     fi
 }
 
 rsync_pull_plain() {
     local dest="$1"; shift
     if [ "$DRY_RUN" -eq 1 ]; then
-        echo "  [dry-run] rsync -a ${RSYNC_EXCLUDE[*]} $* \"$dest\""
+        echo "  [dry-run] rsync -a --delete ${RSYNC_EXCLUDE[*]} $* \"$dest\""
     else
-        rsync -a "${RSYNC_EXCLUDE[@]}" "$@" "$dest"
+        rsync -a --delete "${RSYNC_EXCLUDE[@]}" "$@" "$dest"
     fi
 }
 
@@ -99,10 +100,10 @@ fi
 if [ -d "$SRC_BASE/scripts" ]; then
     echo "[scripts]"
     if [ "$DRY_RUN" -eq 1 ]; then
-        echo "  [dry-run] rsync -a ${RSYNC_EXCLUDE[*]} \"$SRC_BASE/scripts/\" \"$CONFIG/scripts/\""
+        echo "  [dry-run] rsync -a --delete ${RSYNC_EXCLUDE[*]} \"$SRC_BASE/scripts/\" \"$CONFIG/scripts/\""
     else
         mkdir -p "$CONFIG/scripts"
-        rsync -a "${RSYNC_EXCLUDE[@]}" "$SRC_BASE/scripts/" "$CONFIG/scripts/"
+        rsync -a --delete "${RSYNC_EXCLUDE[@]}" "$SRC_BASE/scripts/" "$CONFIG/scripts/"
     fi
 fi
 
@@ -115,6 +116,17 @@ if [ -s "$SRC_BASE/AGENTS.md" ]; then
     fi
 else
     echo "  (源无 AGENTS.md，跳过)"
+fi
+
+echo "[AGENTS-cn.md]"
+if [ -s "$SRC_BASE/AGENTS-cn.md" ]; then
+    if [ "$DRY_RUN" -eq 1 ]; then
+        echo "  [dry-run] cp \"$SRC_BASE/AGENTS-cn.md\" \"$CONFIG/AGENTS-cn.md\""
+    else
+        cp "$SRC_BASE/AGENTS-cn.md" "$CONFIG/AGENTS-cn.md"
+    fi
+else
+    echo "  (源无 AGENTS-cn.md，跳过)"
 fi
 
 if [ "$SOURCE" = claude ] && [ -f "$SRC_BASE/settings.json" ]; then
@@ -131,7 +143,7 @@ if [ "$SOURCE" = claude ] && [ -f "$SRC_BASE/settings.json" ]; then
             echo "  [dry-run] rsync ~/.config/ccstatusline/ -> config/claude-personal/ccstatusline/"
         else
             mkdir -p "$CONFIG/claude-personal/ccstatusline"
-            rsync -a --exclude='.DS_Store' "$HOME/.config/ccstatusline/" "$CONFIG/claude-personal/ccstatusline/"
+            rsync -a --delete --exclude='.DS_Store' "$HOME/.config/ccstatusline/" "$CONFIG/claude-personal/ccstatusline/"
         fi
     fi
 

@@ -315,7 +315,11 @@ def plugin_has_hooks(install_path: Path) -> bool:
         return any((install_path / "hooks").iterdir())
     if (install_path / "hooks.json").is_file():
         return True
-    for meta_name in (".claude-plugin/plugin.json", ".cursor-plugin/plugin.json"):
+    for meta_name in (
+        ".claude-plugin/plugin.json",
+        ".cursor-plugin/plugin.json",
+        ".codex-plugin/plugin.json",
+    ):
         meta = install_path / meta_name
         if meta.is_file():
             data = json.loads(meta.read_text())
@@ -369,7 +373,13 @@ def pull_claude(manifest_path: Path, claude_home: Path, out_dir: Path, dry_run: 
     settings = claude_home / "settings.json"
     installed_path = claude_home / "plugins" / "installed_plugins.json"
     manifest = load_manifest(manifest_path)
-    enabled = enabled_plugins(manifest, "claude")
+    enabled = dict(enabled_plugins(manifest, "claude"))
+
+    # Merge live settings first so a newly installed plugin snapshots on the first pull
+    # (manifest is written back from settings at the end of this function).
+    if settings.exists():
+        for plugin_id, is_on in json.loads(settings.read_text()).get("enabledPlugins", {}).items():
+            enabled.setdefault(plugin_id, is_on)
 
     if not installed_path.exists():
         print("  (无 installed_plugins.json，跳过 claude pull)")
@@ -470,6 +480,43 @@ def pull_cursor(manifest_path: Path, cursor_home: Path, out_dir: Path, dry_run: 
     print(f"  cursor: 共 {count} 个插件快照（enabled/disabled 分目录）")
 
 
+def find_codex_plugins(codex_home: Path) -> list[tuple[str, Path, str]]:
+    """Return (plugin_id, install_path, version_hint) from Codex plugin cache."""
+    found: list[tuple[str, Path, str]] = []
+    seen: set[str] = set()
+    search_roots: list[Path] = []
+    for base in (codex_home / "plugins", codex_home / ".tmp" / "plugins"):
+        if not base.is_dir():
+            continue
+        cache = base / "cache"
+        search_roots.append(cache if cache.is_dir() else base)
+    for root in search_roots:
+        for kind in (".codex-plugin", ".cursor-plugin", ".claude-plugin"):
+            for meta in root.rglob(f"{kind}/plugin.json"):
+                install_path = meta.parent.parent
+                try:
+                    data = json.loads(meta.read_text())
+                except json.JSONDecodeError:
+                    continue
+                name = data.get("name", install_path.name)
+                try:
+                    rel = install_path.relative_to(root)
+                except ValueError:
+                    rel = Path(install_path.name)
+                parts = rel.parts
+                if len(parts) >= 2:
+                    marketplace = parts[0]
+                    plugin_id = f"{name}@{marketplace}"
+                else:
+                    plugin_id = name
+                if plugin_id in seen:
+                    continue
+                seen.add(plugin_id)
+                version = data.get("version", install_path.name)
+                found.append((plugin_id, install_path, str(version)))
+    return found
+
+
 def pull_codex(manifest_path: Path, codex_home: Path, out_dir: Path, dry_run: bool) -> None:
     manifest = load_manifest(manifest_path)
     enabled = enabled_plugins(manifest, "codex")
@@ -477,24 +524,11 @@ def pull_codex(manifest_path: Path, codex_home: Path, out_dir: Path, dry_run: bo
         print("  codex: manifest 无 enabledPlugins，跳过")
         return
     out_dir.mkdir(parents=True, exist_ok=True)
-    candidates: list[Path] = []
-    for base in (codex_home / "plugins", codex_home / ".tmp" / "plugins"):
-        if base.is_dir():
-            candidates.extend(p for p in base.rglob(".cursor-plugin") if p.is_dir())
-            candidates.extend(p for p in base.rglob(".claude-plugin") if p.is_dir())
     count = 0
-    seen: set[str] = set()
-    for meta_dir in candidates:
-        meta_file = meta_dir / "plugin.json"
-        if not meta_file.is_file():
+    manifest_ids = set(enabled.keys())
+    for plugin_id, install_path, version in find_codex_plugins(codex_home):
+        if plugin_id not in manifest_ids:
             continue
-        install_path = meta_dir.parent
-        data = json.loads(meta_file.read_text())
-        name = data.get("name", install_path.name)
-        plugin_id = name
-        if plugin_id in seen:
-            continue
-        seen.add(plugin_id)
         is_on = enabled.get(plugin_id, False)
         dest = snapshot_path(out_dir, plugin_id, is_on)
         rel = dest.relative_to(out_dir)
@@ -505,9 +539,11 @@ def pull_codex(manifest_path: Path, codex_home: Path, out_dir: Path, dry_run: bo
         ensure_bucket_dirs(out_dir)
         remove_stale_snapshot(out_dir, plugin_id, dest, dry_run)
         copytree_plugin(install_path, dest)
-        write_meta(dest, plugin_id, "codex", install_path, data.get("version", ""))
+        write_meta(dest, plugin_id, "codex", install_path, version)
+        hook = plugin_has_hooks(install_path)
+        print(f"  {plugin_id} -> codex/{rel}/ ({'hook' if hook else 'portable'})")
         count += 1
-    print(f"  codex: 共 {count} 个插件快照")
+    print(f"  codex: 共 {count} 个插件快照（enabled/disabled 分目录）")
 
 
 def vendor_portable(platform_dir: Path, config_root: Path, manifest: dict, force: bool, platform: str) -> None:

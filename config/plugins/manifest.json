@@ -2,16 +2,17 @@
   "version": 2,
   "claude": {
     "enabledPlugins": {
-      "claude-md-management@claude-plugins-official": true,
-      "code-review@claude-plugins-official": true,
-      "code-simplifier@claude-plugins-official": true,
+      "claude-md-management@claude-plugins-official": false,
+      "code-review@claude-plugins-official": false,
+      "code-simplifier@claude-plugins-official": false,
+      "codex@openai-codex": true,
       "feature-dev@claude-plugins-official": false,
       "hookify@claude-plugins-official": false,
       "learning-output-style@claude-plugins-official": false,
-      "ralph-loop@claude-plugins-official": true,
+      "ralph-loop@claude-plugins-official": false,
       "session-report@claude-plugins-official": false,
-      "skill-creator@claude-plugins-official": true,
-      "superpowers@superpowers-marketplace": false
+      "skill-creator@claude-plugins-official": false,
+      "superpowers@superpowers-marketplace": true
     }
   },
   "cursor": {
@@ -19,30 +20,34 @@
       "parallel@cursor-public": true,
       "browse@cursor-public": true,
       "continual-learning@cursor-public": true,
-      "claude-md-management@claude-plugins-official": true,
-      "code-review@claude-plugins-official": true,
-      "code-simplifier@claude-plugins-official": true,
+      "claude-md-management@claude-plugins-official": false,
+      "code-review@claude-plugins-official": false,
+      "code-simplifier@claude-plugins-official": false,
       "feature-dev@claude-plugins-official": false,
       "hookify@claude-plugins-official": false,
       "learning-output-style@claude-plugins-official": false,
       "ralph-loop@claude-plugins-official": false,
       "session-report@claude-plugins-official": false,
-      "skill-creator@claude-plugins-official": true,
-      "superpowers@superpowers-marketplace": false
+      "skill-creator@claude-plugins-official": false,
+      "superpowers@superpowers-marketplace": false,
+      "superpowers@cursor-public": true,
+      "codex@openai-codex": false
     }
   },
   "codex": {
     "enabledPlugins": {
-      "claude-md-management@claude-plugins-official": true,
-      "code-review@claude-plugins-official": true,
-      "code-simplifier@claude-plugins-official": true,
+      "claude-md-management@claude-plugins-official": false,
+      "code-review@claude-plugins-official": false,
+      "code-simplifier@claude-plugins-official": false,
       "feature-dev@claude-plugins-official": false,
       "hookify@claude-plugins-official": false,
       "learning-output-style@claude-plugins-official": false,
       "ralph-loop@claude-plugins-official": false,
       "session-report@claude-plugins-official": false,
-      "skill-creator@claude-plugins-official": true,
-      "superpowers@superpowers-marketplace": false
+      "skill-creator@claude-plugins-official": false,
+      "superpowers@superpowers-marketplace": false,
+      "superpowers@openai-curated": true,
+      "codex@openai-codex": false
     }
   },
   "syncPlugins": {
@@ -56,12 +61,17 @@
   "hookPlugins": {
     "claude": [
       "ralph-loop@claude-plugins-official",
-      "hookify@claude-plugins-official"
+      "hookify@claude-plugins-official",
+      "codex@openai-codex",
+      "superpowers@superpowers-marketplace"
     ],
     "cursor": [
-      "continual-learning@cursor-public"
+      "continual-learning@cursor-public",
+      "superpowers@cursor-public"
     ],
-    "codex": []
+    "codex": [
+      "superpowers@openai-curated"
+    ]
   },
   "notes": "原始插件包分平台存于 claude/ cursor/ codex/。hookPlugins 不跨平台 sync；portable 插件 claude 侧 vendor 后进 config/ 再 sync。"
 }

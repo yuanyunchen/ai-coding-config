@@ -1,7 +1,6 @@
 ---
 name: frontend-pipeline
-description: >-
-  从头创作有设计感前端产物的统一入口:网页/落地页(web)、设计型 PDF——报告/海报/信息图(pdf;非读取/合并/填表等通用 PDF 处理,那类用 pdf skill)、交互应用/dashboard(interactive)、幻灯片(slides),以及生成/算法艺术(p5.js,走 interactive)和视觉艺术海报(走 pdf)。先识别类型,再按 effort 档位路由到底层设计能力并管理验证。Entry point for creating designed frontend artifacts from scratch: web/landing pages, design PDFs like reports/posters/infographics (not general PDF manipulation such as reading/merging/forms — use the pdf skill for that), interactive dashboards/apps, slide decks, plus generative art (p5.js) and visual art posters.
+description: "从头创作有设计感前端产物的统一入口:网页/落地页(web)、设计型 PDF——报告/海报/信息图(通用 PDF 读取/合并/填表用 pdf skill)、交互应用/dashboard(interactive)、幻灯片(slides)、生成/算法艺术(p5.js)与视觉艺术海报。先识别类型,再按 effort 档位路由到底层设计能力并管理验证。Entry point for creating designed frontend artifacts from scratch (web, design PDFs, interactive apps, slides, generative art)."
 ---
 
 # frontend-pipeline
@@ -78,4 +77,4 @@ description: >-
 - `algorithmic-art` — p5.js 生成/算法艺术(interactive 艺术分支按需;含 `templates/viewer.html`)
 - `canvas-design` — 静态视觉艺术海报 → PNG/PDF(pdf 艺术分支按需;含 `canvas-fonts/` 字体库)
 
-> 副本与各自原始 skill 完全一致,未改 frontmatter(靠嵌套隐藏,不靠 `disable-model-invocation`)。这些 skill 作为顶层 skill 已在三个工具中 disable(移入 `skills/disabled/`),只通过本 skill 的内部副本调用。
+> 副本与各自原始 skill 完全一致,未改 frontmatter(靠嵌套隐藏,不靠 `disable-model-invocation`)。这些 skill 作为顶层 skill 已在三个工具中 disable(移入 `skills-disabled/`),只通过本 skill 的内部副本调用。

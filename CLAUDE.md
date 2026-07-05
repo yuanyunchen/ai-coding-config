@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 config/                        git 快照（跨设备迁移）
-  agents/  commands/  AGENTS.md
+  agents/  commands/  AGENTS.md  AGENTS-cn.md
   skills/*（启用，扁平）  skills-disabled/*（禁用，同级目录）
   plugins/manifest.json  plugins/README.md
   plugins/{claude,cursor,codex}/{enabled,disabled}/
@@ -24,8 +24,9 @@ config/                        git 快照（跨设备迁移）
   codex-personal/config.personal.toml      Codex 个性化
 config-links/ -> config/       本机软链（gitignore，`./agent-config links`）
 agent-config                   统一 CLI 入口
-scripts/                       deploy | pull | sync | plugins | links
-config/AGENTS.md               部署到三工具的全局英文规则
+scripts/                       deploy | pull | sync | plugins | memory | links
+config/AGENTS.md               部署到三工具的全局英文规则（主版本）
+config/AGENTS-cn.md            AGENTS.md 中文镜像（人读参考；pull/deploy/sync 随 AGENTS.md 一并处理）
 SETUP.md                       新机器首次配置（给人看；装工具、登录、Parallel、browse）
 ```
 
@@ -39,6 +40,7 @@ SETUP.md                       新机器首次配置（给人看；装工具、�
 | 插件      | —               | `settings.json` | —                             |
 | 插件快照  | `config/plugins/cursor/` | `config/plugins/claude/` | `config/plugins/codex/` |
 | 全局规则   | `AGENTS.md`     | `AGENTS.md`     | `AGENTS.md`                 |
+| 中文镜像   | `AGENTS-cn.md`  | `AGENTS-cn.md`  | `AGENTS-cn.md`（人读，非加载） |
 | 个性化设置 | （暂不纳管）      | `settings.json`（深合并） | `config.toml`（深合并）       |
 | 状态栏显示 | （暂不纳管）      | `~/.config/ccstatusline/` | `config.toml` 的 `[tui]`     |
 
@@ -60,7 +62,7 @@ cd ai-coding-config
 ./agent-config deploy          # 或 deploy --no-sync 跳过三工具 sync
 ```
 
-`deploy` 后 SETUP 还要求（`deploy` 不会自动完成）：Cursor IDE 启用 `parallel`/`browse` 插件 → browse 目录 `npm install` → Parallel CLI 登录（见下 Gotchas）。
+`deploy` 后 SETUP 还要求（`deploy` 不会自动完成）：Cursor IDE 启用 `parallel`/`browse`/`superpowers` 插件 → browse 目录 `npm install` → Parallel CLI 登录（见下 Gotchas）。Codex 侧在 IDE 启用 `superpowers@openai-curated` 后 `./agent-config plugins pull --platform codex`。
 
 ### 本机日常改配置
 
@@ -69,6 +71,15 @@ cd ai-coding-config
 3. 拉回仓库快照：`./agent-config pull`
 3b. 若改了插件开关：`./agent-config plugins sync --force`（再 pull 亦可）
 4. 提交：`git add -A && git commit -m "sync config" && git push`
+
+### 全局记忆同步（独立仓库，工作区在 `../global-memory/`）
+
+记忆内容不在本仓库。工作目录：`Agent Development/global-memory/`（`hub/` 软链 → `claude-memory/`）。
+
+```bash
+./agent-config memory pull    # 多设备开工前
+./agent-config memory push    # 收工后有改动
+```
 
 ### 三工具互相同步（不写仓库）
 

@@ -1,6 +1,6 @@
 ---
 name: webpage-content-extraction
-description: Extract complete content (text + figures) from a web page URL. Produces a faithful content.md plus a figures/ directory. Use whenever a URL is the input — articles, blog posts, documentation pages, tutorials, papers rendered as HTML, anything where you want the page parsed for downstream use. Honors a `no_image` directive from the caller — when set, runs a fast text-only path via parallel-cli; default path includes full image discovery and Chrome PDF fallback for JS-rendered graphics. Do NOT use for local files (use file-content-extraction).
+description: "Extract complete content (text + figures) from a web page URL into content.md + figures/. Use whenever a URL is the input — articles, blog posts, documentation pages, tutorials, papers rendered as HTML — parsed for downstream use. Honors no_image (fast text-only path). Local files → file-content-extraction."
 ---
 
 # Web Page Content Extraction

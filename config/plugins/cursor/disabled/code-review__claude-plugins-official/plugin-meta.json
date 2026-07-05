@@ -1,0 +1,10 @@
+{
+  "pluginId": "code-review@claude-plugins-official",
+  "platform": "cursor",
+  "syncedFrom": "code-review@claude-plugins-official",
+  "syncedFromDir": "/Users/yuanyunchen/Desktop/AI Programing/Agent Development/ai-coding-config/config/plugins/claude/disabled/code-review__claude-plugins-official",
+  "version": "unknown",
+  "hasHooks": false,
+  "enabled": false,
+  "copiedAt": "2026-07-04T10:00:11Z"
+}

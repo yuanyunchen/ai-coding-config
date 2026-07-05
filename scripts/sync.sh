@@ -13,6 +13,7 @@
 #   subagents     agents/*.md     agents/*.md     (无对应目录 -> 跳过)
 #   skills        skills/*（启用）+ skills-disabled/*（禁用，同级）  同上  (codex 的 skills/.system 不动)
 #   全局规则      AGENTS.md       AGENTS.md       AGENTS.md
+#   中文镜像      AGENTS-cn.md    AGENTS-cn.md    AGENTS-cn.md（人读参考，非工具加载）
 #
 #   - claude 额外保证 CLAUDE.md 里有 @AGENTS.md 导入（Claude 只读 CLAUDE.md）。
 #   - codex 没有 subagents 机制，故 subagents 只在 cursor <-> claude 之间同步。
@@ -22,13 +23,13 @@
 # 增量语义（关键）：
 #   - 命令 / subagents：把 source 的文件拷到目标，同名覆盖更新，绝不删目标多出来的。
 #   - skills：rsync 不加 --delete，同名 skill 内更新/新增文件，绝不删除目标里多余文件。
-#   - AGENTS.md：source 为准，覆盖目标（这是“统一规则”的本意；覆盖前若内容不同会备份）。
+#   - AGENTS.md / AGENTS-cn.md：source 为准，覆盖目标（统一规则；覆盖前若内容不同会备份）。
 #
 # 路径改写：拷贝后把正文里的 ~/.cursor/  ~/.claude/  ~/.codex/ 统一改写成
 #   目标工具自己的根（如同步到 codex 则改写为 ~/.codex/），使 skill / 命令正文里
 #   "Read ~/.claude/skills/pdf/SKILL.md" 之类指令指向目标工具的真实位置。
 #
-# 撞名保护：覆盖已存在的 skill / AGENTS.md 前，先备份到目标根下
+# 撞名保护：覆盖已存在的 skill / AGENTS.md / AGENTS-cn.md 前，先备份到目标根下
 #   <tool>/.claude-sync-backup-<时间戳>/。
 #
 # 用法：./agent-config sync [--source cursor|claude|codex] [--dry-run] [--no-backup]
@@ -103,7 +104,7 @@ for TGT in $TARGETS; do
     echo "===== -> $TGT ($TGT_BASE) ====="
     [ -d "$TGT_BASE" ] || { echo "  目标根不存在，跳过该工具: $TGT_BASE"; continue; }
 
-    # --- AGENTS.md（source 为准，覆盖；覆盖前若不同则备份）---
+    # --- AGENTS.md / AGENTS-cn.md（source 为准，覆盖；覆盖前若不同则备份）---
     echo "[AGENTS.md]"
     SRC_RULES="$SRC_BASE/AGENTS.md"
     TGT_RULES="$TGT_BASE/AGENTS.md"
@@ -124,6 +125,20 @@ for TGT in $TARGETS; do
         fi
     else
         echo "  (源无 AGENTS.md 内容，跳过)"
+    fi
+
+    echo "[AGENTS-cn.md]"
+    SRC_CN="$SRC_BASE/AGENTS-cn.md"
+    TGT_CN="$TGT_BASE/AGENTS-cn.md"
+    if [ -s "$SRC_CN" ]; then
+        if [ "$DO_BACKUP" -eq 1 ] && [ -s "$TGT_CN" ] && ! cmp -s "$SRC_CN" "$TGT_CN"; then
+            run "mkdir -p \"$BK\" && cp \"$TGT_CN\" \"$BK/AGENTS-cn.md\""
+            echo "  (备份旧 AGENTS-cn.md -> ${BK##*/}/)"
+        fi
+        run "cp \"$SRC_CN\" \"$TGT_CN\""
+        echo "  AGENTS-cn.md -> $TGT_CN"
+    else
+        echo "  (源无 AGENTS-cn.md 内容，跳过)"
     fi
 
     # --- 斜杠命令 ---

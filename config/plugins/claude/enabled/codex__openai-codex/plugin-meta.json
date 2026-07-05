@@ -1,0 +1,8 @@
+{
+  "pluginId": "codex@openai-codex",
+  "platform": "claude",
+  "installPath": "/Users/yuanyunchen/.claude/plugins/cache/openai-codex/codex/1.0.5",
+  "version": "1.0.5",
+  "hasHooks": true,
+  "copiedAt": "2026-07-04T10:38:31Z"
+}

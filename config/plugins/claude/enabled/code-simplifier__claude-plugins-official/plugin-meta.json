@@ -1,8 +1,0 @@
-{
-  "pluginId": "code-simplifier@claude-plugins-official",
-  "platform": "claude",
-  "installPath": "/Users/yuanyunchen/.claude/plugins/cache/claude-plugins-official/code-simplifier/1.0.0",
-  "version": "1.0.0",
-  "hasHooks": false,
-  "copiedAt": "2026-05-26T04:06:07Z"
-}

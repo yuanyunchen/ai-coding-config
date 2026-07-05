@@ -1,120 +1,85 @@
 ---
 name: codex-cli
-description: Delegate coding work to OpenAI Codex via the local `codex` CLI in non-interactive mode (`codex exec`). Use when you want a second autonomous coding agent — especially for tasks needing different reasoning, deep logic, complex algorithms, or as a fresh perspective when one agent is stuck. Treat Codex like a capable engineer you hand a ticket to.
+description: "[DISABLED — superseded by codex-delegation] Former standalone Codex CLI delegation skill. Do not invoke; use ~/.claude/skills/codex-delegation/SKILL.md instead."
 ---
+
+> **Retired 2026-07-04.** Merged into global `codex-delegation` (companion runtime + raw CLI). Kept in `skills-disabled/` for reference only.
 
 # Codex as a worker
 
-Use the local `codex` CLI to hand a self-contained task to Codex and read back the result. You are the orchestrator; Codex does the work.
+Codex is a peer engineer with its own filesystem, shell, and agent loop. You are the orchestrator: brief it like a capable colleague, let it work, read the result, follow up. Don't micromanage individual edits.
 
-## Mental model
-
-Codex is a peer engineer with its own filesystem, shell, and agent loop. Give it a clear task with enough context, then trust it. Don't micromanage individual edits.
-
-## Invocation
+## Canonical invocation
 
 ```bash
-codex exec --skip-git-repo-check --full-auto "<TASK PROMPT>"
+codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check \
+  -c model_reasoning_effort="high" \
+  -o codex_out.txt \
+  "<TASK PROMPT>" < /dev/null
 ```
 
-- Default model is **the current best available on your auth tier** — Codex picks it, don't hardcode. On a ChatGPT subscription the best is `gpt-5.4` (`gpt-5.5` and `gpt-5.4-codex` are API-key-only). On API key, you can pass `-m gpt-5.5`.
-- Default reasoning effort is already **medium**. Bump to `high` / `xhigh` for hard problems, drop to `low` / `minimal` for trivial ones.
-- `--skip-git-repo-check` lets Codex run outside a git repo. Default behavior refuses for safety.
-- `--full-auto` = `workspace-write` sandbox + auto-approve. Standard for autonomous runs.
-- stdout = final agent message. stderr = streaming progress.
-
-## Common flags
-
-| Flag | When to use |
-|---|---|
-| `-m, --model <name>` | Override model. ChatGPT-sub options: `gpt-5.4` (best), `gpt-5.4-mini`, `gpt-5.3-codex`, `gpt-5.3-codex-spark` (cheap/fast). API-key only: `gpt-5.5`, `gpt-5.4-codex`. Don't hardcode — let it default unless you need a specific tradeoff. |
-| `--config model_reasoning_effort="<level>"` | Reasoning budget: `minimal`, `low`, `medium` (default), `high`, `xhigh`. Higher = better reasoning, more tokens, slower. |
-| `-s, --sandbox <mode>` | `read-only` (review only), `workspace-write` (default w/ `--full-auto`), `danger-full-access` (network + full FS — use only in containers) |
-| `--full-auto` | Auto-approve in `workspace-write`. Standard delegation flag. |
-| `--yolo` | Bypass ALL approvals incl. network. Dangerous; avoid unless sandboxed. |
-| `-C, --cd <dir>` | Run in a different directory |
-| `--json` | JSONL event stream on stdout. Each line is an event (`thread.started`, `turn.completed`, `item.*`, `error`). |
-| `-o, --output-last-message <file>` | Write final message to file (cleaner than parsing stdout) |
-| `--output-schema <file>` | Constrain final response to a JSON schema |
-| `-i, --image <file>` | Attach image(s) as input |
-| `--ephemeral` | Don't persist session to disk |
-| `exec resume --last "<followup>"` | Continue the previous session |
-| `exec resume <session-id> "<followup>"` | Resume a specific session |
+- **Model — never pass `-m`.** The config default is already the best available model; the lineup drifts month to month, so let it default.
+- **Reasoning effort — default `high`.** Bump to `xhigh` for the hardest problems; drop to `medium` only for genuinely trivial mechanical tasks.
+- **Bypass mode is the house default.** `--dangerously-bypass-approvals-and-sandbox` = no approvals, no sandbox — fully unattended on this machine. Only switch to sandboxed modes (`-s` / `-a`, see reference) when running untrusted code.
+- `--skip-git-repo-check` — allow running outside a git repo.
+- `-o <file>` — final answer to a file; cleaner than parsing stdout and essential for background runs.
+- `< /dev/null` — **required for headless/background runs.** With stdin open, Codex hangs forever on "Reading additional input from stdin...". Omit only when deliberately piping a prompt via stdin.
+- stdout = final message, stderr = streaming progress (`2> codex.log` to keep for debugging, `2>/dev/null` to discard).
 
 ## Writing the task prompt
 
-Codex executes literally what you say. Treat the prompt like a ticket for an engineer:
+The prompt is the entire briefing — Codex sees none of your conversation.
 
-- **State the goal**, not the steps. Codex will plan.
-- **Pin success criteria** — what makes it "done" (tests pass, file exists, output matches).
-- **Provide context** — paths, repo conventions, what already exists, what to leave alone.
-- **Surface constraints** — what must not change, perf/style rules, libraries to use.
-- **Demand verification** when applicable — "run the tests and confirm they pass".
+- State the **goal**, not the steps; Codex plans.
+- Pin **success criteria** — what makes it "done" (tests pass, file exists, output matches).
+- Provide **context** — paths, repo conventions, what already exists, what to leave alone.
+- Surface **constraints** — what must not change, libraries to use.
+- Demand **verification** — "run the tests and confirm they pass".
 
-The prompt is the entire briefing. Codex has no other context.
+**Directing Codex to its skills**: Codex has its own skills in `~/.codex/skills/` (`ls` it to see what's installed). It won't reliably invoke them on its own — when a task matches one, name it in the prompt: "Use your `pdf` skill to ...".
 
-## Useful subcommands
+## Multi-turn interaction
 
-Beyond `codex exec`, the CLI exposes other non-interactive commands. All accept `-m`, `--config`, `--skip-git-repo-check`, `--full-auto`, etc.
-
-| Subcommand | Purpose | Common form |
-|---|---|---|
-| `codex exec "<task>"` | Main delegation: run a one-shot agent loop | `codex exec --skip-git-repo-check --full-auto "..."` |
-| `codex exec resume --last "<followup>"` | Continue the most recent session | After a previous `exec`, send a follow-up |
-| `codex exec resume <session-id> "..."` | Resume a specific past session | id from earlier `--json` output |
-| `codex review` | Automated code review (read-only, no edits) | `codex review --uncommitted` |
-| `codex review --base <branch>` | Review current branch vs base | `codex review --base main` |
-| `codex review --commit <sha>` | Review a specific commit | — |
-| `codex review -` | Custom review prompt from stdin | `echo "focus on race conditions" \| codex review -` |
-| `codex apply <task-id>` | Apply latest diff from a Codex Cloud task to local working tree (`git apply`) | After a `codex cloud` run |
-| `codex sandbox macos <cmd>` | Run any shell command under Codex's macOS Seatbelt sandbox | Test untrusted scripts |
-| `codex sandbox linux <cmd>` | Same, Landlock+seccomp on Linux | — |
-| `codex login` / `logout` | Manage auth (ChatGPT or API key) | One-time setup |
-| `codex resume` / `fork` | Picker for past sessions (interactive — TUI only) | Don't use in headless |
-| `codex cloud` | Browse / apply Codex Cloud tasks (experimental) | Cloud-side runs |
-| `codex mcp` | Manage MCP server configs Codex can call | Add tools to Codex |
-
-`codex review` is the one most often missed: it's a headless, read-only code reviewer separate from `exec`. Use it for PR review automation; use `exec` when you need writes.
-
-Codex's interactive **slash commands** (`/model`, `/diff`, `/undo`, `/review`, `/approvals`) only exist in the TUI — there is no headless equivalent for those. For headless: switch model with `-m`, view diffs with `git diff`, control approvals with `--full-auto` / `--sandbox` / `--yolo`.
-
-## Reading the output
-
-Plain mode: final message goes to stdout, progress to stderr. Pipe stdout for the answer, redirect stderr for debug:
+Work with Codex the way a human works with an agent: dispatch, read the result, then follow up **in the same session** instead of re-briefing from scratch — resume keeps Codex's full context.
 
 ```bash
-codex exec --skip-git-repo-check --full-auto "<TASK>" \
-  > result.txt 2> codex.log
+codex exec resume --last "Tests still fail on X — fix and rerun" < /dev/null   # continue newest session
+codex exec resume <session-id> "<followup>" < /dev/null                        # a specific one
 ```
 
-With `--json`, parse JSONL events; the relevant final content arrives in `turn.completed` / `item.*` events.
+Resume takes the same flags as `exec` (bypass, effort, `-o`). `--last` only works if the session was persisted — don't use `--ephemeral` when you might follow up. Session ids appear in stderr / `--json` output. Resume writes *this turn's* final message to `-o`, so give each turn a fresh filename (`codex_out2.txt`, …) or it overwrites the previous one.
 
-## Defaults you should usually set
+## Read-only tasks: review & inspection
+
+When you want Codex to *inspect but not touch* your files — code review, "find the bug", explain-this — add `-s read-only` instead of the bypass default. It guarantees no edits regardless of what Codex decides.
 
 ```bash
-codex exec --skip-git-repo-check --full-auto \
-  -o codex_out.txt \
-  "<TASK>"
+codex exec -s read-only --skip-git-repo-check -o review.txt \
+  "Review buggy.py for correctness bugs, with line numbers. Do not modify any files." < /dev/null
 ```
 
-Best-available model (auto), medium reasoning (default), writable sandbox, final answer to a file.
+For git-diff-scoped review there's also a dedicated headless reviewer: `codex review --uncommitted` (or `--base main` / `--commit <sha>`). See `references/cli-reference.md` → `codex review`.
 
-Tune when needed:
-- Hard problem → add `--config model_reasoning_effort="high"`
-- Cheap/fast → add `-m gpt-5.3-codex-spark` or `--config model_reasoning_effort="low"`
-- API key user wanting frontier → add `-m gpt-5.5`
+## Long tasks: run in background
 
-## Gotchas
+Anything beyond a few minutes: don't block on it — launch, keep working, come back.
 
-- Default sandbox is `read-only`. If you need edits, use `--full-auto` (or set `-s workspace-write` and approve).
-- Without `--skip-git-repo-check`, Codex refuses to run outside a git repo.
-- Codex streams a lot of progress to stderr; capture it if you want to debug, otherwise discard with `2>/dev/null`.
-- Auth uses `~/.codex/auth.json` from `codex login` (ChatGPT subscription or API key). Don't pass `OPENAI_API_KEY` unless overriding intentionally.
-- `--yolo` allows network calls. Don't use on the host machine.
-- Resume by `--last` only works if the session was persisted (not `--ephemeral`).
+1. Run the canonical command via Bash with `run_in_background: true` (keep `-o codex_out.txt 2> codex.log`).
+2. Continue other work; peek at `codex.log` for progress if curious.
+3. On completion, read `codex_out.txt` and **verify the outcome yourself** — Codex's "done" is a claim, not a fact (`git diff`, run the tests).
+4. Not satisfied → follow up with `codex exec resume --last "..."`, in background again if long.
 
 ## When NOT to use
 
 - Trivial edits you can do directly — faster than spawning Codex.
 - Tasks needing your conversation context — Codex can't see it; inline the context into the prompt.
-- When Claude Code (cc) is already a better fit for the task — don't reflex-spawn the other agent. Pick one.
+- When Claude Code is already a better fit — don't reflex-spawn the other agent. Pick one.
+
+## References (route by need)
+
+| Need | Read |
+|---|---|
+| Any flag or subcommand beyond the above: `review` (headless code review), sandbox/approval modes for untrusted code, `--json` events, `--output-schema`, `-i` images, `--search`, profiles, config precedence, `apply`, `mcp` / `mcp-server`, `cloud`, `doctor`, models | `references/cli-reference.md` |
+| Wiring Codex into CI / scripts / GitHub Actions; structured output capture patterns; AGENTS.md precedence; automation pitfalls | `references/community-patterns.md` |
+
+When behavior contradicts either file, `codex <cmd> --help` and `codex doctor` are ground truth.

@@ -1,6 +1,6 @@
 ---
 name: file-content-extraction
-description: Extract complete raw content (text + figures) from a local document file — PDF, DOCX, PPTX, or image. Produces a faithful content.md plus a figures/ directory. Use this skill whenever the user wants a document parsed, ingested, summarized, or fed to another agent — including phrases like "read this PDF", "what's in slides.pptx", "extract the report", "process this paper". Do NOT use for URLs (use webpage-content-extraction) or for already-machine-readable files like .py / .md / .csv (read them natively). Honors a `no_image` directive from the caller — when set, produces text-only output and skips figure work.
+description: "Extract complete raw content (text + figures) from a local document — PDF, DOCX, PPTX, or image — into a faithful content.md + figures/. Use whenever a document must be parsed, ingested, summarized, or fed to another agent ('read this PDF', 'what is in slides.pptx', 'extract the report', 'process this paper'). URLs → webpage-content-extraction; machine-readable files (.py/.md/.csv) → read natively. Honors no_image (text-only)."
 ---
 
 # File Content Extraction

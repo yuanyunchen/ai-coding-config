@@ -64,8 +64,11 @@ else
     done
 fi
 
-echo "[AGENTS.md + CLAUDE.md]"
+echo "[AGENTS.md + AGENTS-cn.md + CLAUDE.md]"
 run "cp \"$CONFIG/AGENTS.md\" \"$CLAUDE/AGENTS.md\""
+if [ -f "$CONFIG/AGENTS-cn.md" ]; then
+    run "cp \"$CONFIG/AGENTS-cn.md\" \"$CLAUDE/AGENTS-cn.md\""
+fi
 if [ "$DRY_RUN" -eq 1 ]; then
     echo "  [dry-run] 确保 $CLAUDE/CLAUDE.md 含 @AGENTS.md"
 else

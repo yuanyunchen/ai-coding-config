@@ -68,6 +68,7 @@ git add -A && git commit && git push
 - `parallel@cursor-public`
 - `browse@cursor-public`
 - `continual-learning@cursor-public`（hook）
+- `superpowers@cursor-public`（hook；Cursor 侧 marketplace 为 cursor-public，与 Claude 的 superpowers-marketplace 不同 ID）
 
 ## config-links
 
@@ -76,43 +77,46 @@ git add -A && git commit && git push
 ## 当前安装一览
 
 <!-- installed:start -->
-_Updated: 2026-05-26 04:07 UTC_
+_Updated: 2026-07-05 01:51 UTC_
 
 ## claude
 
-**manifest 启用**: 5 · **git 快照**: 10
+**manifest 启用**: 2 · **git 快照**: 11
 
 | pluginId | kind | version | snapshot |
 |----------|------|---------|----------|
-| `claude-md-management@claude-plugins-official` | portable | 1.0.0 | `claude/enabled/claude-md-management__claude-plugins-official/` |
-| `code-review@claude-plugins-official` | portable | unknown | `claude/enabled/code-review__claude-plugins-official/` |
-| `code-simplifier@claude-plugins-official` | portable | 1.0.0 | `claude/enabled/code-simplifier__claude-plugins-official/` |
+| `claude-md-management@claude-plugins-official` | portable (off) | 1.0.0 | `claude/disabled/claude-md-management__claude-plugins-official/` |
+| `code-review@claude-plugins-official` | portable (off) | unknown | `claude/disabled/code-review__claude-plugins-official/` |
+| `code-simplifier@claude-plugins-official` | portable (off) | 1.0.0 | `claude/disabled/code-simplifier__claude-plugins-official/` |
+| `codex@openai-codex` | hook | 1.0.5 | `claude/enabled/codex__openai-codex/` |
 | `feature-dev@claude-plugins-official` | portable (off) | unknown | `claude/disabled/feature-dev__claude-plugins-official/` |
 | `hookify@claude-plugins-official` | hook (off) | unknown | `claude/disabled/hookify__claude-plugins-official/` |
 | `learning-output-style@claude-plugins-official` | hook (off) | 1.0.0 | `claude/disabled/learning-output-style__claude-plugins-official/` |
-| `ralph-loop@claude-plugins-official` | hook | 1.0.0 | `claude/enabled/ralph-loop__claude-plugins-official/` |
+| `ralph-loop@claude-plugins-official` | hook (off) | 1.0.0 | `claude/disabled/ralph-loop__claude-plugins-official/` |
 | `session-report@claude-plugins-official` | portable (off) | unknown | `claude/disabled/session-report__claude-plugins-official/` |
-| `skill-creator@claude-plugins-official` | portable | unknown | `claude/enabled/skill-creator__claude-plugins-official/` |
-| `superpowers@superpowers-marketplace` | hook (off) | 5.1.0 | `claude/disabled/superpowers__superpowers-marketplace/` |
+| `skill-creator@claude-plugins-official` | portable (off) | unknown | `claude/disabled/skill-creator__claude-plugins-official/` |
+| `superpowers@superpowers-marketplace` | hook | 5.1.0 | `claude/enabled/superpowers__superpowers-marketplace/` |
 
 ## cursor
 
-**manifest 启用**: 7 · **git 快照**: 9
+**manifest 启用**: 4 · **git 快照**: 10
 
 | pluginId | kind | version | snapshot |
 |----------|------|---------|----------|
 | `browse@cursor-public` | portable | 2.0.0 | `cursor/enabled/browse__cursor-public/` |
-| `claude-md-management@claude-plugins-official` | portable | 1.0.0 | `cursor/enabled/claude-md-management__claude-plugins-official/` |
-| `code-review@claude-plugins-official` | portable | unknown | `cursor/enabled/code-review__claude-plugins-official/` |
-| `code-simplifier@claude-plugins-official` | portable | 1.0.0 | `cursor/enabled/code-simplifier__claude-plugins-official/` |
+| `claude-md-management@claude-plugins-official` | portable (off) | 1.0.0 | `cursor/disabled/claude-md-management__claude-plugins-official/` |
+| `code-review@claude-plugins-official` | portable (off) | unknown | `cursor/disabled/code-review__claude-plugins-official/` |
+| `code-simplifier@claude-plugins-official` | portable (off) | 1.0.0 | `cursor/disabled/code-simplifier__claude-plugins-official/` |
 | `continual-learning@cursor-public` | hook | 1.0.0 | `cursor/enabled/continual-learning__cursor-public/` |
 | `feature-dev@claude-plugins-official` | portable (off) | unknown | `cursor/disabled/feature-dev__claude-plugins-official/` |
 | `parallel@cursor-public` | portable | 0.1.1 | `cursor/enabled/parallel__cursor-public/` |
 | `session-report@claude-plugins-official` | portable (off) | unknown | `cursor/disabled/session-report__claude-plugins-official/` |
-| `skill-creator@claude-plugins-official` | portable | unknown | `cursor/enabled/skill-creator__claude-plugins-official/` |
+| `skill-creator@claude-plugins-official` | portable (off) | unknown | `cursor/disabled/skill-creator__claude-plugins-official/` |
+| `superpowers@cursor-public` | hook | 5.0.7 | `cursor/enabled/superpowers__cursor-public/` |
 
 <details><summary>manifest 已关闭（无快照目录）</summary>
 
+- `codex@openai-codex`
 - `hookify@claude-plugins-official`
 - `learning-output-style@claude-plugins-official`
 - `ralph-loop@claude-plugins-official`
@@ -122,19 +126,21 @@ _Updated: 2026-05-26 04:07 UTC_
 
 ## codex
 
-**manifest 启用**: 4 · **git 快照**: 6
+**manifest 启用**: 1 · **git 快照**: 7
 
 | pluginId | kind | version | snapshot |
 |----------|------|---------|----------|
-| `claude-md-management@claude-plugins-official` | portable | 1.0.0 | `codex/enabled/claude-md-management__claude-plugins-official/` |
-| `code-review@claude-plugins-official` | portable | unknown | `codex/enabled/code-review__claude-plugins-official/` |
-| `code-simplifier@claude-plugins-official` | portable | 1.0.0 | `codex/enabled/code-simplifier__claude-plugins-official/` |
+| `claude-md-management@claude-plugins-official` | portable (off) | 1.0.0 | `codex/disabled/claude-md-management__claude-plugins-official/` |
+| `code-review@claude-plugins-official` | portable (off) | unknown | `codex/disabled/code-review__claude-plugins-official/` |
+| `code-simplifier@claude-plugins-official` | portable (off) | 1.0.0 | `codex/disabled/code-simplifier__claude-plugins-official/` |
 | `feature-dev@claude-plugins-official` | portable (off) | unknown | `codex/disabled/feature-dev__claude-plugins-official/` |
 | `session-report@claude-plugins-official` | portable (off) | unknown | `codex/disabled/session-report__claude-plugins-official/` |
-| `skill-creator@claude-plugins-official` | portable | unknown | `codex/enabled/skill-creator__claude-plugins-official/` |
+| `skill-creator@claude-plugins-official` | portable (off) | unknown | `codex/disabled/skill-creator__claude-plugins-official/` |
+| `superpowers@openai-curated` | hook | 5.1.3 | `codex/enabled/superpowers__openai-curated/` |
 
 <details><summary>manifest 已关闭（无快照目录）</summary>
 
+- `codex@openai-codex`
 - `hookify@claude-plugins-official`
 - `learning-output-style@claude-plugins-official`
 - `ralph-loop@claude-plugins-official`

@@ -5,7 +5,7 @@ description: "全局记忆三库(项目定位/时间索引/知识检索)写入�
 
 # memory-management — 全局记忆 Meta skill(三库一图;2026-07-03 v3 同步三模式机制,单层 command 已撤销、手动经对话指令或 /project-*)
 
-全局记忆 = agent 长期化系统,枢纽 `~/.claude/projects/-Users-yuanyunchen/memory/`(git 版本化,远程 `claude-memory`)承载三库:
+全局记忆 = agent 长期化系统,枢纽 `~/.claude/projects/-Users-yuanyunchen/memory/`(git 版本化,远程 `global-memory`)承载三库:
 
 | 库 | 装什么 | 检索语义 | 规范 |
 |---|---|---|---|

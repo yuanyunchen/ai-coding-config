@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-# 全局记忆枢纽 git 同步（独立仓库 claude-memory）。
+# 全局记忆枢纽 git 同步（独立仓库 global-memory）。
 #
 # 用法：
 #   ./agent-config memory status
@@ -12,7 +12,7 @@ set -euo pipefail
 
 SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPTS_DIR/.." && pwd)"
-MANIFEST="$REPO_ROOT/../claude-memory/manifest.json"
+MANIFEST="$REPO_ROOT/../global-memory/manifest.json"
 
 usage() {
     sed -n '2,10p' "$0"
@@ -46,7 +46,7 @@ require_repo() {
     repo="$(repo_root)"
     hub="$(hub_path)"
     if [ ! -d "$repo/.git" ]; then
-        echo "ERROR: claude-memory 未初始化: $repo"
+        echo "ERROR: global-memory 未初始化: $repo"
         exit 1
     fi
     if [ ! -d "$hub" ]; then

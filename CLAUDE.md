@@ -74,6 +74,8 @@ cd ai-coding-config
 
 ### 全局记忆同步（`../global-memory/`，正文在 `memory/` 子目录）
 
+配置与路径说明见 [global-memory/README.md](../global-memory/README.md)。
+
 ```bash
 ./agent-config memory pull    # 多设备开工前
 ./agent-config memory push    # 收工后有改动

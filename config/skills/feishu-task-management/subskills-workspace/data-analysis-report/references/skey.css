@@ -1,0 +1,27 @@
+/* 「结论」section callout — 每个大点 h2 下放一行,写 so-what(不复述标题)。
+   贴进报告设计系统的 _shared.css(用其 CSS 变量 --search / --search-bg / --search-d / --serif / --pixel-d)。
+   HTML 用法:
+     <div class="section-head">
+       <span class="eyebrow">…</span>
+       <h2>发现式标题</h2>
+       <div class="skey">落地含义/so-what,数字用 <span class="n">7.4×</span> 强调。</div>
+       <p class="intro">…</p>
+     </div>
+   写法:h2 = 发现;skey = 这条意味着什么、怎么用。两者不重复。 */
+
+/* CSS 变量都带 fallback —— 没有报告设计系统的 _shared.css 时也不会裸。 */
+.section-head .skey{
+  margin:2px 0 12px; padding:10px 14px;
+  border-left:3px solid var(--search, #1f6f8b);
+  background:var(--search-bg, #eef5f7);
+  border-radius:0 7px 7px 0;
+  font-size:15.5px; font-weight:700; line-height:1.5; max-width:80ch;
+  color:var(--search-d, #14525f); font-family:var(--serif, Georgia, "Songti SC", serif);
+}
+.section-head .skey::before{
+  content:"结论"; display:inline-block; vertical-align:middle;
+  margin-right:9px; padding:1px 8px; border-radius:4px;
+  background:var(--search, #1f6f8b); color:#fff;
+  font-size:11.5px; font-weight:800; letter-spacing:.06em;
+}
+.section-head .skey .n{ color:var(--pixel-d, #9c540f); }   /* 强调数字 */

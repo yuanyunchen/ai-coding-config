@@ -63,24 +63,23 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 
 按需路由用。**具体子技能不预加载**,按本目录用文件路径 `Read` 按需打开它的 `SKILL.md`(及其 `references/`)再干活。
 
-> workspace 子技能虽被 harness 注册为「目录作用域 skill」(形如 `feishu-mira-workspace:whiteboard-design`),但作用域按「正在改的文件在不在该目录」判定,飞书云端任务常不命中——稳妥路径一律按**文件路径 `Read`** 打开(派发通则见 §0)。
-飞书 workspace 子技能根目录:`/Users/yuanyunchen/Desktop/AI Workspace/feishu-mira-workspace/.claude/skills/`(10 个目录;沿革见 `mira-sync-archive.md` §1)。**注意路径含「AI Workspace」父层**——别写成 `Desktop/feishu-mira-workspace/`(错路径会建出孤儿目录)。通用工具(非飞书专属)单列一组,与飞书域分开。
+> 写文档 / 作图这组子技能(原飞书 workspace 子技能)已内迁本 skill 下 `subskills-workspace/`,不再远程引用工作区(旧 `feishu-mira-workspace/` 已归档)。用法同 lark-*:`Read subskills-workspace/<域>/SKILL.md`(及其 `references/`)再干活。下表「位置」列 `subskills-workspace/…` 均相对本 skill 根 `~/.claude/skills/feishu-task-management/`。通用工具(非飞书专属)单列一组,与飞书域分开。
 
 ### 写文档 / 内容
 | 技能 | 一句话用途 | 位置(SKILL.md) |
 |---|---|---|
-| `lark-doc-writer` | 飞书文档写作总入口 + 排版/格式权威规则 + 可读性方法;写/改任何飞书文档前必须调用其 §0 写作通则(强制调用链见 §1)。 | `.../lark-doc-writer/SKILL.md` |
-| `doc-trio` | 写飞书 5 类文档(学习/操作指南/checklist/会议 note/AI handoff)的判型 + 骨架 + 完整性查漏;写这五类前必须先调用判型取骨架(见 §1 调用链),写作通则再走 `lark-doc-writer`。 | `.../doc-trio/SKILL.md` |
-| `feishu-doc-gotchas` | 读写飞书文档/表格/画板遇到格式/blockID/颜色/上传/导入异常时查阅。 | `.../feishu-doc-gotchas/SKILL.md` |
-| `whiteboard-design` | 架构图/流程图/漏斗/金字塔/鱼骨/组织架构等结构化图示的设计方法论(原名 lark-whiteboard;落地=渲染 PNG 嵌 Image(27),ASCII 兜底;官方同名执行技能=伪 skill `lark-whiteboard`)。 | `.../whiteboard-design/SKILL.md` |
-| `data-analysis-report` | 字节内网数据分析**端到端编排**(iDA 取数→多窗/控池分析→双版 HTML→飞书 docx 镜像+HTML 附件→Drive 托管);编排 ida-presto-query / analytical-report / bytedance-internal-hosting / lark-doc-writer,不重复其细节。 | `.../data-analysis-report/SKILL.md` |
+| `lark-doc-writer` | 飞书文档写作总入口 + 排版/格式权威规则 + 可读性方法;写/改任何飞书文档前必须调用其 §0 写作通则(强制调用链见 §1)。 | `subskills-workspace/lark-doc-writer/SKILL.md` |
+| `doc-trio` | 写飞书 5 类文档(学习/操作指南/checklist/会议 note/AI handoff)的判型 + 骨架 + 完整性查漏;写这五类前必须先调用判型取骨架(见 §1 调用链),写作通则再走 `lark-doc-writer`。 | `subskills-workspace/doc-trio/SKILL.md` |
+| `feishu-doc-gotchas` | 读写飞书文档/表格/画板遇到格式/blockID/颜色/上传/导入异常时查阅。 | `subskills-workspace/feishu-doc-gotchas/SKILL.md` |
+| `whiteboard-design` | 架构图/流程图/漏斗/金字塔/鱼骨/组织架构等结构化图示的设计方法论(原名 lark-whiteboard;落地=渲染 PNG 嵌 Image(27),ASCII 兜底;官方同名执行技能=伪 skill `lark-whiteboard`)。 | `subskills-workspace/whiteboard-design/SKILL.md` |
+| `data-analysis-report` | 字节内网数据分析**端到端编排**(iDA 取数→多窗/控池分析→双版 HTML→飞书 docx 镜像+HTML 附件→Drive 托管);编排 ida-presto-query / analytical-report / bytedance-internal-hosting / lark-doc-writer,不重复其细节。 | `subskills-workspace/data-analysis-report/SKILL.md` |
 
 ### 作图 / 图表
 | 技能 | 一句话用途 | 位置 |
 |---|---|---|
-| `ascii-strategy-diagram` | 算法/竞价/计费/排序/链路 的 ASCII 纯文本全景框架图(公式化、多阶段链路首选)。 | `.../ascii-strategy-diagram/SKILL.md` |
-| `dag-flow-diagram` | mermaid DAG:变量依赖图 / 端到端流程 / 概念关系图。 | `.../dag-flow-diagram/SKILL.md` |
-| `chart-gen` | 把数据/指标画成干净自包含的静态 SVG 图表(柱/折线/饼/桑基…),需要时再上传飞书。 | `.../chart-gen/SKILL.md` |
+| `ascii-strategy-diagram` | 算法/竞价/计费/排序/链路 的 ASCII 纯文本全景框架图(公式化、多阶段链路首选)。 | `subskills-workspace/ascii-strategy-diagram/SKILL.md` |
+| `dag-flow-diagram` | mermaid DAG:变量依赖图 / 端到端流程 / 概念关系图。 | `subskills-workspace/dag-flow-diagram/SKILL.md` |
+| `chart-gen` | 把数据/指标画成干净自包含的静态 SVG 图表(柱/折线/饼/桑基…),需要时再上传飞书。 | `subskills-workspace/chart-gen/SKILL.md` |
 
 ### 飞书各业务域 = 官方 `lark-*` 伪 skill(经 `subskills/` 软链,不注册全局)
 > 源文件在 lark-cli 托管的 `~/.agents/skills/`,经软链 `subskills/` 可达,只经本表路由。用法:按下表定位 → `Read subskills/lark-<域>/SKILL.md`(等价 `lark-cli skills read lark-<域>`);完整触发词与边界在各自 frontmatter。字节租户/行为坑(IM 232043 建群、发消息前二次确认、Calendar 禁心算+主日历、1255002/`--as user`、gmail/1063001)见 `memory.md` §13/§15 与 `references/exec-permission.md`。
@@ -130,7 +129,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 |---|---|---|
 | `workspace-management` | Agent 工作区文件系统唯一权威(双侧结构:本地 tasks/<kebab名> + 飞书 Task/<中文名>);建任务夹、收尾、归档、判断「这是什么任务」走它。 | `~/.claude/skills/workspace-management/SKILL.md`(全局) |
 | `harness-management` | harness 层(skill/command/hook/规则)一切变更的唯一入口;沉淀偏好/流程走其 update 流程。 | `~/.claude/skills/harness-management/SKILL.md`(全局) |
-| `feishu-daily-report` | **整理日报**(飞书域):口述清单 + 回读产出 → compile 成飞书日报落 Drive `Daily Report/WeekN`;「记录日报」走全局 `memory-management` 时间索引库。 | `.../feishu-daily-report/SKILL.md` |
+| `feishu-daily-report` | **整理日报**(飞书域):口述清单 + 回读产出 → compile 成飞书日报落 Drive `Daily Report/WeekN`;「记录日报」走全局 `memory-management` 时间索引库。 | `subskills-workspace/feishu-daily-report/SKILL.md` |
 
 ### 其他全局技能
 非飞书任务回全局技能体系(`~/.claude/skills/` 注册表,按各自 description 触发),不经本入口、本表不复刻。

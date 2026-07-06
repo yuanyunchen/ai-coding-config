@@ -1,0 +1,195 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="'Hiragino Sans GB','Hiragino Sans','PingFang SC',sans-serif" role="img" aria-labelledby="t d">
+<title id="t">商品 Emb 体系总控图</title>
+<desc id="d">6 阶段 Bx 主链横轴,两程序对照,travel 项目当前位置高亮,SID 前沿远期。</desc>
+
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M2 1.5L8 5L2 8.5" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+<marker id="arT" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+<path d="M2 1.5L8 5L2 8.5" fill="none" stroke="context-stroke" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<rect x="0" y="0" width="1600" height="900" fill="#FFFFFF"/>
+
+<text x="56" y="60" font-size="34" font-weight="600" fill="#0F3D3A">商品 Emb 体系总控图</text>
+<text x="58" y="92" font-size="17" fill="#6B7A77">从数据到上线的 6 阶段主链 · 两条落地路线对照 · 团队最大缺口 Semantic ID</text>
+
+<g font-size="14">
+<rect x="1105" y="42" width="18" height="14" rx="3" fill="#15807A"/>
+<text x="1130" y="54" fill="#41504D">程序 A 团队成熟 playbook</text>
+<rect x="1330" y="42" width="18" height="14" rx="3" fill="#E07A2F"/>
+<text x="1355" y="54" fill="#41504D">程序 B travel 真实项目</text>
+<rect x="1105" y="68" width="18" height="14" rx="3" fill="#E07A2F" fill-opacity="0.16" stroke="#E07A2F" stroke-width="2"/>
+<text x="1130" y="80" fill="#41504D">travel 当前位置(第 4/5 步)</text>
+<rect x="1330" y="68" width="18" height="14" rx="3" fill="#EDEBE4" stroke="#9AA39F" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="1355" y="80" fill="#41504D">远期 / 团队缺口</text>
+</g>
+
+<line x1="56" y1="112" x2="1544" y2="112" stroke="#E3E0D8" stroke-width="1.5"/>
+
+<text x="56" y="143" font-size="16" font-weight="600" fill="#15807A">6 阶段 / Bx 主链</text>
+
+<g font-size="11" fill="#8A938F" text-anchor="middle">
+<text x="160" y="159">阶段 ① ②</text>
+<text x="468" y="159">阶段 ③</text>
+<text x="700" y="159">阶段 ④</text>
+<text x="932" y="159">阶段 ⑤</text>
+<text x="1164" y="159">阶段 ⑥</text>
+</g>
+
+<line x1="56" y1="208" x2="1396" y2="208" stroke="#BFC6C2" stroke-width="2" marker-end="url(#ar)"/>
+
+<g>
+<rect x="56" y="166" width="208" height="74" rx="11" fill="#E1F0EE" stroke="#15807A" stroke-width="1.6"/>
+<text x="160" y="196" font-size="16" font-weight="600" fill="#0F4F49" text-anchor="middle">B1 数据与样本</text>
+<text x="160" y="220" font-size="13" fill="#3E6B66" text-anchor="middle">B2 模型与表征</text>
+</g>
+<g>
+<rect x="380" y="166" width="176" height="74" rx="11" fill="#E1F0EE" stroke="#15807A" stroke-width="1.6"/>
+<text x="468" y="201" font-size="16" font-weight="600" fill="#0F4F49" text-anchor="middle">B5 工程服务化</text>
+<text x="468" y="223" font-size="12" fill="#5E807B" text-anchor="middle">emb 落库 · 检索铺底</text>
+</g>
+<g>
+<rect x="612" y="166" width="176" height="74" rx="11" fill="#E1F0EE" stroke="#15807A" stroke-width="1.6"/>
+<text x="700" y="201" font-size="16" font-weight="600" fill="#0F4F49" text-anchor="middle">B3 召回链路</text>
+<text x="700" y="223" font-size="12" fill="#5E807B" text-anchor="middle">向量检索 / 生成式</text>
+</g>
+<g>
+<rect x="844" y="166" width="176" height="74" rx="11" fill="#E1F0EE" stroke="#15807A" stroke-width="1.6"/>
+<text x="932" y="201" font-size="16" font-weight="600" fill="#0F4F49" text-anchor="middle">B4 精排特征</text>
+<text x="932" y="223" font-size="12" fill="#5E807B" text-anchor="middle">i2i emb 进商品塔</text>
+</g>
+<g>
+<rect x="1076" y="166" width="176" height="74" rx="11" fill="#E1F0EE" stroke="#15807A" stroke-width="1.6"/>
+<text x="1164" y="201" font-size="16" font-weight="600" fill="#0F4F49" text-anchor="middle">B6 评估与上线</text>
+<text x="1164" y="223" font-size="12" fill="#5E807B" text-anchor="middle">实验 · 收益验证</text>
+</g>
+
+<g>
+<rect x="1300" y="160" width="96" height="86" rx="11" fill="#F4F2EC" stroke="#B7BEB9" stroke-width="1.3"/>
+<text x="1348" y="198" font-size="14" font-weight="600" fill="#5A635F" text-anchor="middle">术语表</text>
+<text x="1348" y="220" font-size="12" fill="#828B86" text-anchor="middle">速查</text>
+</g>
+
+<line x1="56" y1="276" x2="1544" y2="276" stroke="#E3E0D8" stroke-width="1.5"/>
+
+<text x="56" y="320" font-size="20" font-weight="600" fill="#15807A">两条落地路线对照</text>
+<text x="246" y="320" font-size="14" fill="#9AA39F">— 不同路线,非进度先后</text>
+
+<g>
+<rect x="56" y="340" width="42" height="232" rx="9" fill="#15807A"/>
+<text x="77" y="470" font-size="22" font-weight="700" fill="#FFFFFF" text-anchor="middle" transform="rotate(-90 77 470)">程序 A</text>
+</g>
+<text x="118" y="364" font-size="16" font-weight="600" fill="#0F4F49">团队成熟:VLM 商品 emb → 生成式召回 playbook</text>
+<text x="118" y="386" font-size="13" fill="#6B7A77">VLM/MLLM emb → user emb 自回归 next-embed-predict(放弃亿级 id softmax / SID)→ i2i emb 复用进 CVR 精排</text>
+
+<g>
+<rect x="118" y="400" width="266" height="156" rx="10" fill="#E1F0EE" stroke="#15807A" stroke-width="1.4"/>
+<text x="138" y="426" font-size="14" font-weight="600" fill="#0F4F49">4 条 LR 链路 · Carousel advv</text>
+<text x="138" y="452" font-size="13" fill="#2F635D">ROW 召回</text><text x="364" y="452" font-size="14" font-weight="600" fill="#15807A" text-anchor="end">+6.239%</text>
+<text x="138" y="476" font-size="13" fill="#2F635D">EU 召回</text><text x="364" y="476" font-size="14" font-weight="600" fill="#15807A" text-anchor="end">+3.91%</text>
+<text x="138" y="500" font-size="13" fill="#2F635D">TTP 召回近线化</text><text x="364" y="500" font-size="14" font-weight="600" fill="#15807A" text-anchor="end">+9.511%</text>
+<text x="138" y="524" font-size="13" fill="#2F635D">i2i 精排特征</text><text x="364" y="524" font-size="14" font-weight="600" fill="#15807A" text-anchor="end">+8.773%</text>
+<text x="138" y="546" font-size="11.5" fill="#7C8F8B">数值=广告 advv 提升;精排已打包推全</text>
+</g>
+
+<line x1="384" y1="478" x2="436" y2="478" stroke="#15807A" stroke-width="2.2" marker-end="url(#arT)"/>
+
+<g>
+<rect x="438" y="412" width="210" height="132" rx="10" fill="#EAF4F2" stroke="#3FA095" stroke-width="1.3"/>
+<text x="543" y="440" font-size="14" font-weight="600" fill="#0F4F49" text-anchor="middle">落地状态</text>
+<text x="543" y="468" font-size="13" fill="#2F635D" text-anchor="middle">召回链路:部分已上线</text>
+<text x="543" y="492" font-size="13" fill="#2F635D" text-anchor="middle">精排 i2i:已推全</text>
+<rect x="468" y="508" width="150" height="24" rx="12" fill="#15807A"/>
+<text x="543" y="524" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">可复用为 B 的目标态</text>
+</g>
+
+<line x1="700" y1="478" x2="772" y2="478" stroke="#B0B8B3" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#ar)"/>
+<text x="736" y="466" font-size="12" fill="#9AA39F" text-anchor="middle">对齐</text>
+
+<g>
+<rect x="774" y="412" width="276" height="132" rx="10" fill="#F4F2EC" stroke="#B7BEB9" stroke-width="1.3"/>
+<text x="912" y="440" font-size="14" font-weight="600" fill="#5A635F" text-anchor="middle">召回范式演进方向</text>
+<text x="912" y="468" font-size="13" fill="#6E7773" text-anchor="middle">向量检索召回 → 生成式召回</text>
+<text x="912" y="492" font-size="13" fill="#6E7773" text-anchor="middle">user emb 自回归预测下一个 emb</text>
+<text x="912" y="520" font-size="12" fill="#97A09B" text-anchor="middle">下一步前沿:Semantic ID(见底部)</text>
+</g>
+
+<line x1="118" y1="600" x2="1396" y2="600" stroke="#EDE4DB" stroke-width="1.5"/>
+
+<g>
+<rect x="56" y="616" width="42" height="244" rx="9" fill="#E07A2F"/>
+<text x="77" y="738" font-size="22" font-weight="700" fill="#FFFFFF" text-anchor="middle" transform="rotate(-90 77 738)">程序 B</text>
+</g>
+<text x="118" y="640" font-size="16" font-weight="600" fill="#9C4E14">真实 travel 项目:Qwen3-Embedding-8B 文本 emb + 结构化 schema</text>
+<text x="118" y="662" font-size="13" fill="#8A6A4E">商品库 + BI 落地页文本 → 8 类标签 schema(`schemas_travel_hotel.py`)→ 多特征压成一个 emb 作 side-info 喂模型</text>
+
+<g>
+<rect x="118" y="678" width="266" height="158" rx="10" fill="#FBEEE2" stroke="#E07A2F" stroke-width="1.4"/>
+<text x="251" y="704" font-size="14" font-weight="600" fill="#9C4E14" text-anchor="middle">8 步 tracker</text>
+<g font-size="12.5">
+<circle cx="142" cy="726" r="4" fill="#3FA095"/><text x="156" y="730" fill="#6E7773">① 数据源确认 ② 取底表</text>
+<circle cx="142" cy="748" r="4" fill="#3FA095"/><text x="156" y="752" fill="#6E7773">③ NLP 评估数据源</text>
+</g>
+<rect x="130" y="760" width="242" height="48" rx="8" fill="#E07A2F" fill-opacity="0.14" stroke="#E07A2F" stroke-width="2"/>
+<text x="251" y="779" font-size="13" font-weight="600" fill="#9C4E14" text-anchor="middle">④ schema 确认 ⑤ 试生产质量</text>
+<text x="251" y="798" font-size="11.5" fill="#B06A38" text-anchor="middle">当前位置 · 均 in progress</text>
+<text x="251" y="826" font-size="12" fill="#9AA39F" text-anchor="middle">⑥ 产 emb  ⑦ 进模型实验  ⑧ 收益验证</text>
+</g>
+
+<line x1="384" y1="757" x2="436" y2="757" stroke="#E07A2F" stroke-width="2.2" marker-end="url(#arT)"/>
+
+<g>
+<rect x="438" y="688" width="210" height="138" rx="10" fill="#FFFFFF" stroke="#E24B4A" stroke-width="1.8"/>
+<text x="543" y="714" font-size="14" font-weight="700" fill="#A32D2D" text-anchor="middle">单点卡点</text>
+<text x="543" y="740" font-size="13" fill="#7A4A38" text-anchor="middle">工程链路(汉佳,群外)</text>
+<text x="543" y="763" font-size="12.5" fill="#8A6A4E" text-anchor="middle">搭商品召回链路:emb 铺成</text>
+<text x="543" y="781" font-size="12.5" fill="#8A6A4E" text-anchor="middle">稠密向量做检索召回</text>
+<text x="543" y="805" font-size="12" fill="#B06A38" text-anchor="middle">离线链路是否支持未知</text>
+</g>
+
+<line x1="700" y1="757" x2="772" y2="757" stroke="#E0A98A" stroke-width="2" marker-end="url(#ar)"/>
+
+<g>
+<rect x="774" y="688" width="276" height="138" rx="10" fill="#FBEEE2" stroke="#E07A2F" stroke-width="1.4"/>
+<text x="912" y="714" font-size="14" font-weight="600" fill="#9C4E14" text-anchor="middle">目标:6 月底 / 7 月初开实验</text>
+<text x="912" y="742" font-size="13" fill="#8A6A4E" text-anchor="middle">schema 定后一天内出试打标 + emb</text>
+<text x="912" y="766" font-size="13" fill="#8A6A4E" text-anchor="middle">先聚焦品牌 / 价格类高增量特征</text>
+<text x="912" y="794" font-size="12.5" fill="#8A6A4E" text-anchor="middle">无多模态(图片)emb 能力,后续考虑</text>
+<text x="912" y="816" font-size="12" fill="#B06A38" text-anchor="middle">时间线偏紧</text>
+</g>
+
+<text x="1076" y="372" font-size="16" font-weight="600" fill="#5A635F">SID 前沿 · 团队最大缺口(远期)</text>
+<g>
+<rect x="1076" y="388" width="320" height="438" rx="12" fill="#F4F2EC" stroke="#9AA39F" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="1236" y="420" font-size="14.5" font-weight="600" fill="#4F5854" text-anchor="middle">Semantic ID 生成式召回</text>
+<text x="1236" y="444" font-size="12.5" fill="#7A837F" text-anchor="middle">全团队都没落地 · 两程序之外</text>
+
+<line x1="1100" y1="462" x2="1372" y2="462" stroke="#D8DAD2" stroke-width="1.2"/>
+<text x="1100" y="486" font-size="12.5" fill="#6E7773">团队外成熟落地:</text>
+
+<g>
+<rect x="1100" y="498" width="272" height="56" rx="9" fill="#FFFFFF" stroke="#B7BEB9" stroke-width="1.1"/>
+<text x="1118" y="522" font-size="13.5" font-weight="600" fill="#4F5854">OneSearch-V2</text>
+<text x="1118" y="542" font-size="12" fill="#828B86">搜索域 SID 落地</text>
+</g>
+<g>
+<rect x="1100" y="566" width="272" height="56" rx="9" fill="#FFFFFF" stroke="#B7BEB9" stroke-width="1.1"/>
+<text x="1118" y="590" font-size="13.5" font-weight="600" fill="#4F5854">剪映 GRv1</text>
+<text x="1118" y="610" font-size="12" fill="#828B86">Token-Based 生成式召回</text>
+</g>
+<g>
+<rect x="1100" y="634" width="272" height="68" rx="9" fill="#FFFFFF" stroke="#B7BEB9" stroke-width="1.1"/>
+<text x="1118" y="658" font-size="13.5" font-weight="600" fill="#4F5854">GIP 同栈</text>
+<text x="1118" y="678" font-size="12" fill="#828B86">Qwen → RQ-VAE 离散化</text>
+<text x="1118" y="696" font-size="12" fill="#828B86">与本项目 Qwen emb 同源可承接</text>
+</g>
+
+<rect x="1100" y="718" width="272" height="42" rx="9" fill="#EDEBE4"/>
+<text x="1236" y="744" font-size="12.5" fill="#5A635F" text-anchor="middle">学术基线:TIGER · RQ-VAE · DSI</text>
+</g>
+
+<text x="56" y="888" font-size="12" fill="#9AA39F">实证口径:advv 数值与 owner 来自团队 LR 文档与 06-17 会议妙记;SID 落地均在团队外,本项目尚未涉及。</text>
+</svg>

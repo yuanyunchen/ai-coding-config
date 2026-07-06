@@ -1,0 +1,443 @@
+<title>CID 召回实验 · 背景与算法说明</title>
+
+<callout emoji="🎯" background-color="light-green" border-color="green">
+<p><b>实验定位</b>　EU - 旅游(Travel) - 精准意图召回,商品召回环节新增一路"用三类硬意图信号反查商品"的支路,支路号 <code>recall_type=711</code>。</p>
+<p><b>当前阶段</b>　实验已重开,负责人为本人,本周按"开两版"思路调参重跑。</p>
+</callout>
+
+<h1>一、整体流程</h1>
+
+<h2>1.1 三层粒度:广告 / 商品 / 图素</h2>
+
+<p>商品广告链路里同时存在三种粒度,从粗到细分别是广告、商品、图素,三者的召回与打分分工如下:</p>
+
+<table>
+<colgroup><col width="80"/><col width="180"/><col width="220"/><col width="200"/></colgroup>
+<thead>
+<tr><th background-color="light-gray">粒度</th><th background-color="light-gray">含义</th><th background-color="light-gray">在哪召回</th><th background-color="light-gray">谁排序 / 谁打分</th></tr>
+</thead>
+<tbody>
+<tr><td><p><b>广告</b><br/>(ad)</p></td><td><p>广告主创建的投放单元</p></td><td><p>上游广告定向系统</p></td><td><p><b>上游 rank 服务</b><br/>(跨广告竞价、ecpm 精排)</p></td></tr>
+<tr><td><p><b>商品</b><br/>(cid)</p></td><td><p>一条广告下挂的具体商品(catalog item),用户真正看到的对象</p></td><td><p><b>本实验所在的商品召回服务</b><br/><i>(pSort)</i></p></td><td><p><b>不直接打分</b>。多路召回出的商品按"权重抽签"合到一起,本身不评估单个商品好坏</p></td></tr>
+<tr><td><p><b>图素</b><br/>(pid)</p></td><td><p>同一个商品下挂的多张图 / 创意素材</p></td><td><p>跟着商品一起被召回</p></td><td><p><b>商品召回服务内部的"粗排"模型</b><br/><i>(ModelRerankOp,viking ANN 分数)</i><br/>对<b>同一个商品下的多张图素</b>排序</p></td></tr>
+</tbody>
+</table>
+
+<callout emoji="🔑" background-color="light-blue" border-color="blue">
+<p><b>核心结论:广告精排 ≠ 商品图素精排,是两件分开的事</b></p>
+<p><b>① 商品召回服务<u>只管商品和图素</u>,不管广告之间怎么排</b>。它在内部对每个商品下的图素列表做一次精排(选哪张图最好),然后把"广告 → 商品 + 图素"这个包<b>原样回吐</b>给上游。</p>
+<p><b>② 广告之间的精排由<u>上游 rank 服务</u>负责</b>:拿到回吐的包后,它在广告维度做跨广告主竞价、算 ecpm,决定最终哪几条广告在哪个位置展示。</p>
+<p><b>所以"哪个商品被召回 + 哪张图最优"由商品召回服务定;"哪条广告能展、谁排在前面"由上游定。两件事用的是不同的打分模型,各自独立。</b></p>
+</callout>
+
+<h2>1.2 开篇全景:端到端服务拓扑</h2>
+
+<p>先用一张 DAG 全景看清整条逻辑骨架 —— 有哪些环节、谁依赖谁、本实验落在哪一段。细节留给后文,这里只到服务粒度。</p>
+
+<!-- 【开篇 DAG 全景图 · learning 硬骨架】这是全文第一张图,承载概念/框架骨架的高层鸟瞰。⛔ 不用 ASCII 当开篇全景(高层概念关系是 DAG 的活,见 lark-doc-writer §0.6)。
+     落地:首选把下面 mermaid 渲染成 PNG 嵌 Image(27) 块(LR 布局、过长宽比闸,见 dag-flow-diagram);纯文本兜底才把 mermaid 源写进 Code(14) 块(走 XML 导入时 < > & 需转义,见 lark-doc-writer §2)。⛔ 不用 <whiteboard type="mermaid">(本机拍平,见 mcp-recipes 执行覆盖层)。 -->
+<code language="text">
+flowchart TB
+  U(["用户请求<br/>uid + 上下文"])
+  ADR["<b>广告召回</b><br/>━━━━━━━<br/>按定向规则筛出<br/>候选广告集合<br/>(上游 targeting)"]
+  PROD["<b>商品召回服务</b><br/>━━━━━━━<br/>为每条广告配商品<br/>+ 选最优图素<br/>(本实验所在的 pSort)"]
+  ADM["<b>广告精排</b><br/>━━━━━━━<br/>跨广告竞价<br/>按 ecpm 排序<br/>(上游 rank)"]
+  SHOW(["最终展示<br/>排好序的广告列表"])
+  EVAL(["评估反馈<br/>d ADVV / 独占消耗率"])
+  U -->|"用户特征"| ADR
+  ADR -->|"候选广告列表<br/>(对每条 ad 调一次)<br/>输入:uid + 一条 ad"| PROD
+  PROD -->|"ad → 商品列表<br/>+ 每个商品下排好序的图素"| ADM
+  ADM -->|"按 ecpm 排好的 ad 序列"| SHOW
+  SHOW -.->|线下日志| EVAL
+  style PROD fill:#ffeaa7,stroke:#e67e22,stroke-width:2px
+</code>
+
+<p>注意三段分工:<b>广告召回</b>按定向规则筛出候选广告;然后<b>每条广告</b>都会去调一次<b>商品召回服务</b>,让它为这条广告配商品 + 图素;商品召回服务把"广告 → 商品 + 图素"包回吐后,<b>广告精排</b>在广告维度做跨广告竞价 + ecpm 排序,定最终展示顺序。所以本实验调商品召回侧的参数,会通过"商品质量影响 ecpm"间接影响广告精排结果,但<b>不会直接动广告之间的次序</b>。</p>
+
+<h2>1.3 商品召回服务内部架构</h2>
+
+<p>商品召回服务内部分为 4 步。每一步的算法职责如下,模块名以灰色斜体标注,便于反查代码。</p>
+
+<!-- 流程图落地:首选渲染成 PNG 嵌 Image(27) 块;纯文本兜底把下面 mermaid 源写进 Code(14) 块(走 XML 导入时源里的 < > & 需转义,见 lark-doc-writer §2)。⛔ 不用 <whiteboard type="mermaid">(本机拍平,见 mcp-recipes 执行覆盖层)。源格式见 dag-flow-diagram。 -->
+<code language="text">
+flowchart TB
+  IN(["输入<br/>uid + 一条 ad"])
+  subgraph PAR["第 1 步 · 多路并行召回"]
+    direction LR
+    P1["<b>主路</b> 216/24/2<br/>━━━━━━━<br/>默认意图召回<br/>用户→兴趣类目→商品"]
+    P2["<b>TTP 路</b> 713"]
+    P3["<b>重定向路</b> 4"]
+    P4["★ <b>本实验路</b> 711<br/>━━━━━━━<br/>精准意图召回<br/>用户→硬信号→商品"]
+    P5["<b>其他召回路</b>…"]
+  end
+  MERGE["<b>第 2 步 · 合流抽签</b><br/>━━━━━━━<br/>各路按 merge_weight<br/>轮流取商品<br/>(snake_merge)"]
+  RR["<b>第 3 步 · 图素精排</b>(粗排)<br/>━━━━━━━<br/>viking ANN 模型打分<br/>对每个商品下的<br/>图素列表排序"]
+  CAP["<b>第 4 步 · 出口</b><br/>━━━━━━━<br/>每广告主限额<br/>+ 装配响应"]
+  OUT(["输出<br/>ad → 商品列表 +<br/>每个商品下排好序的图素"])
+  IN -->|"uid + ad"| P1
+  IN -->|"uid + ad"| P2
+  IN -->|"uid + ad"| P3
+  IN -->|"uid + ad"| P4
+  IN -->|"uid + ad"| P5
+  P1 -->|"商品列表<br/>(带来源路标记)"| MERGE
+  P2 -->|"商品列表"| MERGE
+  P3 -->|"商品列表"| MERGE
+  P4 -->|"商品列表"| MERGE
+  P5 -->|"商品列表"| MERGE
+  MERGE -->|"按权重交错的<br/>单一商品序列"| RR
+  RR -->|"商品序列<br/>(图素已重排)"| CAP
+  CAP -->|"约束后的最终包"| OUT
+  style P4 fill:#ffeaa7,stroke:#e67e22,stroke-width:2px
+  style RR fill:#d6eaff
+</code>
+
+<table>
+<colgroup><col width="50"/><col width="200"/><col width="320"/><col width="100"/></colgroup>
+<thead>
+<tr><th background-color="light-gray">步</th><th background-color="light-gray">这一步在做什么</th><th background-color="light-gray">设计目的 / 关键参数</th><th background-color="light-gray">本实验改不改</th></tr>
+</thead>
+<tbody>
+<tr><td><p>1</p></td><td><p><b>多路并行召回</b>:不同算法各自跑,各自吐出一批候选商品,路与路之间相互独立</p></td><td><p>不同路捕捉不同强度的意图(默认意图量大但泛、精准意图量小但准),并行 + 后合流可在覆盖度与精度之间调节</p></td><td><p><b>新增一路</b>,其他路不动</p></td></tr>
+<tr><td><p>2</p></td><td><p><b>合流抽签</b>:把各路出的商品按权重轮流取,组成一个有序列表 <i>(snake_merge)</i></p></td><td><p>权重 <code>merge_weight</code> 决定本路在最终序列里占多大份额。EU 当前意图路:非意图路 启动权重 = 4 : 1</p></td><td><p>只调本路自己的 <code>merge_weight</code></p></td></tr>
+<tr><td><p><b>3</b></p></td><td><p><b>图素精排</b>(口语里说的"粗排"):对每个商品下挂的多张图素,用 viking ANN 模型打分排序 <i>(ModelRerankOp)</i></p></td><td><p><b>整条服务里唯一一次"打分"</b>。打的是<b>图素分</b>,不是商品分、也不是广告分;只决定"同一个商品下哪张图素优先"</p></td><td><p>不动模型,本周不涉及</p></td></tr>
+<tr><td><p>4</p></td><td><p><b>出口</b>:每广告主最多保留 N 个商品,装配响应回吐上游</p></td><td><p>防止单一广告主刷屏,<code>ads_per_adv_limit=10</code></p></td><td><p>不动</p></td></tr>
+</tbody>
+</table>
+
+<callout emoji="📌" background-color="light-yellow" border-color="yellow">
+<p><b>关于"打分"的四个澄清</b></p>
+<p><b>Q1: 既然有"精排",为什么说商品不打分?</b><br/>这里的"精排"打的是<b>图素维度</b>(同一商品下哪张图最优),不是<b>商品维度</b>(商品 A 比商品 B 好)。商品本身的好坏由"合流抽签"的<u>路权重</u>间接表达——好路权重高、占的坑多,商品自然多。</p>
+<p><b>Q2: "消耗率低 = 粗排不认"具体指什么?</b><br/>两件事叠加:① 服务内部图素精排把本路出的图素排到了后面;② 上游广告 rank 算 ecpm 时不偏好本路出的商品。两件事分开诊断,光调召回侧参数不一定能救消耗率,必要时需要在粗排阶段配置"保送"。</p>
+<p><b>Q3: 广告之间的次序在哪儿决定?</b><br/><b>不在本服务里。</b>本服务把"广告→商品+图素"包回吐后,广告维度的竞价精排由上游 rank 服务完成。本实验调权重所说的"挤压主路",指<b>同一条广告下,本路抢了主路的商品坑</b>,不是广告之间的争抢。</p>
+<p><b>Q4: 为什么不在商品维度也加一次打分?</b><br/>架构上这一层按"多路召回 + 加权合流"设计,假设各路本身已表达了商品好坏(好路权重高);再加一次商品分排序会和上游 ecpm 重复计算。</p>
+</callout>
+
+<hr/>
+
+<h1>二、本实验定位</h1>
+
+<p>本实验是 §一.3 第 1 步"多路并行召回"里新增的一条支路,与其他召回路并列,不串接在它们之前或之后。</p>
+
+<!-- 流程图落地:首选渲染成 PNG 嵌 Image(27) 块;纯文本兜底把下面 mermaid 源写进 Code(14) 块(走 XML 导入时源里的 < > & 需转义,见 lark-doc-writer §2)。⛔ 不用 <whiteboard type="mermaid">(本机拍平,见 mcp-recipes 执行覆盖层)。源格式见 dag-flow-diagram。 -->
+<code language="text">
+flowchart TB
+  IN(["输入<br/>uid + 一条 ad"])
+  subgraph PARS["多路并行召回"]
+    direction LR
+    MAIN["<b>主路</b> 216/24/2<br/>━━━━━━━<br/>默认意图召回"]
+    TTP["<b>TTP 路</b> 713"]
+    RDR["<b>重定向路</b> 4"]
+    NEW["★ <b>本实验路</b> 711<br/>━━━━━━━<br/>精准意图召回"]
+    OTH["<b>其他路</b>"]
+  end
+  MERGE["<b>合流抽签</b><br/>━━━━━━━<br/>snake_merge"]
+  RR["<b>图素精排</b><br/>━━━━━━━<br/>viking ANN"]
+  OUT(["回吐上游<br/>ad → 商品 + 排好序的图素"])
+  IN -->|"uid + ad"| PARS
+  MAIN -->|"商品列表"| MERGE
+  TTP -->|"商品列表"| MERGE
+  RDR -->|"商品列表"| MERGE
+  NEW -->|"商品列表<br/>(打 recall_flag=711)"| MERGE
+  OTH -->|"商品列表"| MERGE
+  MERGE -->|"交错后的商品序列"| RR
+  RR -->|"商品序列<br/>(图素已重排)"| OUT
+  style NEW fill:#ffeaa7,stroke:#e67e22,stroke-width:3px
+</code>
+
+<table>
+<colgroup><col width="200"/><col width="420"/></colgroup>
+<thead>
+<tr><th background-color="light-gray">问题</th><th background-color="light-gray">回答</th></tr>
+</thead>
+<tbody>
+<tr><td><p>本实验在哪一层?</p></td><td><p>商品召回服务内部 — 第 1 步"多路并行召回"里加一路。不在广告召回,也不在广告精排。</p></td></tr>
+<tr><td><p>跟主路是替换还是并列?</p></td><td><p>并列。主路 216/24/2、TTP 713、redirect 4 都<b>继续跑</b>,本实验是<b>新增</b>的一路(支路号 <code>711</code>),在合流抽签中占据一定份额。</p></td></tr>
+<tr><td><p>跟其他路怎么连接?</p></td><td><p>第 1 步内部各路<b>互不通信</b>,在第 2 步合流时统一汇入。</p></td></tr>
+<tr><td><p>本路出的商品会被打分吗?</p></td><td><p>本路出商品,商品下的图素会进精排;<b>商品本身不被打分</b>。</p></td></tr>
+<tr><td><p>影响范围?</p></td><td><p>对自身:由权重决定占多少坑;对其他路:权重升高会挤压它们在合流里的份额;对广告维度:间接影响(广告的 ecpm 取决于挂的商品)。</p></td></tr>
+<tr><td><p>本实验唯一标识</p></td><td><p><code>recall_type = 711</code>(对照:主路 216/24/2,TTP 713,redirect 4,已 close 的旧 EU 精准意图 710)</p></td></tr>
+</tbody>
+</table>
+
+<hr/>
+
+<h1>三、本支路算法详解</h1>
+
+<h2>3.1 算法定位</h2>
+
+<callout emoji="🧭" background-color="light-green" border-color="green">
+<p>本路是<b>"反查式"召回</b>:拿用户最近表现出的<b>三类硬意图信号</b> → 反查这些信号<b>命中的广告主 / 账户</b> → 把这些广告主 / 账户下挂的<b>商品</b>拉出来作为候选。</p>
+<p>对比主路(默认意图)走的是"用户 → 兴趣类目 → 商品",本路<b>跳过了"兴趣类目"这一中间层</b>,直接用业务侧的硬信号反查,意图更"硬"、转化目的更明确,但召回量天然比主路小[[AI notes]](https://bytedance.us.larkoffice.com/docx/EucjdTYF4ouhqzxmtDHutjsjszd)。</p>
+</callout>
+
+<h2>3.2 三类硬意图信号</h2>
+
+<table>
+<colgroup><col width="120"/><col width="240"/><col width="260"/></colgroup>
+<thead>
+<tr><th background-color="light-gray">信号</th><th background-color="light-gray">来源</th><th background-color="light-gray">捕捉的意图</th></tr>
+</thead>
+<tbody>
+<tr><td><p><b>pixel</b>(像素事件)</p></td><td><p>广告主在自家网站/App 埋点(TikTok pixel SDK)上报的真实行为(View / AddToCart / Purchase)</p></td><td><p>用户在广告主自有渠道上的<b>真实交互行为</b>,意图最强</p></td></tr>
+<tr><td><p><b>adv</b>(广告主 IAB 标签)</p></td><td><p>广告主主动上报的 IAB 兴趣 / 类目标签</p></td><td><p>用户被广告主<b>主动标定</b>为某类目标人群</p></td></tr>
+<tr><td><p><b>account</b>(账户级兴趣)</p></td><td><p>用户在同一广告主账户范围内的兴趣聚合</p></td><td><p>跨广告主<b>账户矩阵</b>下的整体偏好(例如同一旅游集团下多个酒店品牌的合并兴趣)</p></td></tr>
+</tbody>
+</table>
+
+<p>三类信号<b>并行</b>拉取,最终汇到同一个候选商品池。</p>
+
+<h2>3.3 反查链路</h2>
+
+<!-- 流程图落地:首选渲染成 PNG 嵌 Image(27) 块;纯文本兜底把下面 mermaid 源写进 Code(14) 块(走 XML 导入时源里的 < > & 需转义,见 lark-doc-writer §2)。⛔ 不用 <whiteboard type="mermaid">(本机拍平,见 mcp-recipes 执行覆盖层)。源格式见 dag-flow-diagram。 -->
+<code language="text">
+flowchart TB
+  U(["输入<br/>uid"])
+  subgraph SIG["① 拉硬信号"]
+    direction LR
+    P["<b>pixel parser</b><br/>━━━━━━━<br/>解析像素事件<br/>(View/AddToCart/Purchase)"]
+    A["<b>adv parser</b><br/>━━━━━━━<br/>解析广告主<br/>IAB 兴趣标签"]
+    C["<b>account parser</b><br/>━━━━━━━<br/>解析账户级<br/>兴趣聚合"]
+  end
+  ADV["<b>② 信号 → 广告主/账户</b><br/>━━━━━━━<br/>信号自带的<br/>advertiser_id / account_id"]
+  CID["<b>③ 广告主/账户 → 商品</b><br/>━━━━━━━<br/>viking 倒排查询<br/>(IndexBitmapOp)"]
+  POOL(["输出<br/>候选商品池"])
+  U -->|"uid"| SIG
+  P -->|"pixel 事件 × 100"| ADV
+  A -->|"IAB 标签 × 100"| ADV
+  C -->|"account 兴趣 × 100"| ADV
+  ADV -->|"广告主 ID / 账户 ID 集合"| CID
+  CID -->|"商品 ID 位图"| POOL
+  style P fill:#ffeaa7
+  style A fill:#ffeaa7
+  style C fill:#ffeaa7
+  style CID fill:#d6eaff
+</code>
+
+<ol>
+<li><b>用户 → 硬信号</b>:从用户画像里把 pixel / adv / account 三类信号各拉一批</li>
+<li><b>硬信号 → 广告主 / 账户</b>:信号本身就携带广告主或账户身份(pixel 事件挂在某广告主下、IAB 标签由特定广告主上报、account 兴趣按账户聚合)</li>
+<li><b>广告主 / 账户 → 商品</b>:走 viking 倒排,把这些广告主/账户下挂的商品拉成位图 <i>(IndexBitmapOp)</i>,作为本路候选</li>
+</ol>
+
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow">
+<p><b>已知坑</b>　viking 出错走本地兜底时,可能<b>重新分配 direct_id</b>,导致业务侧按 direct_id 聚合的统计错位[[Product_sort 代码阅读]](https://bytedance.sg.larkoffice.com/docx/Pb5BdzpUaoCv99xBkz9lynJCghu)。本周不动,知道这个坑存在即可。</p>
+</callout>
+
+<h2>3.4 七步算法流程</h2>
+
+<p>反查出候选商品池只是开始,还要经过<b>去重 → 截断 → 打标 → 报权重</b> 几步,才能把"本路要推哪些商品 + 按多大权重推"交给合流环节。这是一条公式驱动的细节链路,用 ASCII 逐步展开 —— 注意同一批商品集在不同阶段的"分身":候选集 <code>X</code> → 去重后 <code>X'</code> → 截断后 <code>X''</code>。</p>
+
+<!-- 【正文 ASCII · 只展开细节】公式/流程链路的逐步推导(同名变量换分身)用 ASCII 进 Code(14) 块,不画高层概念(那是开篇 DAG 的活)。每行 ≤ ~72 等宽列(CJK 计 2);走 XML 导入路径时 < > & 需转义(此处 ≤ 已转 &lt;=)。排版规范见 ascii-strategy-diagram。 -->
+<code language="text">
+输入: uid
+  │
+  ▼  从用户画像各取 raw_feature_k=100 条原始特征
+[ ① 硬信号 ]  pixel / adv / account 三类
+  │
+  ▼  viking 倒排反查命中商品(IndexBitmapOp)
+[ ② 候选集 X ]  本路反查出的全部候选商品
+  │
+  ▼  位图差集 X − 主路商品集 (dedup top_k=600/900/600)
+[ ③ 候选集 X' ]  本路独有商品(去掉与主路重合的)
+  │
+  ▼  从 X' 随机抽 random_bitmap k=500(性能保护)
+[ ④ 候选集 X'' ]  ≤ 500 个商品
+  │
+  ▼  逐个打 recall_flag=711(后续 metric/log 按此分维)
+[ ⑤ 带标商品列表 ]
+  │
+  ▼  声明本路在合流抽签的份额 merge_weight=200  ★最关键杠杆
+[ ⑥ 商品列表 + 权重 ]
+  │
+  ▼  每广告主最多 ads_per_adv_limit=10 个(防刷屏)
+[ ⑦ 出口约束后的最终包 ]
+  │
+  ▼  交给合流抽签 snake_merge,与其他召回路统一汇入
+输出: 带 recall_flag=711 + 权重的商品列表
+</code>
+
+<table>
+<colgroup><col width="50"/><col width="160"/><col width="380"/></colgroup>
+<thead>
+<tr><th background-color="light-gray">步</th><th background-color="light-gray">在做什么</th><th background-color="light-gray">为什么这样设计 / 关键参数</th></tr>
+</thead>
+<tbody>
+<tr><td><p>①</p></td><td><p>拉硬信号</p></td><td><p>三类信号各拉 <code>raw_feature_k</code> 条原始特征,这是<b>候选量入口阀门</b>:拉得多→后面候选商品多→pass count 高,但时延也高</p></td></tr>
+<tr><td><p>②</p></td><td><p>反查候选商品池</p></td><td><p>本路算法核心:用硬信号反查命中商品,跳过"兴趣类目"中间层</p></td></tr>
+<tr><td><p>③</p></td><td><p>与主路去重</p></td><td><p>如果不去重,本路和主路重合度高 → <b>独占消耗率</b>掉低 → 推全没价值。<code>top_k</code> 是"用对方主路多少广告 ID 当去重素材",经验值 ≈ 主路体量 × 0.7</p></td></tr>
+<tr><td><p>④</p></td><td><p>随机截断</p></td><td><p>性能保护:候选池过大会显著增加下游时延。<b>调大→更多候选,调小→省时延</b></p></td></tr>
+<tr><td><p>⑤</p></td><td><p>打标</p></td><td><p>给本路出的所有商品打上 <code>recall_flag=711</code> 标签,后续 metric / log 按这个 flag 分维度统计</p></td></tr>
+<tr><td><p>⑥</p></td><td><p>报合流权重</p></td><td><p><b>本实验最关键的杠杆</b>:<code>merge_weight</code> 决定在合流抽签里本路占多少坑。权重↑ → 本路展示份额↑ → 但主路被挤压</p></td></tr>
+<tr><td><p>⑦</p></td><td><p>出口约束</p></td><td><p>同一广告主最多保留 <code>ads_per_adv_limit=10</code> 个商品,防止单一广告主刷屏。一般不动</p></td></tr>
+</tbody>
+</table>
+
+<callout emoji="💡" background-color="light-blue" border-color="blue">
+<p><b>支路与全局的边界</b>　这 7 步全部发生在 §一.3 第 1 步"多路并行召回"的<b>本支路内部</b>。第 ⑦ 步结束后,本路的商品交给合流抽签,与其他召回路的商品<b>统一</b>进入合流 → 图素精排 → 出口 → 回吐上游做广告精排。<b>本路在交付合流后不再单独处理</b>。</p>
+</callout>
+
+<hr/>
+
+<h1>四、调参方向</h1>
+
+<p>mentor 明确给出的可动维度只有两类,正好对应 §三.4 的两类"阀门"[[Meeting transcript]](https://bytedance.us.larkoffice.com/docx/Ll7gd76NToKDa7x95d0ugMIbsFg):</p>
+
+<table>
+<colgroup><col width="140"/><col width="260"/><col width="220"/></colgroup>
+<thead>
+<tr><th background-color="light-gray">方向</th><th background-color="light-gray">影响什么</th><th background-color="light-gray">用在什么情况</th></tr>
+</thead>
+<tbody>
+<tr><td><p><b>合流权重</b><br/>(merge_weight)<br/>对应步 ⑥</p></td><td><p>本路在合流抽签里占的份额</p></td><td><p>权重高 → 本路展示多 → 自身消耗 ↑,但其他主路被挤压;权重低 → 本路占比更低</p></td></tr>
+<tr><td><p><b>候选量阀门</b><br/>(raw_feature_k / dedup top_k / random k)<br/>对应步 ① + ③ + ④</p></td><td><p>本路候选商品池的大小</p></td><td><p>调大 → pass count ↑、召回更完整,但去重压力和时延上升;调小则反过来</p></td></tr>
+</tbody>
+</table>
+
+<h2>4.1 现象-决策对照</h2>
+
+<table>
+<colgroup><col width="240"/><col width="220"/><col width="180"/></colgroup>
+<thead>
+<tr><th background-color="light-gray">观测到的现象</th><th background-color="light-gray">根因猜想</th><th background-color="light-gray">该调哪一类</th></tr>
+</thead>
+<tbody>
+<tr><td><p>pass count 低<br/>(本路没几个商品进精排)</p></td><td><p>召回量不足</p></td><td><p>候选量阀门:<code>raw_feature_k</code> 100→150、<code>random_bitmap k</code> 500→800</p></td></tr>
+<tr><td><p>独占消耗率 &lt; 30%<br/>(和主路重合多)</p></td><td><p>去重力度不够</p></td><td><p>候选量阀门里的 dedup <code>top_k</code> 整体调大</p></td></tr>
+<tr><td><p>消耗率低<br/>(召回到了但图素精排 / 上游广告精排不偏好)</p></td><td><p>不是召回问题,模型层不认</p></td><td><p>需 mentor 加"粗排保送"</p></td></tr>
+<tr><td><p>其他主路指标显著下跌</p></td><td><p>本路在合流中权重过高</p></td><td><p>合流权重 <code>merge_weight</code> 调低 200→150</p></td></tr>
+<tr><td><p>d ADVV 正向但波动</p></td><td><p>占坑不稳</p></td><td><p>合流权重略调高</p></td></tr>
+</tbody>
+</table>
+
+<callout emoji="✅" background-color="light-green" border-color="green">
+<p><b>本周两版实验</b></p>
+<p>V1:动<b>合流权重</b> <code>merge_weight</code> 200→150(对应步 ⑥)</p>
+<p>V2:动<b>候选量阀门</b> <code>raw_feature_k</code> 100→150(三处) + <code>random_bitmap k</code> 500→800(对应步 ① + ④)</p>
+<p>两版互不影响,可同时跑。详细操作步骤(改哪个 JSON 节点、Libra 怎么复制、Omega 怎么引流)见配套的「操作指南」文档。</p>
+</callout>
+
+<callout emoji="❓" background-color="light-blue" border-color="blue">
+<p><b>本节 Q&amp;A</b></p>
+<p><b>Q:消耗率低就一定是召回不够吗?</b><br/>不一定。可能是图素精排把本路图素排后、或上游 ecpm 不偏好本路商品;这类是模型层问题,光调候选量阀门救不了,需配"粗排保送"。</p>
+<p><b>Q:d ADVV 和独占消耗率分别看什么?</b><br/>d ADVV 是主决策指标(看广告主价值是否正向);独占消耗率看本路独有商品的消耗占比,&lt; 30% 说明与主路重合多、推全无价值。</p>
+</callout>
+
+<hr/>
+
+<h1>五、术语速查</h1>
+
+<p>主线术语放上面,代码模块名仅供反查代码时使用,日常理解流程不需要记。</p>
+
+<h2>5.1 主线术语</h2>
+
+<table>
+<colgroup><col width="180"/><col width="500"/></colgroup>
+<thead>
+<tr><th background-color="light-gray">术语</th><th background-color="light-gray">解释</th></tr>
+</thead>
+<tbody>
+<tr><td><p>广告 / 商品 / 图素</p></td><td><p>三层粒度,从粗到细;商品召回服务输出"广告 → 商品 + 图素"包,回吐上游做广告精排</p></td></tr>
+<tr><td><p>recall_type / 支路号</p></td><td><p>多路并行召回里"路"的唯一编号。本实验=711,主路=216/24/2,TTP=713,重定向=4,旧 EU 精准意图=710(已 close)</p></td></tr>
+<tr><td><p>合流抽签 / snake_merge</p></td><td><p>各召回路按 <code>merge_weight</code> 轮流出商品,组成最终序列的算法</p></td></tr>
+<tr><td><p>粗排</p></td><td><p>mentor 口语,指<b>图素精排</b>(viking ANN 打分,对每个商品下的图素列表排序);<b>不是广告精排</b></p></td></tr>
+<tr><td><p>粗排保送 / 保量</p></td><td><p>在图素精排阶段强制保留本路若干图素不被模型挤掉,需 mentor 配置</p></td></tr>
+<tr><td><p>pixel / adv / account</p></td><td><p>本路用的三类硬意图信号:用户行为 / 广告主 IAB 标定 / 账户聚合</p></td></tr>
+<tr><td><p>merge_weight</p></td><td><p>本路在合流抽签里的权重,当前 200,V1 调到 150</p></td></tr>
+<tr><td><p>raw_feature_k</p></td><td><p>步 ① 每类信号拉多少条原始特征,当前 100,V2 调到 150</p></td></tr>
+<tr><td><p>独占消耗率</p></td><td><p>本路独有商品(主路没召回的)所产生的消耗占本路总消耗的比例。&lt; 30% = 推全无价值</p></td></tr>
+<tr><td><p>d ADVV</p></td><td><p>决策广告主价值,本实验主决策指标。openlog 维度 p &lt; 20% 即认为置信可推进</p></td></tr>
+<tr><td><p>pass count</p></td><td><p>本路有多少商品通过召回交给了精排,反映"召回量"是否够</p></td></tr>
+</tbody>
+</table>
+
+<h2>5.2 代码模块名(选读)</h2>
+
+<table>
+<colgroup><col width="180"/><col width="500"/></colgroup>
+<thead>
+<tr><th background-color="light-gray">模块</th><th background-color="light-gray">对应主线概念</th></tr>
+</thead>
+<tbody>
+<tr><td><p><i>pSort</i></p></td><td><p>商品召回服务整体(见 §一.2 端到端服务拓扑)</p></td></tr>
+<tr><td><p><i>MultiMergeOp</i> / <i>snake_merge</i></p></td><td><p>合流抽签算法所在模块</p></td></tr>
+<tr><td><p><i>ModelRerankOp</i></p></td><td><p>图素精排("粗排")所在模块</p></td></tr>
+<tr><td><p><i>IndexBitmapOp</i></p></td><td><p>本路 §三.3 第 ③ 步走 viking 倒排的模块</p></td></tr>
+<tr><td><p><i>op quota = 64</i></p></td><td><p>单实例最多挂 64 条召回支路的工程约束</p></td></tr>
+</tbody>
+</table>
+
+<hr/>
+
+<h1>六、总结(一图带走)</h1>
+
+<p>两张收口图把全文细节展开到一处:<b>图 1</b> 是变量依赖 DAG —— 谁是可调杠杆、经什么公式影响哪个指标;<b>图 2</b> 是全链 ASCII —— 从召回到评估的端到端公式链路与闭环。读懂这两张,等于读完全文。</p>
+
+<h2>6.1 变量依赖 DAG(可调杠杆 → 指标)</h2>
+
+<p>圆角=变量 / 数据,方角=公式 / 模块,实线=算出,虚线=回灌。两类杠杆(合流权重、候选量阀门)如何一路影响到主决策指标 d ADVV,一图看清。</p>
+
+<!-- 【结尾收口图 ① · 变量依赖 DAG】learning 硬骨架的双收口之一,尽量含全文核心概念与关系。落地:渲染成 PNG 嵌 Image(27) 块(过长宽比闸,见 dag-flow-diagram);纯文本兜底才写进 Code(14) 块(< > & 转义)。⛔ 不用 <whiteboard type="mermaid">(本机拍平,见 mcp-recipes 执行覆盖层)。 -->
+<code language="text">
+flowchart TB
+  ENG(["<b>实验者</b><br/>━━━━━━━<br/>设定可调参数"])
+  MW(["<b>merge_weight</b><br/>━━━━━━━<br/>合流权重(步⑥)<br/>当前 200"])
+  VK(["<b>候选量阀门</b><br/>━━━━━━━<br/>raw_feature_k / dedup top_k<br/>/ random k(步①③④)"])
+  MERGE["<b>合流抽签</b><br/>━━━━━━━<br/>snake_merge<br/>按权重轮流取商品"]
+  DEDUP["<b>与主路去重</b><br/>━━━━━━━<br/>位图差集 X − 主路"]
+  PASS(["<b>pass count</b><br/>━━━━━━━<br/>进精排的商品数<br/>= 召回量"])
+  EXCL(["<b>独占消耗率</b><br/>━━━━━━━<br/>本路独有消耗占比<br/>&lt; 30% = 推全无价值"])
+  SHARE(["<b>展示份额 / 消耗</b><br/>━━━━━━━<br/>本路在合流占的坑"])
+  RANK["<b>图素精排 + 上游 ecpm</b><br/>━━━━━━━<br/>ModelRerankOp + 广告 rank"]
+  ADVV(["<b>d ADVV</b><br/>━━━━━━━<br/>主决策指标<br/>p &lt; 20% 可推进"])
+  ENG -->|"设 merge_weight"| MW
+  ENG -->|"设阀门"| VK
+  VK -->|"候选池大小"| DEDUP
+  DEDUP -->|"独有商品集 X'"| PASS
+  DEDUP -->|"独有占比"| EXCL
+  MW -->|"占坑份额"| MERGE
+  MERGE -->|"交错后序列"| SHARE
+  PASS -->|"够多才有量"| SHARE
+  SHARE -->|"进模型打分"| RANK
+  EXCL -.->|"过低则推全无价值"| ADVV
+  RANK -->|"消耗 / 价值"| ADVV
+  ADVV -.->|"波动→回调 merge_weight"| MW
+  style MW fill:#ffeaa7,stroke:#e67e22,stroke-width:2px
+  style VK fill:#ffeaa7,stroke:#e67e22,stroke-width:2px
+  style ADVV fill:#ffeaa7,stroke:#e67e22,stroke-width:2px
+</code>
+
+<h2>6.2 全链 ASCII 公式图(召回 → 合流 → 精排 → 评估)</h2>
+
+<p>把开篇全景 + 本支路七步 + 评估闭环串成一条端到端链路,标注每段的关键参数与公式,作最终对账。</p>
+
+<!-- 【结尾收口图 ② · 全链 ASCII】learning 硬骨架的双收口之二:从输入逐阶段串到闭环,节点带参数、边写公式 / 分支。正文/收口的链路细节用 ASCII。每行 ≤ ~72 等宽列(CJK 计 2);走 XML 导入路径时 < > & 已转义为 &lt; &gt;。排版规范见 ascii-strategy-diagram。 -->
+<code language="text">
+输入: uid + 一条 ad
+  │
+  ▼  多路并行召回(主路 216/24/2 · TTP 713 · 重定向 4 · ★本路 711)
+[ 本路 711 ]  硬信号反查 → X → 去重 X' → 截断 X'' → 打标 + 权重
+  │      阀门: raw_feature_k / top_k / random k
+  │      杠杆: merge_weight(决定占多少坑)
+  ▼  各路按 merge_weight 轮流取商品(snake_merge)
+[ 合流后的单一商品序列 ]
+  │
+  ▼  viking ANN 对每个商品下的图素打分(ModelRerankOp,唯一一次打分)
+[ 图素已重排的商品序列 ]
+  │
+  ▼  每广告主 ≤ ads_per_adv_limit=10,装配响应回吐上游
+[ ad → 商品 + 排好序图素 ]
+  │
+  ▼  上游广告 rank: 跨广告竞价,算 ecpm 定展示位
+[ 最终展示的广告列表 ]
+  │
+  ▼  线下日志统计
+[ 评估 ]  d ADVV(主决策, p &lt; 20% 可推进)
+          独占消耗率(&lt; 30% = 推全无价值)
+  │
+  └─ 回灌: d ADVV 波动 / 主路被挤压 → 回调 merge_weight、阀门
+</code>
+
+<callout emoji="❓" background-color="light-blue" border-color="blue">
+<p><b>本节 Q&amp;A</b></p>
+<p><b>Q:看这两张图就够了吗?</b><br/>够建立整条逻辑骨架:图 1 看"调什么影响什么指标",图 2 看"端到端怎么算 + 在哪闭环"。具体每个参数的取值与改法见 §三 / §四,操作步骤见配套「操作指南」。</p>
+</callout>

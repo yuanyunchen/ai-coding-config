@@ -1,0 +1,84 @@
+<title>📖 日报 2026-06-10</title>
+
+<callout emoji="📖" background-color="light-blue" border-color="blue">
+<p><b>概述</b>：今天一边推进 CID 精准意图召回实验，一边系统补计费/竞价/出价基础知识，并把文档写作、写日报、个人知识库几套基础设施补齐。</p>
+<ul>
+<li><b>CID 精准意图召回实验</b>：新增一组 <code>ads_per_adv_limit=10</code> 实验，验证「渗透率偏低是否因召回 cid 集中在同一广告主、触发大量截断」。</li>
+<li><b>申请 TTAM 权限</b>：申请 Admin 只读权限，用于附身访问真实广告主环境、配合 CID 实验排查。</li>
+<li><b>计费 / 竞价 / 出价指标学习</b>（今日学习重点）：把 5 份内部文档的口径整合成一篇按「出价 → 竞价计费 → 评估」三阶段、公式驱动的系统学习文档。</li>
+<li><b>学习文档 skill 与 checklist skill</b>：把「散乱原始材料 → 系统学习文档 / 学习路线图」的能力固化成 skill。</li>
+<li><b>文档写作 skill 系统</b>：把整套写作规则整理成「单一权威 + 分工不重复」的 skill 生态，审计后修复一致性问题。</li>
+<li><b>构建写日报 skill</b>：把日报「记录 → 整理」双阶段流程固化成 skill。</li>
+<li><b>优化个人知识库系统</b>：补检索规则，打通文件整理与日报推送、让上下文可继承。</li>
+</ul>
+</callout>
+
+<hr/>
+
+<h1>一、CID 精准意图召回实验</h1>
+<p>在昨天跑通的 711 支路实验基础上，今天<b>新增一组对照实验，测试 </b><b><code>ads_per_adv_limit=10</code></b><b> 参数</b>。动机是验证一个对当前渗透率偏低的猜想——<b>支路召回的 cid 可能主要来源于同一广告主，导致按广告主截断后大量 cid 被砍掉、渗透上不去</b>。通过给单广告主的 ad 召回数设上限 10--30，观察渗透率是否改善，即可判断截断是不是瓶颈。</p>
+<p>实验背景承接昨天日报：711 用 pixel / 广告主 / 账户三类硬信号反查到广告主与账户、再直接召回其挂载商品，base 版结论是 Travel 单行业 dADVV 全面正向、但总盘被 Entertainment 拖累<cite doc-id="UhZLdbCmKoGuJaxPwtouXMvLsLd" file-type="docx" title="📖 日报 2026-06-09" type="doc"></cite>。</p>
+<ul><li>实验入口：<a href="https://libra-sg.tiktok-row.net/libra/peer-review/72083836/view/101304487?version=new">Libra peer-review 72083836</a></li></ul>
+
+<hr/>
+
+<h1>二、申请 TTAM Admin 只读权限</h1>
+<p>为了能附身访问真实广告主环境、配合 CID 实验排查线上现象，今天申请了 TTAM（TikTok Ads Manager）的 Admin Read-only 权限。并整理后续操作步骤。<cite doc-id="H1z0dVqJ3oKAQYxINakuukaNsed" file-type="docx" title="🤖 TTAM TikTok Ads - Admin Read only 权限申请操作指南" type="doc"></cite>。</p>
+<p><cite type="user" user-id="ou_ff282dcd7d52d161baac13d492defa44" user-name="李奕"></cite> 权限review麻烦帮忙点一下通过。 </p>
+
+<hr/>
+
+<h1>三、计费 / 竞价 / 出价指标学习</h1>
+<p>今日学习重点。把分散在新人串讲、广告综述、广告主价值指标定义等 5 份内部文档里的口径，整合成一篇系统学习文档：按「出价 → 竞价计费 → 评估」三阶段循序展开，nobid 作为一条贯穿主线<cite doc-id="ZrBHdu1A5oEeNHxnjlzui0oXsNd" file-type="docx" title="计费 / 竞价 / 出价指标 · 学习文档" type="doc"></cite>。学到的内容覆盖三阶段：</p>
+<ul>
+<li><b>出价</b>：rank_bid 口径，风控（target cost）/ 流控（cost cap）/ nobid 三类 PID 调控逻辑。</li>
+<li><b>竞价计费</b>：eCPM、hidden_cost、sorted_ecpm、GFP / GSP / VCG 三种机制、二价反解与 GSP 倒挂。</li>
+<li><b>评估</b>：CPA 与 CPA bid 的区别、ADVV 的本质与各出价产品定义、nobid 的加权打平、计费比。</li>
+<li><b>口径矛盾澄清</b>：rank_bid 在不同源文档定义冲突，统一取自洽的转化口径。</li>
+</ul>
+
+<hr/>
+
+<h1>四、学习文档 skill 与 checklist skill</h1>
+<p>专业知识琐碎、散落在不同文件，检索效率低；人工文档口语化、缺系统逻辑与公式，甚至同一概念（如 rank_bid、cpa）在不同文档定义冲突——大量时间耗在梳理信息、理解语言上，真正用于理解记忆的时间很少。围绕这个痛点构建两个 skill：</p>
+<ul>
+<li><b>学习文档 skill</b>：自动按主题、学习目标汇总相关 context 文件、搜索关联资料，把散乱口语化的原始材料整合成有系统逻辑和公式、源口径矛盾已澄清的学习文档。实例即今天产出的 <cite doc-id="ZrBHdu1A5oEeNHxnjlzui0oXsNd" file-type="docx" title="计费 / 竞价 / 出价指标 · 学习文档" type="doc"></cite>。</li>
+<li><b>checklist skill</b>：在学习文档基础上增加上下文与<b>学习路径设计</b>，把要点、学习目标拆成细分目标与任务，串成「先读什么 → 看哪一章 → 解决什么问题」的学习路线图，并自动构建配套学习文档。实例见 <cite doc-id="Wofcd4K6go0Mzkx11Lwu452KsKe" file-type="docx" title="📖 待学习知识 Checklist · 1:1 with yunchen（2026-06-09）" type="doc"></cite>。</li>
+</ul>
+
+<hr/>
+
+<h1>五、文档写作 skill 系统</h1>
+<p>把上述及其他写作能力收进一套「单一权威 + 分工不重复」的生态，明确各 skill 职责：</p>
+<ul>
+<li><code>lark-doc-writer</code> §0：命名 / 格式 / 风格 / 作图选型与飞书 XML 排版的<b>唯一权威</b>。</li>
+<li><code>doc-trio</code>：负责「学习 / 操作 / checklist / AI handoff」四类文档的分流与骨架，只引用 §0、不另立规则。</li>
+<li><code>ascii-strategy-diagram</code> 与 <code>dag-flow-diagram</code>：两个作图专家，由 §0.5 选型挂载。</li>
+</ul>
+<p>随后做了一轮审计（先报告不改动），通读全部 reference / template 与 SKILL.md 后修复几处一致性问题：</p>
+<ul>
+<li>模版白板里教转义却出现裸 <code>&lt;</code> 的反例；</li>
+<li>发布统一走官方文档导入工具；</li>
+<li>补齐转义铁律（ASCII 块和 mermaid 节点都要转义 <code>&lt;&gt;&amp;</code>）与 description 字节上限自检。</li>
+</ul>
+<p>另外把「写规则」的方法论沉淀进 <code>continue-learning</code>，新增「失败驱动·少即是多 / 不复述已知 / 不一致分流」三条原则，并消解了与原条目的一处自相矛盾。</p>
+
+<hr/>
+
+<h1>六、构建写日报 skill</h1>
+<p>把日报整套流程固化成 <code>daily-report</code> skill，由 SKILL.md 做意图分流，指向「记录」与「整理」两份 reference：</p>
+<ul>
+<li><b>记录阶段</b>：任务执行中把成果记成独立 md 片段，存固定文件夹按日期归档；记录前先列出涉及的产出 / context 文件再逐个读，尽量写完整、防遗漏。</li>
+<li><b>整理阶段</b>：一天结束时汇总成飞书日报，落到 Drive 的 Daily Report / 周子文件夹、命名 <code>📖 日报 {日期}</code>。考虑到 agent 跨会话记不住自己干过什么，整理不单靠片段，而是<b>综合「用户口述清单 + 实际回读产出文件 + md 记录片段」三方来源</b>整合成文——本篇即按此流程产出。</li>
+</ul>
+
+<hr/>
+
+<h1>七、优化个人知识库系统</h1>
+<p>在已有知识库基础上继续优化检索体验：补充<b>检索规则</b>让人和 AI 都能按主题更准地定位文档，并把<b>文件整理与日报推送两个阶段打通</b>，使上下文可在整理、推送之间继承，不必每次重新交代背景。</p>
+
+<hr/>
+
+<callout emoji="💡" background-color="light-green" border-color="green">
+<p><b>今日小结</b>　实验侧给 CID 召回加了一组验证截断假设的对照，并申请真实环境权限；知识侧吃透计费 / 竞价 / 出价三阶段机制、产出系统学习文档；基建侧把学习文档 / checklist skill、写作 skill 生态、写日报 skill 与个人知识库检索一并补齐——让「学得快、写得准、记得住」逐步形成闭环。</p>
+</callout>

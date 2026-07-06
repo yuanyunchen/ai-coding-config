@@ -1,0 +1,172 @@
+<!--
+==============================================================================
+飞书会议 Note 模板(取自 Mira 经用户验收的真实模板 meeting_note_template v1.0)
+首次用例:调参实验环境对齐 1:1
+
+【使用说明】
+1. 替换 {{占位符}} 为真实内容，删除不需要的占位符行
+2. checkbox 条目按实际清单增删
+3. 流程图（mermaid 源，落地见 §二 处的注释）按本次会议的核心产出重新画
+4. 章节顺序固定不动:目标 → 进度 → 五件事 → 节奏 → Checklist → 会后动作 → 存档
+
+【风格硬规则】
+- 标题不加中文括号注释（不要写"（会后填）""（建议 1 小时）"这类）
+- 颜色用 light-green / light-yellow / light-red / light-blue / light-gray
+- 表头一律 <th background-color="light-gray">
+- 列宽用 <colgroup><col width>
+- checkbox 用 <checkbox done="false">，不要用表格 + ☐ 字符
+- 流程图落地:首选渲染成 PNG 嵌 Image(27) 块,纯文本兜底把 mermaid 源写进 code language="text" 块;⛔ 不用 whiteboard mermaid(本机拍平,见 mcp-recipes 执行覆盖层)
+- callout 内 key-value 用全角空格分隔:"目标　xxx"，不用冒号 "目标:xxx"
+- emoji 克制使用，只在 callout 和关键标记处
+- 章节间用 <hr/> 分隔
+- 整体语言自然不尴尬，避免公文体也避免过度口语化
+
+【参考】写作通则与飞书 XML 规则:lark-doc-writer §0/§1 + references/lark-doc-style.md(视觉)/ lark-doc-xml.md(XML)。
+执行落地走官方 lark-cli(见 feishu-task-management 入口 + cli.md;旧 mcp__feishu__* MCP 已退役),本模板是 XML 形态的起稿骨架。
+==============================================================================
+-->
+
+<title>{{会议性质}} · {{日期}}｜{{会议主题}}</title>
+
+<callout emoji="🏁" background-color="light-green" border-color="green">
+<p><b>会议目标</b>　{{一句话说清这次会议要解决的核心问题}}</p>
+<p><b>不在范围</b>　{{明确排除项，避免会议跑题或自我加压}}</p>
+</callout>
+
+<h1>一、当前进度</h1>
+
+<table>
+<colgroup><col width="200"/><col width="400"/></colgroup>
+<thead>
+<tr><th background-color="light-gray">事项</th><th background-color="light-gray">状态</th></tr>
+</thead>
+<tbody>
+<tr><td>{{进度项 1}}</td><td><span text-color="green">{{已完成的状态}}</span></td></tr>
+<tr><td>{{进度项 2}}</td><td><span text-color="yellow">{{进行中或待确认}}</span></td></tr>
+<tr><td>{{进度项 3}}</td><td><span text-color="red">{{受阻或异常}}</span></td></tr>
+</tbody>
+</table>
+
+<hr/>
+
+<h1>二、会议要拿到的 N 件事</h1>
+
+<!-- 流程图落地:首选渲染成 PNG 嵌 Image(27) 块;纯文本兜底把下面 mermaid 源写进 Code(14) 块(走 XML 导入时源里的 < > & 需转义,见 lark-doc-writer §2)。⛔ 不用 <whiteboard type="mermaid">(本机拍平,见 mcp-recipes 执行覆盖层)。源格式见 dag-flow-diagram。 -->
+<code language="text">
+flowchart LR
+  M["{{会议简称}}"] --> A["1. {{产出 1}}<br/>{{一句话补充}}"]
+  M --> B["2. {{产出 2}}<br/>{{一句话补充}}"]
+  M --> C["3. {{产出 3}}<br/>{{一句话补充}}"]
+  M --> D["4. {{产出 4}}<br/>{{一句话补充}}"]
+  M --> E["5. {{产出 5}}<br/>{{一句话补充}}"]
+</code>
+
+<hr/>
+
+<h1>三、会议节奏</h1>
+
+<p>整场预计{{时长}}，按下面时段推进。</p>
+
+<table>
+<colgroup><col width="120"/><col width="480"/></colgroup>
+<thead>
+<tr><th background-color="light-gray">时段</th><th background-color="light-gray">动作</th></tr>
+</thead>
+<tbody>
+<tr><td>0–5 min</td><td>{{开场，同步进度，对齐目标}}</td></tr>
+<tr><td>5–{{X}} min</td><td>{{第一个 deep dive 块}}</td></tr>
+<tr><td>{{X}}–{{Y}} min</td><td>{{第二个 deep dive 块}}</td></tr>
+<tr><td>{{Y}}–{{Z}} min</td><td>{{第三个 deep dive 块}}</td></tr>
+<tr><td>最后 5 min</td><td>复述结论，约下次同步</td></tr>
+</tbody>
+</table>
+
+<hr/>
+
+<h1>四、Checklist</h1>
+
+<h2>A. {{第一类话题}}</h2>
+
+<checkbox done="false">{{要确认或拿到的具体事项 1}}</checkbox>
+<checkbox done="false">{{要确认或拿到的具体事项 2}}</checkbox>
+<checkbox done="false">{{要确认或拿到的具体事项 3}}</checkbox>
+
+<h2>B. {{第二类话题}}</h2>
+
+<checkbox done="false">{{事项 1}}</checkbox>
+<checkbox done="false">{{事项 2}}</checkbox>
+<checkbox done="false">{{事项 3}}</checkbox>
+
+<h2>C. {{开放性问题 / 需要对方判断的话题}}</h2>
+
+<callout emoji="❓" background-color="light-yellow" border-color="yellow">
+<p><b>Q1</b>　{{核心问题 1}}</p>
+<p><b>Q2</b>　{{核心问题 2}}</p>
+<p><b>Q3</b>　{{核心问题 3}}</p>
+</callout>
+
+<p>{{如需现场记录答案，提供一张空表}}</p>
+
+<table>
+<thead>
+<tr>
+<th background-color="light-gray">{{字段 1}}</th>
+<th background-color="light-gray">{{字段 2}}</th>
+<th background-color="light-gray">{{字段 3}}</th>
+</tr>
+</thead>
+<tbody>
+<tr><td></td><td></td><td></td></tr>
+<tr><td></td><td></td><td></td></tr>
+<tr><td></td><td></td><td></td></tr>
+</tbody>
+</table>
+
+<h2>D. {{第四类话题，例如资源 / 权限 / 联系人}}</h2>
+
+<p>{{给这类话题一句执行原则，例如 "每项当场打开链接验权限，缺则当场提工单"}}</p>
+
+<checkbox done="false"><b>{{资源 1}}</b>　{{要拿到的具体物件}}</checkbox>
+<checkbox done="false"><b>{{资源 2}}</b>　{{要拿到的具体物件}}</checkbox>
+<checkbox done="false"><b>{{资源 3}}</b>　{{要拿到的具体物件}}</checkbox>
+
+<h2>E. {{第五类话题，例如节奏 / 兜底 / 风险}}</h2>
+
+<checkbox done="false">{{风险或节奏问题 1}}</checkbox>
+<checkbox done="false">{{风险或节奏问题 2}}</checkbox>
+<checkbox done="false">{{风险或节奏问题 3}}</checkbox>
+
+<hr/>
+
+<h1>五、会议后 {{时间窗}} 内必做</h1>
+
+<callout emoji="⚠️" background-color="light-red" border-color="red">
+<p>{{说明为什么这个时间窗很关键，例如 "趁记忆新鲜、对方还在线，立即跑一遍 dry run，拖到周末就是八小时回合制"}}</p>
+</callout>
+
+<ol>
+<li seq="auto">{{自驱动作 1}}</li>
+<li seq="auto">{{自驱动作 2}}</li>
+<li seq="auto">{{自驱动作 3，通常是把会议中现场填写的内容沉淀到第六节存档}}</li>
+</ol>
+
+<hr/>
+
+<h1>六、结论存档</h1>
+
+<p>会后填，作为本次{{会议性质}}的最终交付物。</p>
+
+<table>
+<colgroup><col width="180"/><col width="420"/></colgroup>
+<thead>
+<tr><th background-color="light-gray">项</th><th background-color="light-gray">最终结果</th></tr>
+</thead>
+<tbody>
+<tr><td>{{要存档的关键产出 1}}</td><td></td></tr>
+<tr><td>{{要存档的关键产出 2}}</td><td></td></tr>
+<tr><td>{{要存档的关键产出 3}}</td><td></td></tr>
+<tr><td>{{要存档的关键产出 4}}</td><td></td></tr>
+<tr><td>{{要存档的关键产出 5}}</td><td></td></tr>
+<tr><td>下次同步时间与议题</td><td></td></tr>
+</tbody>
+</table>

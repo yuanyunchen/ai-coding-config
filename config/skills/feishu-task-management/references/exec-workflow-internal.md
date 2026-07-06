@@ -6,7 +6,7 @@
 > 边界:下面以旧 `mcp__feishu__*` / `LARK_TOOLS` 记述的白名单是**历史/能力地图事实**;官方 `lark-cli` 无白名单全可达,CLI 命令见同目录 `cli.md`。
 
 ## 0. 架构:技能在工作区,执行走官方 lark-cli
-- 飞书技能集独立隔离在 `~/Desktop/AI Workspace/feishu-mira-workspace/.claude/skills/`,由全局 `feishu-task-management` 技能(本文件同目录的 SKILL.md)索引;**不做全局软链**,不与通用技能混。
+- 飞书技能集独立隔离在 `feishu-task-management` 技能内部(写文档/作图组在 `subskills-workspace/`、官方 lark-* 在 `subskills/`、任务域在 `subskills-local/`),由本 skill(同目录 SKILL.md)索引;**不做全局注册**,不与通用技能混。
 - 真正读写云文档**默认走官方 `lark-cli`**(`@larksuite/cli`,见同目录 `cli.md`:三层命令 + 鉴权 + 自助发现 `schema`/`skills` + 踩坑表)。技能给规则/方法论,CLI 执行。**旧 `mcp__feishu__*` MCP 已退役**(正从 `.claude.json`/`.cursor`/`.codex` 移除),不再是执行路径——下面以 MCP 工具名记的坑当后端事实读,落地命令以 `cli.md` 为准。
 
 ## 5. 白名单边界(常用够,冷门需扩载)

@@ -29,7 +29,7 @@ description: "harness-management 内部 subskill(伪 skill,经其 update 模块�
 
 ## 边界
 
-- 上游副本（`~/.claude/plugins/**`、lark-cli 托管的 `~/.agents/skills/**`、Anthropic 官方 skill 目录形状）：不动结构、不重排；只允许头部薄层批注（如现状注/前置声明），且接受更新时被覆盖的风险要登账。
+- 上游副本（当前工具 home 的 `plugins/**`、lark-cli 托管的 `~/.agents/skills/**`、Anthropic 官方 skill 目录形状）：不动结构、不重排；只允许头部薄层批注（如现状注/前置声明），且接受更新时被覆盖的风险要登账。
 - 飞书域 skill 改动不再登同步台账(Mira 同步已冻结 2026-07-03,台账归档于 feishu-task-management `mira-sync-archive.md`)。
 
 ## 进阶心法(2026-07-02 自 writing-great-skills 并入;全文见 [`writing-great-skills.md`](writing-great-skills.md) + [`writing-great-skills-glossary.md`](writing-great-skills-glossary.md))

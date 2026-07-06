@@ -73,7 +73,7 @@ daily-report 的内核——**不偷懒、不凭印象、覆盖当天主要产�
 
 1. **用户口述清单(主线)**:用户触发「整理日报」时通常会列出今天做了哪几件事、附参考文件 / 产出文件链接。这是最权威的当天工作清单,以它为骨架。
 2. **产出文件(必读)**:对用户给的每个产出文件链接**实际回读**(见第二节),据此把每件事写准、写全——这是对抗"agent 记不住自己干过什么"的关键。
-3. **md 记录(补充)**:取今天日期 `{YYYY-MM-DD}`(`date +%F`),读当天的本地 record 文件 `~/.claude/projects/-Users-yuanyunchen/memory/timeline-records/{YYYY-MM-DD}.md`(由全局 `memory-management` 的 time 子模块维护,文件内按 `## {HHMM}` 时间排序),以及用户指明的其他 agent 写的记录文件。有就整合进来,没有也不阻塞。
+3. **md 记录(补充)**:取今天日期 `{YYYY-MM-DD}`(`date +%F`),读当天的本地 record 文件 `/Users/bytedance/Desktop/AI Workspace/Agentic Engineering/global-memory/memory/timeline-records/{YYYY-MM-DD}.md`(由全局 `memory-management` 的 time 子模块维护,文件内按 `## {HHMM}` 时间排序),以及用户指明的其他 agent 写的记录文件。有就整合进来,没有也不阻塞。
 4. **前几天的日报(跨天去重基准)**:整理前先扫一眼最近几天已发的日报(`Daily Report/WeekN/`,拉 outline + 必要 section 局部读即可,不必全文),记下已经报过的事。**当日去重**:今天的条目若与前几天重复(同一产出/进展已报过),不再重复列;确属同一主线的延续,只一句点明「承接 X、今天新进展是 Y」,不复述旧内容。
 
 > 三方都没有、用户也没口述 → 反问用户:今天做了哪些事、有哪些产出文件,便于整理。

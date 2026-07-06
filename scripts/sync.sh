@@ -1,7 +1,8 @@
 #!/bin/bash
 ################################################################################
-# 以 cursor | claude | codex 任一为 SOURCE，把统一的 agent 配置【增量】同步到
-# 另外两个工具。只添加 / 更新，绝不删除目标里已有的东西。
+# 以 cursor | claude | codex 任一为 SOURCE，把统一的 agent 配置同步到
+# 另外两个工具。默认【增量】：只添加 / 更新，绝不删除目标里已有的东西。
+# 加 --mirror 则【镜像】：目标与源对齐，删除源里没有的多余项（覆盖前备份）。
 #
 # 三个工具的部署目录（全局安装）：
 #   ~/.cursor   ~/.claude   ~/.codex
@@ -20,10 +21,15 @@
 #   - codex 的 skills/.system 是官方系统 skill，永不触碰。
 #   - hook 型 Claude 插件（manifest hookPlugins）不同步；各工具单独安装。
 #
-# 增量语义（关键）：
+# 增量语义（默认）：
 #   - 命令 / subagents：把 source 的文件拷到目标，同名覆盖更新，绝不删目标多出来的。
 #   - skills：rsync 不加 --delete，同名 skill 内更新/新增文件，绝不删除目标里多余文件。
 #   - AGENTS.md / AGENTS-cn.md：source 为准，覆盖目标（统一规则；覆盖前若内容不同会备份）。
+#
+# 镜像语义（--mirror）：
+#   - 命令 / subagents：删除目标里 source 没有的文件（hook 插件 IGNORE_COMMANDS 除外）。
+#   - skills / skills-disabled：rsync --delete；并删除目标里 source 未同步的整个 skill 目录。
+#   - 同步到 codex 时仍永不触碰 skills/.system；--mirror 也会同步 CODEX_IGNORE 里跳过的 skill。
 #
 # 路径改写：拷贝后把正文里的 ~/.cursor/  ~/.claude/  ~/.codex/ 统一改写成
 #   目标工具自己的根（如同步到 codex 则改写为 ~/.codex/），使 skill / 命令正文里
@@ -32,7 +38,8 @@
 # 撞名保护：覆盖已存在的 skill / AGENTS.md / AGENTS-cn.md 前，先备份到目标根下
 #   <tool>/.claude-sync-backup-<时间戳>/。
 #
-# 用法：./agent-config sync [--source cursor|claude|codex] [--dry-run] [--no-backup]
+# 用法：./agent-config sync [--source cursor|claude|codex] [--target cursor|claude|codex]
+#                           [--mirror] [--dry-run] [--no-backup]
 ################################################################################
 
 set -euo pipefail
@@ -47,6 +54,8 @@ IGNORE_COMMANDS=" ralph-loop.md cancel-ralph.md hookify.md configure.md list.md 
 CODEX_IGNORE_SKILLS=" skill-creator webpage-content-extraction "
 
 SOURCE="claude"
+TARGET_FILTER=""
+MIRROR=0
 DRY_RUN=0
 DO_BACKUP=1
 STAMP="$(date +%Y%m%d-%H%M%S)"
@@ -56,14 +65,24 @@ while [ $# -gt 0 ]; do
         --source)
             [ -n "${2:-}" ] || { echo "ERROR: --source 需要一个值 (cursor|claude|codex)"; exit 1; }
             SOURCE="$2"; shift 2 ;;
+        --target)
+            [ -n "${2:-}" ] || { echo "ERROR: --target 需要一个值 (cursor|claude|codex)"; exit 1; }
+            TARGET_FILTER="$2"; shift 2 ;;
+        --mirror)  MIRROR=1; shift ;;
         --dry-run)   DRY_RUN=1; shift ;;
         --no-backup) DO_BACKUP=0; shift ;;
-        -h|--help)   sed -n '2,49p' "$0"; exit 0 ;;
+        -h|--help)   sed -n '2,52p' "$0"; exit 0 ;;
         *) echo "ERROR: 未知参数 '$1'（用 -h 查看用法）"; exit 1 ;;
     esac
 done
 
 case "$SOURCE" in cursor|claude|codex) ;; *) echo "ERROR: --source 只能是 cursor|claude|codex"; exit 1 ;; esac
+case "$TARGET_FILTER" in
+    "") ;;
+    cursor|claude|codex)
+        [ "$TARGET_FILTER" = "$SOURCE" ] && { echo "ERROR: --target 不能与 --source 相同"; exit 1; } ;;
+    *) echo "ERROR: --target 只能是 cursor|claude|codex"; exit 1 ;;
+esac
 
 # --- 工具属性 ---
 base_dir()  { echo "$HOME/.$1"; }                                  # 部署根
@@ -75,9 +94,55 @@ SRC_BASE="$(base_dir "$SOURCE")"
 
 ALL="cursor claude codex"
 TARGETS=""
-for t in $ALL; do [ "$t" = "$SOURCE" ] || TARGETS="$TARGETS $t"; done
+for t in $ALL; do
+    [ "$t" = "$SOURCE" ] && continue
+    [ -n "$TARGET_FILTER" ] && [ "$t" != "$TARGET_FILTER" ] && continue
+    TARGETS="$TARGETS $t"
+done
+[ -n "$TARGETS" ] || { echo "ERROR: 没有可同步的目标（检查 --source / --target）"; exit 1; }
 
 run() { if [ "$DRY_RUN" -eq 1 ]; then echo "  [dry-run] $*"; else eval "$*"; fi; }
+
+should_sync_skill() {
+    local name="$1" tgt="$2"
+    [ "$name" = ".system" ] && return 1
+    case "$IGNORE_SKILLS" in *" $name "*) return 1 ;; esac
+    if [ "$tgt" = codex ] && [ "$MIRROR" -eq 0 ]; then
+        case "$CODEX_IGNORE_SKILLS" in *" $name "*) return 1 ;; esac
+    fi
+    return 0
+}
+
+backup_path() {
+    local bk="$1" sub="$2" name="$3"
+    run "mkdir -p \"$bk/$sub\" && cp -R \"$4\" \"$bk/$sub/$name\""
+}
+
+prune_skill_dir() {
+    local src_dir="$1" tgt_dir="$2" bk_sub="$3"
+    [ "$MIRROR" -eq 1 ] || return 0
+    [ -d "$tgt_dir" ] || return 0
+    for entry in "$tgt_dir"/*; do
+        [ -e "$entry" ] || continue
+        local name; name=$(basename "$entry")
+        [ "$name" = ".system" ] && continue
+        should_sync_skill "$name" "$TGT" || continue
+        local found=0
+        if [ -d "$src_dir" ]; then
+            for src_entry in "$src_dir"/*; do
+                [ -e "$src_entry" ] || continue
+                [ "$(basename "$src_entry")" = "$name" ] && { found=1; break; }
+            done
+        fi
+        if [ "$found" -eq 0 ]; then
+            if [ "$DO_BACKUP" -eq 1 ]; then
+                backup_path "$BK" "$bk_sub" "$name" "$entry"
+            fi
+            run "rm -rf \"$entry\""
+            echo "  (删除多余 ${bk_sub}/${name}/)"
+        fi
+    done
+}
 
 # 把 path 下 .md/.py 正文里的三种工具根，统一改写成 dest 工具的根
 rewrite_paths() {
@@ -92,9 +157,14 @@ rewrite_paths() {
         ' 2>/dev/null || true
 }
 
-echo "同步 agent 配置（增量，只加不删）"
+if [ "$MIRROR" -eq 1 ]; then
+    echo "同步 agent 配置（镜像，与源完全对齐）"
+else
+    echo "同步 agent 配置（增量，只加不删）"
+fi
 echo "  源:   $SOURCE ($SRC_BASE)"
 echo "  目标: $(echo $TARGETS)"
+[ -n "$TARGET_FILTER" ] && echo "  (仅同步到: $TARGET_FILTER)"
 [ "$DRY_RUN" -eq 1 ] && echo "  (dry-run：不写任何文件)"
 
 for TGT in $TARGETS; do
@@ -146,15 +216,30 @@ for TGT in $TARGETS; do
     SRC_CMD="$SRC_BASE/$(cmd_dir "$SOURCE")"
     TGT_CMD="$TGT_BASE/$(cmd_dir "$TGT")"
     N=0
+    SYNCED_CMDS=""
     if [ -d "$SRC_CMD" ]; then
         run "mkdir -p \"$TGT_CMD\""
         for f in "$SRC_CMD"/*.md; do
             [ -f "$f" ] || continue
             base=$(basename "$f")
             case "$IGNORE_COMMANDS" in *" $base "*) echo "  (跳过 ${base}: hook 插件，仅 Claude)"; continue ;; esac
+            SYNCED_CMDS="$SYNCED_CMDS $base "
             run "cp \"$f\" \"$TGT_CMD/$(basename "$f")\""
             rewrite_paths "$TGT_CMD/$(basename "$f")" "$TGT"
             echo "  $(basename "$f") -> $TGT_CMD/"; N=$((N+1))
+        done
+    fi
+    if [ "$MIRROR" -eq 1 ] && [ -d "$TGT_CMD" ]; then
+        for f in "$TGT_CMD"/*.md; do
+            [ -f "$f" ] || continue
+            base=$(basename "$f")
+            case "$IGNORE_COMMANDS" in *" $base "*) continue ;; esac
+            case "$SYNCED_CMDS" in *" $base "*) continue ;; esac
+            if [ "$DO_BACKUP" -eq 1 ]; then
+                backup_path "$BK" "commands" "$base" "$f"
+            fi
+            run "rm -f \"$f\""
+            echo "  (删除多余命令 ${base})"; N=$((N+1))
         done
     fi
     [ "$N" -eq 0 ] && echo "  (无)"
@@ -163,13 +248,28 @@ for TGT in $TARGETS; do
     echo "[agents]"
     if has_agents "$SOURCE" && has_agents "$TGT"; then
         N=0
+        SYNCED_AGENTS=""
         if [ -d "$SRC_BASE/agents" ]; then
             run "mkdir -p \"$TGT_BASE/agents\""
             for f in "$SRC_BASE/agents"/*.md; do
                 [ -f "$f" ] || continue
+                base=$(basename "$f")
+                SYNCED_AGENTS="$SYNCED_AGENTS $base "
                 run "cp \"$f\" \"$TGT_BASE/agents/$(basename "$f")\""
                 rewrite_paths "$TGT_BASE/agents/$(basename "$f")" "$TGT"
                 echo "  $(basename "$f") -> $TGT_BASE/agents/"; N=$((N+1))
+            done
+        fi
+        if [ "$MIRROR" -eq 1 ] && [ -d "$TGT_BASE/agents" ]; then
+            for f in "$TGT_BASE/agents"/*.md; do
+                [ -f "$f" ] || continue
+                base=$(basename "$f")
+                case "$SYNCED_AGENTS" in *" $base "*) continue ;; esac
+                if [ "$DO_BACKUP" -eq 1 ]; then
+                    backup_path "$BK" "agents" "$base" "$f"
+                fi
+                run "rm -f \"$f\""
+                echo "  (删除多余 agent ${base})"; N=$((N+1))
             done
         fi
         [ "$N" -eq 0 ] && echo "  (无)"
@@ -185,12 +285,17 @@ for TGT in $TARGETS; do
         [ -d "$src_dir" ] || return 0
         run "mkdir -p \"$tgt_dir\""
         local bk_sub; bk_sub="$(basename "$tgt_dir")"
+        local rsync_delete=""
+        [ "$MIRROR" -eq 1 ] && rsync_delete="--delete"
         for entry in "$src_dir"/*; do
             [ -e "$entry" ] || continue
             NAME=$(basename "$entry")
-            [ "$NAME" = ".system" ] && continue
-            case "$IGNORE_SKILLS" in *" $NAME "*) continue ;; esac
-            if [ "$TGT" = codex ]; then case "$CODEX_IGNORE_SKILLS" in *" $NAME "*) echo "  (跳过 ${NAME}: codex 不适用)"; continue ;; esac; fi
+            should_sync_skill "$NAME" "$TGT" || {
+                if [ "$TGT" = codex ] && [ "$MIRROR" -eq 0 ]; then
+                    case "$CODEX_IGNORE_SKILLS" in *" $NAME "*) echo "  (跳过 ${NAME}: codex 不适用)" ;; esac
+                fi
+                continue
+            }
             SRC_REAL="$(cd "$entry" 2>/dev/null && pwd -P || true)"
             [ -z "$SRC_REAL" ] && continue
             TARGET="$tgt_dir/$NAME"
@@ -201,22 +306,27 @@ for TGT in $TARGETS; do
                 BK_N=$((BK_N+1))
             fi
             run "mkdir -p \"$TARGET\""
-            run "rsync -aL --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' \"$SRC_REAL/\" \"$TARGET/\""
+            run "rsync -aL $rsync_delete --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' \"$SRC_REAL/\" \"$TARGET/\""
             rewrite_paths "$TARGET" "$TGT"
             echo "  $bk_sub/$NAME/ -> $TARGET/"; N=$((N+1))
         done
+        prune_skill_dir "$src_dir" "$tgt_dir" "$bk_sub"
     }
     sync_skill_dir "$SRC_BASE/skills" "$TGT_BASE/skills"
     sync_skill_dir "$SRC_BASE/skills-disabled" "$TGT_BASE/skills-disabled"
     if [ "$TGT" = codex ] && [ -d "$SRC_BASE/skills/.system" ]; then
         run "mkdir -p \"$TGT_BASE/skills/.system\""
         run "rsync -aL --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' \"$SRC_BASE/skills/.system/\" \"$TGT_BASE/skills/.system/\""
-        echo "  .system/ -> $TGT_BASE/skills/.system/ (codex 官方)"
+        echo "  .system/ -> $TGT_BASE/skills/.system/ (codex 官方，不加 --delete)"
     fi
     [ "$N" -eq 0 ] && echo "  (无可同步的 skill)"
     [ "$BK_N" -gt 0 ] && echo "  (覆盖前备份了 $BK_N 个同名旧 skill -> ${BK##*/}/)"
 done
 
 echo ""
-echo "完成。以 $SOURCE 为源，已增量同步到:$(echo " $TARGETS")。"
+if [ "$MIRROR" -eq 1 ]; then
+    echo "完成。以 $SOURCE 为源，已镜像同步到:$(echo " $TARGETS")。"
+else
+    echo "完成。以 $SOURCE 为源，已增量同步到:$(echo " $TARGETS")。"
+fi
 [ "$DRY_RUN" -eq 1 ] && echo "（dry-run：未写任何文件，去掉 --dry-run 实际执行）"

@@ -1,5 +1,7 @@
 model = "gpt-5.5"
-model_reasoning_effort = "medium"
+model_context_window = 1050000
+model_auto_compact_token_limit = 900000
+model_reasoning_effort = "high"
 personality = "pragmatic"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"

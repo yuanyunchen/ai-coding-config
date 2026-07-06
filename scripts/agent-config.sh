@@ -18,7 +18,7 @@
 # 示例：
 #   ./agent-config deploy --dry-run
 #   ./agent-config pull
-#   ./agent-config sync --source cursor
+#   ./agent-config sync --source claude --mirror --target codex
 ################################################################################
 
 set -euo pipefail

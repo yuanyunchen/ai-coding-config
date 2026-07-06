@@ -25,7 +25,7 @@ description: 用户要把数据/指标画成图表、做可视化、生成 SVG �
 纯 Python 标准库,无第三方依赖。读 JSON,写一张内嵌完整样式的 SVG。
 
 ```bash
-python3 "/Users/yuanyunchen/.claude/skills/feishu-task-management/subskills-workspace/chart-gen/scripts/render_chart.py" \
+python3 "/Users/bytedance/.codex/skills/feishu-task-management/subskills-workspace/chart-gen/scripts/render_chart.py" \
   --type bar \
   --data '{"columns":["月份","销售额"],"data":[{"月份":"1月","销售额":120},{"月份":"2月","销售额":150}]}' \
   --title "月度销售额" --out chart.svg

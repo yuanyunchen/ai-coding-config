@@ -36,7 +36,7 @@
 → 全文见 `references/exec-workflow-internal.md` §6.3(skills-first 并声明 / find-skills / preflight / 搜索带引用 / 材料自取 / 产出默认飞书 docx)。
 
 ### 6.4 飞书域补充备忘(全局规则见 AGENTS.md 沟通板块 + Memory/Harness 板块,本节只放全局没有的增量)
-- **长任务 / 任务文档组织**:唯一权威 = 全局 `workspace-management` skill(`~/.claude/skills/workspace-management/`);`long-task-workflow` 已于 2026-07-01 按用户指令禁用(overhead 大、文档分散;不激活,恢复见其 `SKILL.md.disabled`)。
+- **长任务 / 任务文档组织**:唯一权威 = 全局 `workspace-management` skill(`~/.codex/skills/workspace-management/`);`long-task-workflow` 已于 2026-07-01 按用户指令禁用(overhead 大、文档分散;不激活,恢复见其 `SKILL.md.disabled`)。
 - **响应速度**:用户问问题时**能直接回答就不要调用工具或查 context**,实在不确定再查文件。
 - **记录方法论**:把需求/偏好/准则/坑沉淀为记忆或写入 skill 时,要**完整且合理抽象,保留情境/原因/行动三要素**,在完整与抽象间取平衡,避免过度简化导致误用(与全局 Harness 板块红线「最小改动、不简化到失真」同向;三要素为本域补充)。
 

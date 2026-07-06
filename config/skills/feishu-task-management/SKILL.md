@@ -63,7 +63,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 
 按需路由用。**具体子技能不预加载**,按本目录用文件路径 `Read` 按需打开它的 `SKILL.md`(及其 `references/`)再干活。
 
-> 写文档 / 作图这组子技能(原飞书 workspace 子技能)已内迁本 skill 下 `subskills-workspace/`,不再远程引用工作区(旧 `feishu-mira-workspace/` 已归档)。用法同 lark-*:`Read subskills-workspace/<域>/SKILL.md`(及其 `references/`)再干活。下表「位置」列 `subskills-workspace/…` 均相对本 skill 根 `~/.claude/skills/feishu-task-management/`。通用工具(非飞书专属)单列一组,与飞书域分开。
+> 写文档 / 作图这组子技能(原飞书 workspace 子技能)已内迁本 skill 下 `subskills-workspace/`,不再远程引用工作区(旧 `feishu-mira-workspace/` 已归档)。用法同 lark-*:`Read subskills-workspace/<域>/SKILL.md`(及其 `references/`)再干活。下表「位置」列 `subskills-workspace/…` 均相对本 skill 根 `~/.codex/skills/feishu-task-management/`。通用工具(非飞书专属)单列一组,与飞书域分开。
 
 ### 写文档 / 内容
 | 技能 | 一句话用途 | 位置(SKILL.md) |
@@ -115,7 +115,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 | `lark-workflow-standup-report` | 指定日期日程 + 未完成任务摘要 |
 
 ### 飞书任务域本地伪 skill(`subskills-local/`)
-> **构建规则(钉死)**:凡飞书任务域的 skill,一律建成本 skill 内部伪 skill——物理放 `subskills-local/<skill>/` + 在本表登一行路由;**禁止**注册为 `~/.claude/skills/` 直属全局 skill(新建走 harness-management update 流程)。用法同 lark-*:`Read subskills-local/<域>/SKILL.md`,触发词/边界在各自 frontmatter。
+> **构建规则(钉死)**:凡飞书任务域的 skill,一律建成本 skill 内部伪 skill——物理放 `subskills-local/<skill>/` + 在本表登一行路由;**禁止**注册为 `~/.codex/skills/` 直属全局 skill(新建走 harness-management update 流程)。用法同 lark-*:`Read subskills-local/<域>/SKILL.md`,触发词/边界在各自 frontmatter。
 
 | 伪 skill | 管什么(边界) |
 |---|---|
@@ -127,12 +127,12 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 > 已删/已迁物(long-task-workflow、choice-card、daily-report 拆分、frontend-design-pro 并入 frontend-pipeline)见 `mira-sync-archive.md` §1 沿革台账,不再占本表。
 | 技能 | 一句话用途 | 位置 |
 |---|---|---|
-| `workspace-management` | Agent 工作区文件系统唯一权威(双侧结构:本地 tasks/<kebab名> + 飞书 Task/<中文名>);建任务夹、收尾、归档、判断「这是什么任务」走它。 | `~/.claude/skills/workspace-management/SKILL.md`(全局) |
-| `harness-management` | harness 层(skill/command/hook/规则)一切变更的唯一入口;沉淀偏好/流程走其 update 流程。 | `~/.claude/skills/harness-management/SKILL.md`(全局) |
+| `workspace-management` | Agent 工作区文件系统唯一权威(双侧结构:本地 tasks/<kebab名> + 飞书 Task/<中文名>);建任务夹、收尾、归档、判断「这是什么任务」走它。 | `~/.codex/skills/workspace-management/SKILL.md`(全局) |
+| `harness-management` | harness 层(skill/command/hook/规则)一切变更的唯一入口;沉淀偏好/流程走其 update 流程。 | `~/.codex/skills/harness-management/SKILL.md`(全局) |
 | `feishu-daily-report` | **整理日报**(飞书域):口述清单 + 回读产出 → compile 成飞书日报落 Drive `Daily Report/WeekN`;「记录日报」走全局 `memory-management` 时间索引库。 | `subskills-workspace/feishu-daily-report/SKILL.md` |
 
 ### 其他全局技能
-非飞书任务回全局技能体系(`~/.claude/skills/` 注册表,按各自 description 触发),不经本入口、本表不复刻。
+非飞书任务回全局技能体系(`~/.codex/skills/` 注册表,按各自 description 触发),不经本入口、本表不复刻。
 
 ## 注意
 - 这些飞书子技能源文件只在工作区一份(非全局软链)。Codex/Cursor 在工作区目录下工作时,读工作区的 `AGENTS.md` 获得同样索引。

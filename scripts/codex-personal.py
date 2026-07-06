@@ -19,6 +19,8 @@ from typing import Any
 # config.toml 中可跨设备移植的个性化 key
 MANAGED_SCHEMA: dict[str, Any] = {
     "model": True,
+    "model_context_window": True,
+    "model_auto_compact_token_limit": True,
     "model_reasoning_effort": True,
     "personality": True,
     "approval_policy": True,

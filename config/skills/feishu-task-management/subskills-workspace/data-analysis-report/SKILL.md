@@ -7,7 +7,7 @@ description: "字节内网数据分析项目的端到端工作流:iDA 取数 →
 
 > 「在字节做一个数据分析交付」的总编排:取数 → 分析 → 报告 → 飞书交付 → 托管。子能力**引用既有 skill,不在此重复**;本 skill 装 ① 编排顺序 ② 本域口径/行文/语言/质量/检查要求 ③ 两份必读成稿模版。
 >
-> **子能力取用注意**:`ida-presto-query` / `analytical-report` / `bytedance-internal-hosting` 现为 `feishu-task-management` 的**内部伪 skill**(已摘除全局注册,`Skill()` 直调不到)——经飞书入口按需 `Read ~/.claude/skills/feishu-task-management/subskills-local/<域>/SKILL.md`(派子智能体时把该路径写进 prompt)。
+> **子能力取用注意**:`ida-presto-query` / `analytical-report` / `bytedance-internal-hosting` 现为 `feishu-task-management` 的**内部伪 skill**(已摘除全局注册,`Skill()` 直调不到)——经飞书入口按需 `Read ~/.codex/skills/feishu-task-management/subskills-local/<域>/SKILL.md`(派子智能体时把该路径写进 prompt)。
 
 ## 0 · 何时用 + 必读模版
 - **何时用**:mentor/老板派的离线数据分析(如「search vs pixel city 信号增量」),要产出可决策报告 + 可分享链接。动手前先查 `feishu-memory`(`~/feishu-memory/bin/bm tool search-notes "<问题>"`)拿口径/背景/历史结论,别重复研究。
@@ -60,7 +60,7 @@ description: "字节内网数据分析项目的端到端工作流:iDA 取数 →
 
 ## 5 · 飞书交付 → 用 `feishu-task-management`(官方 lark-cli)
 - 飞书 docx 是**原生在线文档,本身即可分享链接**(无需 HTML 托管 / Goofy / Preview 渲染那一套);章序/图序/结论行与 §0 模版一致。
-- **lark-cli 执行 + 同步坑见全局** `~/.claude/skills/feishu-task-management/memory.md`(block_move OT 冲突→create+delete;raw-dump 验真;权限/分享不自动改)。
+- **lark-cli 执行 + 同步坑见全局** `~/.codex/skills/feishu-task-management/memory.md`(block_move OT 冲突→create+delete;raw-dump 验真;权限/分享不自动改)。
 
 ## 6 · 收尾 → 用 `/workspace-checkpoint`(task-workspace v2;原 `record` 已于 2026-07-02 禁用)。
 

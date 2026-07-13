@@ -11,6 +11,7 @@
 - [ ] 装 Cursor，登录，打开一次
 - [ ] 装 Claude Code，登录，运行一次 `claude`
 - [ ] 装 Codex，登录，运行一次 `codex`
+- [ ] 装 `bytedcli`，完成字节内部账号登录
 - [ ] 装 `ccstatusline` + `jq`（Claude Code 状态栏显示）
 - [ ] 克隆本仓库，执行 `./agent-config deploy`
 - [ ] 克隆 `global-memory`，运行 `./bin/setup`（见 [global-memory README](../global-memory/README.md)）
@@ -50,6 +51,22 @@ brew install jq          # context-tokens 部件依赖；已有可跳过
 ```bash
 npm install -g @openai/codex    # 注意是 @openai/codex，需 Node 22+
 codex           # 选 Sign in with ChatGPT（Plus/Pro 等），或用 API Key
+```
+
+### bytedcli
+
+三工具共享同一份全局 CLI；`deploy` 负责同步 skill，不重复安装二进制。
+
+```bash
+npm install -g @bytedance-dev/bytedcli@latest --registry https://bnpm.byted.org
+bytedcli auth login
+bytedcli --json auth status
+```
+
+若安装时 Puppeteer 下载浏览器失败，可跳过该可选下载后重试：
+
+```bash
+PUPPETEER_SKIP_DOWNLOAD=1 npm install -g @bytedance-dev/bytedcli@latest --registry https://bnpm.byted.org
 ```
 
 ---

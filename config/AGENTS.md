@@ -72,11 +72,11 @@ Building on "Writing & Expression", replies and reports written for the user add
 
 ## 3. Tools
 
-### Browser via Chrome Plugin, Never Computer Control
+### Browser: Try What Works; Never Ask; Never Computer Control
 
-> All web operations go through the Chrome extension; never screen control for the web.
+> Pick a working browser backend yourself; escalate only when all are blocked. Never screen-control the web.
 
-Any web/browser task — opening pages, reading rendered content, screenshots, clicking, form filling — uses the Chrome plugin (claude-in-chrome MCP, `mcp__claude-in-chrome__*`). Do not use computer-use (`mcp__computer-use__*`) on browsers: it is read-only there, hangs ~5 minutes on unanswered OS permission dialogs (looks frozen), and is slower and flakier. Chrome plugin not connected → stop and say so; do not fall back to computer control. computer-use is reserved for native desktop apps. When dispatching browser/visual tasks to subagents, write this prohibition into their prompt explicitly.
+When a web/browser task needs automation (open pages, read rendered content, screenshots, click, fill forms): try the browser backends available in this session (Chrome plugin `mcp__claude-in-chrome__*`, agent-browser MCP, Cursor/IDE browser tools, or equivalents) and use the first that works. Never ask the user which browser or backend to use — try yourself. If one fails or is blocked, try the others before stopping; report to the user only after every available backend is blocked or unavailable. Do not fall back to computer-use (`mcp__computer-use__*`) for browsers: it is read-only on the web, hangs ~5 minutes on unanswered OS permission dialogs (looks frozen), and is slower and flakier; computer-use stays for native desktop apps only. When dispatching browser/visual tasks to subagents, put this rule in their prompt explicitly.
 
 ---
 

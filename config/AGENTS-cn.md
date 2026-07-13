@@ -72,11 +72,11 @@
 
 ## 三、工具 (Tools)
 
-### 浏览器走 Chrome 插件,不用电脑控制 (Browser via Chrome Plugin)
+### 浏览器:哪个能用用哪个;永不询问;不用电脑控制 (Browser: Try What Works)
 
-> 任何网页操作都用 Chrome 扩展,绝不用屏幕控制做 web。
+> 自己选能跑通的浏览器后端;全部 block 再向用户反馈。绝不用屏幕控制做 web。
 
-任何网页/浏览器任务——开页、读渲染后内容、截图、点击、填表——一律用 Chrome 插件(claude-in-chrome MCP,`mcp__claude-in-chrome__*`)。不要用 computer-use(`mcp__computer-use__*`)操作浏览器:它对浏览器只读、OS 授权弹窗无响应会挂约 5 分钟(看着像卡死)、更慢更不稳。Chrome 插件没连上 → 停下并说明,不要退回电脑控制。computer-use 只留给原生桌面应用。把浏览器/视觉任务派给子智能体时,在其 prompt 里明确写上这条禁令。
+当网页/浏览器任务需要自动化(开页、读渲染后内容、截图、点击、填表)时:尝试本会话可用的浏览器后端(Chrome 插件 `mcp__claude-in-chrome__*`、agent-browser MCP、Cursor/IDE 浏览器工具或等价物),哪个能用用哪个。永远不要询问用户用哪个浏览器/后端——自己尝试。某一个失败或被 block → 先测其他后端再停;仅当全部可用后端都 block/不可用时才向用户反馈。不要退回 computer-use(`mcp__computer-use__*`)操作浏览器:它对浏览器只读、OS 授权弹窗无响应会挂约 5 分钟(看着像卡死)、更慢更不稳;computer-use 只留给原生桌面应用。把浏览器/视觉任务派给子智能体时,在其 prompt 里明确写上本条。
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: harness-management
-description: "Harness 层(skill/command/agent/hook/全局规则/settings)一切新增与修改的唯一入口;二模式(none 缺省/auto),recall·update 两例程,内部 subskills 承载写作规范。触发:用户表达持久化意图时——记下来、以后都这样、下次直接用、别再、保存为规则/模版/skill、改 skill、加规则、调 AGENTS.md、建 command/hook/subagent、沉淀、迭代 skill;或长对话/压缩后需重读核心规则防漂移。边界:记忆桶内容(事实/偏好)转 memory-management。"
+description: "Harness 层(skill/command/agent/hook/全局规则/settings)一切新增与修改的唯一入口;二模式(none 缺省/auto),recall·update 两例程,内部 subskills 承载写作与三源同步。触发:记下来、以后都这样、下次直接用、别再、保存为规则/模版/skill、改 skill、加规则、调 AGENTS.md、建 command/hook/subagent、沉淀、迭代 skill;同步三源、sync skills、deploy harness、agent-config;或长对话/压缩后重读核心规则防漂移。边界:记忆桶转 memory-management。"
 ---
 
 # harness-management — Harness 层管理(规范权威 + 模式 + 子模块)
@@ -40,6 +40,7 @@ recall / update 是内置子模块(`modules/`):手动 = 对话指令或 /project
 | 怎么写 SKILL.md(结构/description 触发预算/拆分纪律) | `subskills/skill-authoring/SKILL.md`(+ 同目录 writing-great-skills 两篇进阶) |
 | 建新 skill 的脚手架、跑 eval、description 调优 | `subskills/skill-creator/SKILL.md`(原全局 skill-creator,整目录收编) |
 | 写/审 AGENTS.md、CLAUDE.md 等 agent 指导文件 | `subskills/agent-file/SKILL.md`(原全局 write-agent-file) |
+| 三源同步 / deploy / pull / links / 从 GitHub 更新推三工具(任意 cwd) | `subskills/multi-source-sync/SKILL.md` |
 | hook / 权限 / settings.json / env | 内置 update-config skill(session 内置,外部执行层;hook 过目后才落) |
 | 工作区 .agent/ 能力物的结构与登记规范 | workspace-management `references/capability-layer.md`(执行规范在彼;沉淀决策在本 skill) |
 

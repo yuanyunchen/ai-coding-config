@@ -20,15 +20,7 @@
    | command(当前工具 home 的 `commands/` 或项目 agent 配置目录下的 `commands/`) | 薄 command 惯例:只引用 skill、Read 模块执行(参照 /project-* 系列) |
    | 工作区 .agent/ 能力物 | workspace-management `references/capability-layer.md` 的结构与登记规范 |
    | 飞书域 skill | 建成 feishu-task-management 内部伪 skill(其 §2 构建规则),禁注册全局 |
-8. **验证登记**:引用面 sweep(旧名/旧路径 grep 清残留,历史日志不回改);触发词查重(新 description vs 既有注册表);改动一行留痕(全局级 → 枢纽定位卡/TIMELINE 由 memory-management 按其模式处理;工作区级 → MEMORY.md 能力层路由表同笔更新);向用户回简短清单:落了什么/哪层/冲突如何消解。
+   | 三源同步 / deploy / pull / links / GitHub→三 live | `../subskills/multi-source-sync/SKILL.md`(任意 cwd 调 `$REPO/agent-config`;本机 `config-links` 保持软链) |
+8. **验证登记**:引用面 sweep(旧名/旧路径 grep 清残留,历史日志不回改);触发词查重(新 description vs 既有注册表);改动一行留痕(全局级 → 枢纽定位卡/TIMELINE 由 memory-management 按其模式处理;工作区级 → MEMORY.md 能力层路由表同笔更新);全局级改动若需三工具可见 → 同笔走 `../subskills/multi-source-sync/SKILL.md`;向用户回简短清单:落了什么/哪层/冲突如何消解。
 
-## 多源 harness 同步协议
-
-当用户要求从 GitHub 更新 harness / skills / rules 并同步到 Claude Code、Codex、Cursor 三源时,按以下顺序执行:
-
-1. **下载最新文件**:先 `fetch`/拉取 GitHub 最新引用到配置源仓库,不要直接覆盖 live runtime。
-2. **看冲突**:对比 GitHub 版本、配置源仓库本地改动、三个 live runtime(`~/.claude`/`~/.codex`/`~/.cursor`)的差异;识别哪些是当前 harness 更新必须保留的本地化改动(如路径、工具差异、用户未提交改动)。
-3. **报告判断**:向用户报告冲突面和拟处理策略;若用户已明确授权“冲突自己看着改”,可继续但必须保留当前 harness 的有效更新,不回退到旧路径/旧规则。
-4. **解决冲突**:在配置源仓库内完成合并/路径本地化/必要迁移;再同步到当前 live runtime 并验证目录、触发入口、路径引用。
-5. **同步 GitHub**:提交并 push 配置源仓库;如果同时更新全局记忆,也提交并 push global-memory。
-6. **同步三源**:把最终版本同步到 Claude Code(`~/.claude`)、Codex(`~/.codex`)、Cursor(`~/.cursor`);每个源按自身根路径重写引用,同步前保留备份,同步后检查三源都有目标文件且无错误工具根路径。
+全局 harness 改完要推 Claude/Cursor/Codex、或用户只要「同步三源 / deploy / links」时:直接 Read 并执行 `../subskills/multi-source-sync/SKILL.md`(协议与 CLI 摘要在彼,此处不重复)。

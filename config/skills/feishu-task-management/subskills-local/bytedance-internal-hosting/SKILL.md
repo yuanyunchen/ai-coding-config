@@ -8,7 +8,7 @@ description: "把 HTML 报告/网页/交互产物托管到字节内网分享。�
 **一句话**:要**可浏览的网页** → **Goofy 快速网页预览**(zip → 静态站 + gf-preview URL);要**存档/飞书内分享** → 飞书云盘文件用 **Preview** 渲染;**Mira 不能托管网页**(只会 import 成降级 docx)。Chrome 插件 `file_upload` 拒绝项目路径 → 用**文件注入技法**绕过。
 
 ## 何时用本 skill
-手上有个 HTML(报告 / dashboard / 落地页)要给同事一个**能打开的链接**,或要在飞书里**存档分享**。一切浏览器操作走 **claude-in-chrome 插件**(全局规则「浏览器走 Chrome 插件」,绝不 computer-use)。
+手上有个 HTML(报告 / dashboard / 落地页)要给同事一个**能打开的链接**,或要在飞书里**存档分享**。浏览器操作优先 **claude-in-chrome**(内网 SPA);失败按 AGENTS Try What Works 试其他后端。绝不用 computer-use。
 
 ---
 

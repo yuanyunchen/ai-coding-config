@@ -93,9 +93,9 @@ When a web/browser task needs automation (open pages, read rendered content, scr
 
 > Three long-term stores: project locator / time index / knowledge retrieval.
 
-- **Lightweight recall (no skill load needed)**: hub = `~/.claude/projects/-Users-yuanyunchen/memory/MEMORY.md`; when history / project location / work knowledge is needed, Read it and jump to the right store by question type; single-layer index, follow only named pointers. Working outside ~: read the hub first, then take what's relevant.
+- **Lightweight recall (no skill load needed)**: hub = runtime softlink to `global-memory/hub/MEMORY.md` (after `bin/setup`, typically `~/.claude/projects/-Users-$(whoami)/memory/MEMORY.md`; resolve via `memory-management` §路径解析 — never hardcode a username). When history / project location / work knowledge is needed, Read it and jump to the right store by question type; single-layer index, follow only named pointers. Working outside ~: read the hub first, then take what's relevant.
 - **Update judgment**: information worth recording globally appears (project state finalized, cross-task invariant fact, user preference) → invoke memory-management and run its update routine; modes and trigger criteria live inside the skill.
-- **auto-memory dual-track, fixed**: the per-project auto-memory guidance injected each session does not change the destination — memories always go to the global hub (`~/.claude/projects/-Users-yuanyunchen/memory/`); if a memory file must live in a project directory, register a one-line index in the hub `MEMORY.md` to prevent memory splits.
+- **auto-memory dual-track, fixed**: the per-project auto-memory guidance injected each session does not change the destination — memories always go to the global hub (`global-memory/hub/` via the runtime softlink above); if a memory file must live in a project directory, register a one-line index in the hub `MEMORY.md` to prevent memory splits.
 - **When to load**: the update judgment above fires; deliberate deep recall; /project-* commands.
 
 ## 6. Harness Section (behavior-constraint layer; change mechanism = `harness-management` skill)

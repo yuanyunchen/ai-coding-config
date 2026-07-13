@@ -2,7 +2,7 @@
 
 > 来源:原 `memory.md` §7(IM 读消息:能定位读不了正文)+ §8(浏览器开飞书网页版兜底 SOP + row 数据中心渲染空白)。逐字保真搬运。
 > 取用场景:读用户私聊/机器人不在的群的消息 → 结论直接指向「唯一解 = Chrome 插件」,§7→§8 是「问题→唯一解」连续叙事。
-> 边界:下面以旧 `mcp__feishu__*` / `useUAT:true` 记述的是**飞书后端 IM 能力事实**;CLI 命令见同目录 `cli.md`,对齐全局规则「浏览器走 Chrome 插件」。
+> 边界:下面以旧 `mcp__feishu__*` / `useUAT:true` 记述的是**飞书后端 IM 能力事实**;CLI 命令见同目录 `cli.md`。全局浏览器行为 = AGENTS「Try What Works」;本节写的是飞书网页版场景下 Chrome 插件常为唯一可行路径的**域执行事实**。
 
 > ⚠ **域名说明(2026-06-23 核真,M-1)**:本文出现两个飞书网页版域 —— bare `bytedance.larkoffice.com`(走 `accounts.feishu.cn`,CN-routed)与 `bytedance.us.larkoffice.com`(走 `accounts-us.feishu.cn`,US-routed),**实测二者均 HTTP 200 可达,是同一 `bytedance` 租户的两个有效网页入口域,不是矛盾、不是新旧**(API 租户域是第三维度,`lark-cli doctor` 报 `open.feishu.cn`)。原文记录的两个域**一律保留原值**;开网页时按实际能进的那个用,拿不准就两个都试,别据「方向性结论」批量替换。
 
@@ -15,12 +15,12 @@
 - **`im_v1_message_list` 不认 `useUAT`**:传了也按 **app/bot 身份**执行 → 只能读**机器人所在**的会话。机器人不在用户任何私聊/群里 → 报 `230002 "Bot/User can NOT be out of the chat"`(即便会话名里就有用户本人)。
 - **`im_v1_chat_list` + `useUAT:true` 能列「用户所在的群」**(chat_mode=group/topic,带 chat_id/name/owner),**但不含 p2p 私聊**。
 - 结论:**MCP 读不了用户私聊 / 机器人不在的群的消息正文**——search_v2 只给 message_id,而 message_get/message_list 都是 bot 身份、进不去。**读这类消息只能走 Chrome 插件(§8)**,这是当前唯一可行路径。
-- **实测可行解 = Chrome 插件读飞书网页版(2026-06-17 走通)**:`mcp__Claude_in_Chrome__*` 连本地浏览器 → `navigate` 到 `https://bytedance.larkoffice.com/messenger/`(US 租户;首次可能要再 navigate 一次等 SPA 加载)→ 截图找到对方会话(左侧会话列表按头像/名字)→ 点开 → `get_page_text` 一次性抓全对话(含代码块/SQL/链接);**发件方向以截图里的头像左右为准**(对方头像在左),`get_page_text` 线性化时 sender label 可能错位,别只信文字标签。这是读「机器人不在的私聊/群」消息的首选路径(对齐全局规则「浏览器走 Chrome 插件」)。computer-use 对浏览器只读且 Feishu 桌面常被拒授权,不走。
+- **实测可行解 = Chrome 插件读飞书网页版(2026-06-17 走通)**:`mcp__Claude_in_Chrome__*` 连本地浏览器 → `navigate` 到 `https://bytedance.larkoffice.com/messenger/`(US 租户;首次可能要再 navigate 一次等 SPA 加载)→ 截图找到对方会话(左侧会话列表按头像/名字)→ 点开 → `get_page_text` 一次性抓全对话(含代码块/SQL/链接);**发件方向以截图里的头像左右为准**(对方头像在左),`get_page_text` 线性化时 sender label 可能错位,别只信文字标签。这是读「机器人不在的私聊/群」消息的首选路径(飞书网页域通常唯一可行;全局 AGENTS = Try What Works)。computer-use 对浏览器只读且 Feishu 桌面常被拒授权,不走。
 - 其他兜底:(a)让用户粘贴/截图;(b)把机器人 `im_v1_chatMembers_create` 拉进群再 `im_v1_message_list`(私聊不行、打扰他人)。
 
-## 8. 浏览器打开飞书网页版(执行层够不到时的首选兜底,对齐全局规则「浏览器走 Chrome 插件」)
+## 8. 浏览器打开飞书网页版(执行层够不到时的首选兜底;域约束)
 
-何时用:要读「机器人不在的私聊/群」的消息正文、看渲染后的文档/多维表格、或核对刚建文档的渲染效果——凡执行层(`lark-cli`)做不到或要"看渲染"的,用 Chrome 插件开飞书网页版。computer-use 不走(对浏览器只读、Feishu 桌面授权常被拒、弹窗挂 5min)。
+何时用:要读「机器人不在的私聊/群」的消息正文、看渲染后的文档/多维表格、或核对刚建文档的渲染效果——凡执行层(`lark-cli`)做不到或要"看渲染"的,优先用 Chrome 插件开飞书网页版(此场景通常唯一可行)。若插件不可用,按 AGENTS「Try What Works」试其他后端;全部 block 再反馈。computer-use 不走(对浏览器只读、Feishu 桌面授权常被拒、弹窗挂 5min)。
 
 SOP:
 1. `mcp__Claude_in_Chrome__list_connected_browsers` → `select_browser`(取本地浏览器 deviceId)。**绝不询问用户选哪个浏览器——哪个能用用哪个,自动选能用的那个**(2026-06-25 用户明确,每次必读):按 **deviceId** select、**别按 name**(编号/名字随重连漂移);优先已登录 bytedance/SG 内网的那个;候选都连着就直接 select 第一个能用的,只有都没连上才停下说明,绝不退回 computer-use。

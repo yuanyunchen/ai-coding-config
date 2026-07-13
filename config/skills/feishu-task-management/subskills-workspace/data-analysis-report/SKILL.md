@@ -10,7 +10,7 @@ description: "字节内网数据分析项目的端到端工作流:iDA 取数 →
 > **子能力取用注意**:`ida-presto-query` / `analytical-report` / `bytedance-internal-hosting` 现为 `feishu-task-management` 的**内部伪 skill**(已摘除全局注册,`Skill()` 直调不到)——经飞书入口按需 `Read ~/.codex/skills/feishu-task-management/subskills-local/<域>/SKILL.md`(派子智能体时把该路径写进 prompt)。
 
 ## 0 · 何时用 + 必读模版
-- **何时用**:mentor/老板派的离线数据分析(如「search vs pixel city 信号增量」),要产出可决策报告 + 可分享链接。动手前先查 `feishu-memory`(`~/feishu-memory/bin/bm tool search-notes "<问题>"`)拿口径/背景/历史结论,别重复研究。
+- **何时用**:mentor/老板派的离线数据分析(如「search vs pixel city 信号增量」),要产出可决策报告 + 可分享链接。动手前先查 bytedance 域库(`<global-memory>/bin/bm tool search-notes --project bytedance "<问题>"`)拿口径/背景/历史结论,别重复研究。
 - **必读模版(写之前先打开读,照它们的结构/口径/语言写)**:
   - 核心 · 决策向:https://bytedance.us.larkoffice.com/docx/RJCAdp9bjosJeDxUN68uimfMsAf
   - 完整 · 同行复核:https://bytedance.us.larkoffice.com/docx/VLwRdYOqVoPeyMxzg5tubfDEsqg

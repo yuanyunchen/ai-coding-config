@@ -1,7 +1,7 @@
 ---
 name: lark-skill-maker
 version: 1.0.0
-description: "创建 lark-cli 的自定义 Skill。当用户需要把飞书 API 操作封装成可复用的 Skill（包装原子 API 或编排多步流程）时使用。本 skill 是执行层;持久性 skill 变更先过 continue-learning 判层。"
+description: "创建 lark-cli 的自定义 Skill。当用户需要把飞书 API 操作封装成可复用的 Skill（包装原子 API 或编排多步流程）时使用。本 skill 是执行层;持久性 skill 变更先过 harness-management 判层。"
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -9,7 +9,7 @@ metadata:
 
 # Skill Maker
 
-> **执行层前置**:本 skill 是执行层。凡持久性规则/技能变更——新增 skill、改 SKILL.md / references / templates、改 AGENTS.md / 全局 CLAUDE.md 持久规则——必须先经 continue-learning skill 过判层与冲突检查(用户 AGENTS.md Rule 9「规则改法」/ Rule 10「持续学习」),再用本 skill 动手;项目级 CLAUDE.md 属自动层、不在门内。唯一豁免:写在活体 skill/规则文件之外的草稿(scratch / 任务工作区副本,供用户审阅);对活体文件的任何 Edit/Write 不豁免——即使用户已表态许可。飞书 skill 改动完成后,按 feishu-workspace 规约在 mira-sync §3.3 登账。
+> **执行层前置**:本 skill 是执行层。凡持久性规则/技能变更——新增 skill、改 SKILL.md / references / templates、改 AGENTS.md / 全局 CLAUDE.md 持久规则——必须先经 **harness-management** update 流程过判层与冲突检查(AGENTS.md Harness 板块),再用本 skill 动手;项目级 CLAUDE.md 属自动层、不在门内。唯一豁免:写在活体 skill/规则文件之外的草稿(scratch / 任务工作区副本,供用户审阅);对活体文件的任何 Edit/Write 不豁免——即使用户已表态许可。飞书 skill 改动完成后,按 feishu-workspace 规约登账(mira 同步已冻结,见 mira-sync-archive)。
 
 基于 lark-cli 创建新 Skill。Skill = 一份 `SKILL.md`，教 AI 用 CLI 命令完成任务。
 

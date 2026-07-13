@@ -93,9 +93,9 @@
 
 > 长期记忆三库:项目定位 / 时间索引 / 知识检索。
 
-- **轻量 recall(不需加载 skill)**:枢纽 = `~/.claude/projects/-Users-yuanyunchen/memory/MEMORY.md`;需要前史/项目定位/工作知识时 Read 它,按问题类型跳三库,单层索引只跳点名的。非 ~ 目录工作先读枢纽再取记忆。
+- **轻量 recall(不需加载 skill)**:枢纽 = runtime 软链到 `global-memory/hub/MEMORY.md`(`bin/setup` 后常见 `~/.claude/projects/-Users-$(whoami)/memory/MEMORY.md`;按 `memory-management` §路径解析,禁止写死用户名)。需要前史/项目定位/工作知识时 Read 它,按问题类型跳三库,单层索引只跳点名的。非 ~ 目录工作先读枢纽再取记忆。
 - **update 判断**:出现值得全局记录的信息(项目状态定型、跨任务恒真事实、用户偏好)→ invoke memory-management 走其 update 例程;模式与触发判据细节都在 skill 内。
-- **auto-memory 双轨定死**:harness 每会话注入的 per-project auto-memory 指引不改变落点——记忆一律写全局枢纽(`~/.claude/projects/-Users-yuanyunchen/memory/`);确需在项目目录就地写记忆文件时,必须同步在枢纽 `MEMORY.md` 登一行索引,防止记忆分裂。
+- **auto-memory 双轨定死**:harness 每会话注入的 per-project auto-memory 指引不改变落点——记忆一律写全局枢纽(`global-memory/hub/`,经上述 runtime 软链);确需在项目目录就地写记忆文件时,必须同步在枢纽 `MEMORY.md` 登一行索引,防止记忆分裂。
 - **加载时机**:上一条 update 判断命中、主动深 recall、/project-* 命令。
 
 ## 六、Harness 板块(行为约束层;变更机制 = `harness-management` skill)

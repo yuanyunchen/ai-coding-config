@@ -224,9 +224,9 @@ AI 生成的飞书文档有**两个反向失败**:常见的是**格式规范但�
 
 ---
 
-## §9 回报本次用到的 skill(强制,飞书域落地——根锚见 [`continue-learning` 核心原则 8](../continue-learning/SKILL.md))
+## §9 回报本次用到的 skill(强制,飞书域落地——根锚见 AGENTS.md Harness「Transparent attribution」/ harness-management)
 
-用户看不到 skill 调用过程。落完文档后,在给用户的消息里**显式说明本轮用了哪些 skill**(如:lark-doc-writer + doc-trio),并附可验证信息(改动的文件名 / 飞书文档链接 / 版本号)。本节是跨 skill 通用元规则在飞书域的具体落地,通用元规则见 continue-learning 核心原则 8。
+用户看不到 skill 调用过程。落完文档后,在给用户的消息里**显式说明本轮用了哪些 skill**(如:lark-doc-writer + doc-trio),并附可验证信息(改动的文件名 / 飞书文档链接 / 版本号)。本节是跨 skill 通用元规则在飞书域的具体落地。
 
 ---
 

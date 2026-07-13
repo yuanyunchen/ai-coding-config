@@ -20,7 +20,7 @@ description: "读写飞书文档/表格/画板(执行层走官方 lark-cli)前�
 > - 读 / 写评论 → `drive_v1_fileComment_list` / `drive_v1_fileComment_create`
 > - 原生画板 create / update → **本机无白名单工具,如实告知**
 
-已在 `continue-learning` SKILL 记过的 3 条不重复:① 整块替换后底层 block ID 重生,需重新 `docx_v1_documentBlock_list`;② callout 颜色在 fetch 后丢失,做模版要从保留完整属性的源文件重建;③ `<ul>` 没有顶层 block id,每个 `<li>` 各自是一个 block。
+已在 harness 层记过的 3 条不重复(原 continue-learning,现归 harness-management 域):① 整块替换后底层 block ID 重生,需重新 `docx_v1_documentBlock_list`;② callout 颜色在 fetch 后丢失,做模版要从保留完整属性的源文件重建;③ `<ul>` 没有顶层 block id,每个 `<li>` 各自是一个 block。
 
 ## 按现象一跳定位（先查这张表）
 

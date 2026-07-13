@@ -15,7 +15,7 @@ description: "在字节内网用 SQL 取数 —— 通过 Chrome 插件驱动 iD
 ## 1. 平台与启动(Chrome 插件,绝不用 computer-use)
 
 - 平台 = **iDA**(内部 SQL 智能体)。Chrome 打开 `https://ida-sg.tiktok-row.net/agent/home?agentId=14638&appId=555138`。
-- **一切浏览器操作走 claude-in-chrome MCP(`mcp__claude-in-chrome__*`),绝不用 computer-use**(全局规则「浏览器走 Chrome 插件」;computer-use 对浏览器只读、授权弹窗会挂约 5 分钟)。插件没连上 → 停下说明,不退回电脑控制。
+- **浏览器后端**:iDA 是内网 SPA,优先 `mcp__claude-in-chrome__*`;失败则按 AGENTS「Try What Works」试其他可用后端。**绝不用 computer-use**(对浏览器只读、授权弹窗会挂约 5 分钟)。全部后端 block 再向用户反馈。
 - 进 agent 后**模型选 GPT-5.5**(每个新标签页/新会话默认模型都要手动重选 GPT-5.5)。
 - iDA 在**公共 Presto 队列**跑,返回**结果表 + CSV 下载链接**。
 - **风神(Aeolus)SQL 编辑器路径不用**:队列 `root.snake_aeolus` 常 99%+ 拥挤,且 Monaco 编辑器输入易出错;iDA 队列更空更稳。

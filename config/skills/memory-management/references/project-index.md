@@ -1,7 +1,7 @@
 # 项目定位库 — 定位卡规范(原「project 子模块」升级版)
 
 > 目标:**agent 从枢纽出发,两跳内定位到所有有价值的项目目录与云端文件**(MEMORY.md 索引行 → 定位卡 → path/token)。此为 memory-weekly-check 的对账承诺。
-> 落点:`~/.claude/projects/-Users-yuanyunchen/memory/<project-slug>.md` + 同目录 `MEMORY.md` ②组一行索引(必做,全局可发现)。
+> 落点:`global-memory/hub/<project-slug>.md` + 同目录 `MEMORY.md` ②组一行索引(必做,全局可发现;经 runtime 软链等价)。
 
 ## 定位卡(一项目一文件,frontmatter + ≤6 行正文)
 

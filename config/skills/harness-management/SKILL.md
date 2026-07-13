@@ -7,7 +7,7 @@ description: "Harness 层(skill/command/agent/hook/全局规则/settings)一切�
 
 Harness 层 = 约束 agent 行为的持久配置:skill(含 subskill/伪 skill)、command、agent(派发类型)、hook、全局规则(AGENTS.md)、settings。**对这一层的任何新增/修改都走本 skill**——判桶 → 判层 → 冲突检查 → 按模式审批 → 路由执行。与 workspace-management(工作区)、memory-management(全局记忆)同构三件套:模式 + recall/update 子模块 + 薄 command;三层 recall 各管一件事——workspace 恢复任务状态、memory 恢复长期记忆、harness 恢复行为约束。
 
-2026-07-03 起替代 continue-learning(已归档在当前工具 home 的 `skills-archive/continue-learning/`);原「过 continue-learning 门」语义 = 走本 skill update 流程、按当前模式定审批。上层编排 = `project-management`(/project-init·recall·update,三系统一次走齐)。
+2026-07-03 起替代 continue-learning(已归档/移除;sole successor = 本 skill);原「过 continue-learning 门」语义 = 走本 skill update 流程、按当前模式定审批。上层编排 = `project-management`(/project-init·recall·update,三系统一次走齐)。
 
 ## 模式(二模式,缺省 none;模式行就在本节,改模式 = 用户说一声、改此行)
 

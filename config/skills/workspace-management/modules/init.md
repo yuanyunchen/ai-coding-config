@@ -14,5 +14,5 @@
    - **规模分档**:context 少量(≤3 份)主 agent 自己摄取;大量或 `--deep` 时按 WM/references/subagent-protocol.md 派子智能体分工摄取/逐模块深读,note 由主 agent 验收后归位。
    - 产出一律写 **MEMORY.md + note**(agent 记忆),不写 CLAUDE.md(那是人维护的项目规范)。
 6. **初期记忆**:用户开工消息原文落 `.agent/memory/requirement/`(贴原语义);草拟 `.agent/memory/goal.md`(目标 + 验收标准,依据 = requirement + context 摄取所得);MEMORY.md 补齐定位 / 现状 / 核心索引(含 context 索引与 note 指针)。
-7. **全局记忆自判**(不强制):任务疑似有前史、涉及既有项目或某领域(飞书/字节广告等)时,自行判断查全局枢纽定位卡(`~/.claude/projects/-Users-yuanyunchen/memory/MEMORY.md`)与域 store;命中则把相关条目指针写进工作区 MEMORY.md §3,此后工作区内不再重复查。判断不需要就跳过。
+7. **全局记忆自判**(不强制):任务疑似有前史、涉及既有项目或某领域(飞书/字节广告等)时,自行判断查全局枢纽定位卡(`global-memory/hub/MEMORY.md` 或 runtime 软链;`memory-management` §路径解析)与域 store;命中则把相关条目指针写进工作区 MEMORY.md §3,此后工作区内不再重复查。判断不需要就跳过。
 8. 向用户回一段简短开工确认:工作区在哪、双侧链接、模式、goal 一句话。

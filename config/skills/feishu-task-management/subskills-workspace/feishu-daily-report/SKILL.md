@@ -1,6 +1,6 @@
 ---
 name: feishu-daily-report
-description: "把当天工作整理成一篇飞书日报。触发:「整理日报 / 写今天日报 / 汇总日报 / 出日报 / 把今天的日报整理出来」。读当天 record(全局 memory-management 的 time 子模块维护的 `…/memory/timeline-records/{date}.md`)+ 用户口述清单 + 回读产出文件,compile 成飞书日报落 Drive 的 Daily Report/WeekN 归档。只产飞书日报。不做「记录日报」(当日本地 record)——那是 memory-management/time,别混。"
+description: "把当天工作整理成一篇飞书日报。触发:「整理日报 / 写今天日报 / 汇总日报 / 出日报 / 把今天的日报整理出来」。读当天 timeline record(`global-memory/hub/timeline-records/{date}.md`)+ 用户口述清单 + 回读产出文件,compile 成飞书日报落 Drive 的 Daily Report/WeekN 归档。只产飞书日报。不做「记录日报」(当日本地 record)——那是 memory-management/time,别混。"
 ---
 
 # feishu-daily-report — 整理成飞书日报
@@ -14,7 +14,7 @@ description: "把当天工作整理成一篇飞书日报。触发:「整理日�
 
 ## 来源(三方整合,冲突以原始文件为准)
 1. 用户口述当天清单(主线)+ 产出文件链接(**必读回读**)。
-2. 当天 record:`/Users/bytedance/Desktop/AI Workspace/Agentic Engineering/global-memory/memory/timeline-records/{date}.md`(memory-management/time 维护)+ 其他 agent 记录文件。
+2. 当天 record:`global-memory/hub/timeline-records/{date}.md`(经 runtime 软链等价;memory-management 时间索引维护)+ 其他 agent 记录文件。
 3. 缺 context 文件时按 `references/retrieval-guide.md` 自查(KB 索引 + `drive +search` 文档搜索),不反问。
 详见 `references/compile.md` §1。
 

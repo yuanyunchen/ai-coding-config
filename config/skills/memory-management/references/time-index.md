@@ -2,7 +2,7 @@
 
 > 目标:按时间检索——「X 月做了什么」「这个项目何时定的方向」。**层级化、索引化、近期高优**(R10)。
 > **本文件 = TIMELINE 结构唯一权威**:所有写入主体(主 agent 里程碑行、memory-weekly-check 整理、用户显式指令)都按本文件结构写,不各自内联规则。
-> 纯 markdown、绝不产飞书。落点:`~/.claude/projects/-Users-yuanyunchen/memory/TIMELINE.md`(+ 按需 `timeline-records/`)。
+> 纯 markdown、绝不产飞书。落点:`global-memory/hub/TIMELINE.md`(+ 按需 `timeline-records/`;经 runtime 软链等价,见 `memory-management` §路径解析)。
 
 ## 层级结构(两级半,按需生长)
 

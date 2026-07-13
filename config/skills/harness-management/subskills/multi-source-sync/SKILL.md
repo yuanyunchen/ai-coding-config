@@ -63,7 +63,7 @@ Live runtime(工具 home,非仓):
 
 1. **三 live**:`"$REPO/agent-config" sync --source <canonical>`(默认 `claude`;可按用户指定改源/目标/`--mirror`)
 2. **回仓**:若改动源自 live → `"$REPO/agent-config" pull`;若改动已在 `$REPO/config/` → 跳过 pull,直接确保 live 已 deploy/sync
-3. **GitHub**:在 `$REPO` 内 `git status` / `git diff`;有改动 → 按用户 git 规范 add(禁 secrets)→ commit(HEREDOC)→ `git push`;无改动但 ahead → 只 push;behind → 先 `git pull --rebase`(或报告冲突)再 push。`--dry-run` / 用户明确「不要推 GitHub」才跳过本步。
+3. **GitHub**:在 `$REPO` 内 `git status` / `git diff`;有改动 → 按用户 git 规范 add(禁 secrets)→ commit(HEREDOC)→ `git push`;无改动但 ahead → 只 push;behind → 先 `git pull --rebase`(或报告冲突)再 push。**调用本 subskill 的「同步三源 / sync」即视为用户已授权本次 commit+push**(2026-07-12 明示);与「平时未经要求不擅自 commit」的通用 git 纪律不冲突——授权范围仅限本管道。`--dry-run` / 用户明确「不要推 GitHub」/「只本地」才跳过本步。
 4. **验收**:三 home 目标文件存在且工具根路径已改写;`config-links` 仍为软链;`git status` 显示与远端一致(或已说明未推原因)。
 
 同时动全局记忆时:另对 `global-memory` 走同等 git 同步(或 `"$REPO/agent-config" memory push`)。

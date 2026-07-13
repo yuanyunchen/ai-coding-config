@@ -43,8 +43,8 @@
 ## 7. IM 读消息:能定位、读不了正文
 → 全文见 `references/exec-im-browser.md` §7(唯一可行解 = Chrome 插件,接 §8)。
 
-## 8. 浏览器打开飞书网页版(执行层够不到时的首选兜底,对齐全局规则「浏览器走 Chrome 插件」)
-→ 全文见 `references/exec-im-browser.md` §8(select_browser 按 deviceId 自动选不询问 / messenger SOP / 发件方向以头像为准)。
+## 8. 浏览器打开飞书网页版(执行层够不到时的首选兜底;域约束,非全局「只能 Chrome」)
+→ 全文见 `references/exec-im-browser.md` §8。全局行为 = AGENTS「Browser: Try What Works」;飞书 IM/渲染场景下 Chrome 插件通常是唯一能进网页版的路径——有则用,没有则按 AGENTS 试其他后端,全 block 再反馈。
 
 ## 9. (历史·MCP 已退役)lark-mcp 启用白名单 + 扩载流程 + 完整目录
 → 全文见 `references/exec-appendix-legacy.md`(纯历史参照,日常不读)。
@@ -64,7 +64,7 @@
 
 规则:**不要把无权限文档当死路、记一句「读不了」就算**——主动替用户申请访问权限,并把已申请清单记进当前任务记录(owner 批准后再 fetch 复读)。
 - **优先 `lark-cli drive +apply-permission --token <token或URL> --type <docx|wiki|sheet|file|…> --perm view --as user --remark "<理由>"`**:以用户身份给文档 owner 发一张「申请查看权限」卡片,一条命令搞定(实测 2026-06-23 `ok:true`;输出前缀行 `Requesting view access on …` 会让裸 `json.load` 解析失败,无碍,命令已执行)。比开浏览器快,符合 §10 求助阶梯「lark-cli 能做的走 lark-cli」。
-- CLI 做不到(报错 / 需交互)→ **Chrome 插件**开该文档页点「申请权限」按钮(对齐全局规则「浏览器走 Chrome 插件」)。
+- CLI 做不到(报错 / 需交互)→ **优先 Chrome 插件**开该文档页点「申请权限」按钮(飞书网页域约束;全局仍遵守 AGENTS Try What Works)。
 - **与 §12 末条「不替用户改 access control」不冲突**:本条是替用户向 owner 发**标准申请**、owner 审批(不绕过权限);§12 指不擅自改文档分享范围/给别人放权。前者做、后者不做。
 - 申请后把「标题 + token + 申请时间 + 权限类型」记到任务文件(如 `.content/access_requests.md`)。
 

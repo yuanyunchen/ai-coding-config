@@ -1,6 +1,6 @@
 # 派发任务:{任务名}
 
-> 先 Read 并遵守工作区规范:/Users/yuanyunchen/.claude/skills/workspace-management/references/subagent-protocol.md(第一节)。
+> 先 Read 并遵守工作区规范:当前工具 home 的 `skills/workspace-management/references/subagent-protocol.md`(第一节)。
 > 你的工作目录 = 本文件所在目录;对外只允许写下方「输出」指定的 path。
 
 ## 任务与背景

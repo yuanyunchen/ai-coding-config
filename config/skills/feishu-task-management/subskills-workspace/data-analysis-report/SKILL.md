@@ -1,13 +1,13 @@
 ---
 name: data-analysis-report
-description: "字节内网数据分析项目的端到端工作流:iDA 取数 → 多窗/控池分析 → 报告(**飞书 docx 交付,不产 HTML**)。统管「过程·口径·行文·语言·质量·检查」六件事,**编排并引用** ida-presto-query / lark-doc-writer / chart-gen,不重复其细节。**写之前必读两份成稿飞书 docx 模版**(见 §0)。触发:数据分析报告、增量分析、cid 召回分析、广告算法离线分析、iDA 取数做报告、给 mentor/老板的分析交付。"
+description: "字节内网数据分析项目的端到端工作流:SQL 取数 → 多窗/控池分析 → 报告(**飞书 docx 交付,不产 HTML**)。统管「过程·口径·行文·语言·质量·检查」六件事,**编排并引用** sql-query / lark-doc-writer / chart-gen,不重复其细节。**写之前必读两份成稿飞书 docx 模版**(见 §0)。触发:数据分析报告、增量分析、cid 召回分析、广告算法离线分析、SQL 取数做报告、给 mentor/老板的分析交付。"
 ---
 
 # 数据分析报告 · 端到端工作流(字节内网)
 
 > 「在字节做一个数据分析交付」的总编排:取数 → 分析 → 报告 → 飞书交付 → 托管。子能力**引用既有 skill,不在此重复**;本 skill 装 ① 编排顺序 ② 本域口径/行文/语言/质量/检查要求 ③ 两份必读成稿模版。
 >
-> **子能力取用注意**:`ida-presto-query` / `analytical-report` / `bytedance-internal-hosting` 现为 `feishu-task-management` 的**内部伪 skill**(已摘除全局注册,`Skill()` 直调不到)——经飞书入口按需 `Read ~/.codex/skills/feishu-task-management/subskills-local/<域>/SKILL.md`(派子智能体时把该路径写进 prompt)。
+> **子能力取用注意**:`sql-query` / `analytical-report` / `bytedance-internal-hosting` 现为 `feishu-task-management` 的**内部伪 skill**(已摘除全局注册,`Skill()` 直调不到)——经飞书入口按需 `Read ~/.claude/skills/feishu-task-management/subskills-local/<域>/SKILL.md`(派子智能体时把该路径写进 prompt)。
 
 ## 0 · 何时用 + 必读模版
 - **何时用**:mentor/老板派的离线数据分析(如「search vs pixel city 信号增量」),要产出可决策报告 + 可分享链接。动手前先查 bytedance 域库(`<global-memory>/bin/bm tool search-notes --project bytedance "<问题>"`)拿口径/背景/历史结论,别重复研究。
@@ -15,9 +15,10 @@ description: "字节内网数据分析项目的端到端工作流:iDA 取数 →
   - 核心 · 决策向:https://bytedance.us.larkoffice.com/docx/RJCAdp9bjosJeDxUN68uimfMsAf
   - 完整 · 同行复核:https://bytedance.us.larkoffice.com/docx/VLwRdYOqVoPeyMxzg5tubfDEsqg
 
-## 1 · 取数 → 用 `ida-presto-query`
+## 1 · 取数 → 用 `sql-query`
 - **先定数据源口径**:底表 + 分区(p_date)+ 关键 flag(如 recall_flag / 信号定义),记进报告附录供复现。
-- 大窗超时 → 一致采样 `mod(user_id,N)=0` 压到 1/N,**先在有全量答案的窗校验无偏再外推**(全局 Rule 11)。粘贴法/朴素 SQL/多 tab/窗口模板全在 `ida-presto-query`。
+- 固定执行优先级为 **bytedcli CLI → Aeolus 网页 → iDA**；鉴权、队列、单次/异步查询、并行与降级条件均以 `sql-query` 为准。
+- 大窗超时 → 一致采样 `mod(user_id,N)=0` 压到 1/N,**先在有全量答案的窗校验无偏再外推**(全局 Rule 11)。
 - **地理字段是 geoname id**:画图/写国名/大洲前必须 id→name,否则轴和结论里是裸 id。
 
 ## 2 · 分析方法(本域硬约定)

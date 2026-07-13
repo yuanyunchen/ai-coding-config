@@ -72,7 +72,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 | `doc-trio` | 写飞书 5 类文档(学习/操作指南/checklist/会议 note/AI handoff)的判型 + 骨架 + 完整性查漏;写这五类前必须先调用判型取骨架(见 §1 调用链),写作通则再走 `lark-doc-writer`。 | `subskills-workspace/doc-trio/SKILL.md` |
 | `feishu-doc-gotchas` | 读写飞书文档/表格/画板遇到格式/blockID/颜色/上传/导入异常时查阅。 | `subskills-workspace/feishu-doc-gotchas/SKILL.md` |
 | `whiteboard-design` | 架构图/流程图/漏斗/金字塔/鱼骨/组织架构等结构化图示的设计方法论(原名 lark-whiteboard;落地=渲染 PNG 嵌 Image(27),ASCII 兜底;官方同名执行技能=伪 skill `lark-whiteboard`)。 | `subskills-workspace/whiteboard-design/SKILL.md` |
-| `data-analysis-report` | 字节内网数据分析**端到端编排**(iDA 取数→多窗/控池分析→双版 HTML→飞书 docx 镜像+HTML 附件→Drive 托管);编排 ida-presto-query / analytical-report / bytedance-internal-hosting / lark-doc-writer,不重复其细节。 | `subskills-workspace/data-analysis-report/SKILL.md` |
+| `data-analysis-report` | 字节内网数据分析**端到端编排**(SQL 取数→多窗/控池分析→双版 HTML→飞书 docx 镜像+HTML 附件→Drive 托管);编排 sql-query / analytical-report / bytedance-internal-hosting / lark-doc-writer,不重复其细节。 | `subskills-workspace/data-analysis-report/SKILL.md` |
 
 ### 作图 / 图表
 | 技能 | 一句话用途 | 位置 |
@@ -119,7 +119,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 
 | 伪 skill | 管什么(边界) |
 |---|---|
-| `ida-presto-query` | 字节内网 SQL 取数:Chrome 插件驱动 iDA(Presto 引擎)跑查询/下 CSV;粘贴法、朴素 SQL、超时 1/N 采样校验、Presto 方言、多 tab 并行、窗口嵌套模板 |
+| `sql-query` | 字节内网 SQL 取数统一入口:固定优先级 bytedcli CLI → Aeolus 网页 → iDA;覆盖鉴权、队列、单次/异步查询、并行、采样校验、方言、CSV 与降级条件。 |
 | `analytical-report` | 严肃数据分析报告引擎:自包含离线 HTML(core/full 双版、SVG 图表、可折叠 SQL、读图三拍、诚实口径)+ starter-kit + build→Playwright→对抗审查闭环。通用 HTML 报告引擎;端到端飞书数据分析编排走 `data-analysis-report` |
 | `bytedance-internal-hosting` | 把 HTML 报告/网页/交互产物托管到字节内网分享:Goofy 快速网页预览(gf-preview URL)/ 飞书云盘 Preview 决策树 + file_upload 路径限制绕过技法 |
 

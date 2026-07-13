@@ -1,11 +1,12 @@
 #!/bin/bash
 ################################################################################
-# 全局记忆枢纽 git 同步（独立仓库 global-memory）。
+# 全局记忆 git 同步（仓库 global-memory：hub + bytedance）。
 #
 # 用法：
 #   ./agent-config memory status
 #   ./agent-config memory pull
 #   ./agent-config memory push [-m "message"]
+#   ./agent-config memory setup    # 注册 BM projects + runtime 软链
 ################################################################################
 
 set -euo pipefail
@@ -15,7 +16,7 @@ REPO_ROOT="$(cd "$SCRIPTS_DIR/.." && pwd)"
 MANIFEST="$REPO_ROOT/../global-memory/manifest.json"
 
 usage() {
-    sed -n '2,10p' "$0"
+    sed -n '2,12p' "$0"
 }
 
 repo_root() {
@@ -33,11 +34,30 @@ from pathlib import Path
 manifest_path = Path(sys.argv[1])
 manifest = json.loads(manifest_path.read_text())
 base = manifest_path.parent
-hub = manifest.get("hubPath") or manifest.get("hubRepo", "memory")
+hub = manifest.get("hubPath") or "hub"
+if "projects" in manifest and "hub" in manifest["projects"]:
+    hub = manifest["projects"]["hub"].get("path", hub)
 hub_path = Path(os.path.expanduser(hub))
 if not hub_path.is_absolute():
     hub_path = (base / hub_path).resolve()
 print(hub_path)
+PY
+}
+
+bytedance_path() {
+    python3 - "$MANIFEST" <<'PY'
+import json, os, sys
+from pathlib import Path
+manifest_path = Path(sys.argv[1])
+manifest = json.loads(manifest_path.read_text())
+base = manifest_path.parent
+p = "bytedance"
+if "projects" in manifest and "bytedance" in manifest["projects"]:
+    p = manifest["projects"]["bytedance"].get("path", p)
+path = Path(os.path.expanduser(p))
+if not path.is_absolute():
+    path = (base / path).resolve()
+print(path)
 PY
 }
 
@@ -50,7 +70,7 @@ require_repo() {
         exit 1
     fi
     if [ ! -d "$hub" ]; then
-        echo "ERROR: 记忆目录不存在: $hub"
+        echo "ERROR: hub 目录不存在: $hub（是否尚未迁移 memory→hub？）"
         exit 1
     fi
     echo "$repo"
@@ -72,10 +92,17 @@ case "$CMD" in
     status)
         repo="$(require_repo)"
         hub="$(hub_path)"
-        echo "repo: $repo"
-        echo "hub:  $hub"
+        byte="$(bytedance_path)"
+        echo "repo:       $repo"
+        echo "hub:        $hub"
+        echo "bytedance:  $byte"
+        echo "bm:         $repo/bin/bm"
         git -C "$repo" remote -v 2>/dev/null | head -2 || true
         git -C "$repo" status -sb
+        ;;
+    setup)
+        repo="$(require_repo)"
+        "$repo/bin/setup"
         ;;
     pull)
         repo="$(require_repo)"

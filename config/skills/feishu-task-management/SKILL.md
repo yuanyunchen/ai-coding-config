@@ -1,6 +1,6 @@
 ---
 name: feishu-task-management
-description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书相关的任务(写文档/多维表格/电子表格/IM/日历/任务/Wiki/Drive/Minutes/通讯录、以及给飞书作图)都必须先调用本 skill**,再路由到具体子技能(官方 lark-* 与飞书任务域 skill 均为本 skill 内部伪 skill、不注册全局,路由表在正文 §2)。执行层 = 官方 lark-cli;做飞书/广告算法任务前先查 feishu-memory 知识库(见正文 §1)。触发词:飞书、Lark、云文档、docx、多维表格、bitable、电子表格、sheets、飞书群、飞书日历、知识库、wiki、妙记、minutes、飞书云盘、drive、飞书任务/待办、审批、考勤打卡、OKR、飞书邮箱/邮件、通讯录/open_id、视频会议/会中、会议纪要、画板、幻灯片/slides、妙搭/Spark/Miaoda、飞书事件监听、Markdown 文件读写。"
+description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书相关的任务(写文档/多维表格/电子表格/IM/日历/任务/Wiki/Drive/Minutes/通讯录、以及给飞书作图)都必须先调用本 skill**,再路由到具体子技能(官方 lark-* 与飞书任务域 skill 均为本 skill 内部伪 skill、不注册全局,路由表在正文 §2)。执行层 = 官方 lark-cli;做飞书/广告算法任务前先查 bytedance 知识库(见正文 §1)。触发词:飞书、Lark、云文档、docx、多维表格、bitable、电子表格、sheets、飞书群、飞书日历、知识库、wiki、妙记、minutes、飞书云盘、drive、飞书任务/待办、审批、考勤打卡、OKR、飞书邮箱/邮件、通讯录/open_id、视频会议/会中、会议纪要、画板、幻灯片/slides、妙搭/Spark/Miaoda、飞书事件监听、Markdown 文件读写。"
 ---
 
 # 飞书 / Lark 工作区(入口索引 + 执行规约)
@@ -9,7 +9,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 
 做任何飞书「执行类操作」(建块/嵌图/导入导出/Drive下载/读私聊/改文档结构/调白名单外能力)之前,先在下表按「你正在做的操作 / 撞到的现象」**一跳定位 → 只 `Read` 对应 `references/exec-*.md` 那一个文件**,再动手。不要凭记忆建块/嵌图/下载——已记录的坑不重查必重犯。执行细坑全量已 reference 化,本表是入口;完整后端事实在 `references/`,完整 CLI 语法在 `cli.md`。
 
-> **派子智能体做任何飞书任务(全文唯一通则)**:子智能体不自动 invoke skill——把本 SKILL.md 路径 + 任务所需子技能 SKILL.md / `references/exec-*.md` 的文件路径写进它的 prompt 让它 `Read`;写文档加 lark-doc-writer(+适用时 doc-trio),字节工作让它先 `bin/bm` 查 feishu-memory。见全局 AGENTS.md Harness 板块「subagent(派发)」。
+> **派子智能体做任何飞书任务(全文唯一通则)**:子智能体不自动 invoke skill——把本 SKILL.md 路径 + 任务所需子技能 SKILL.md / `references/exec-*.md` 的文件路径写进它的 prompt 让它 `Read`;写文档加 lark-doc-writer(+适用时 doc-trio),字节工作让它先 `<repo>/bin/bm tool search-notes --project bytedance`。见全局 AGENTS.md Harness 板块「subagent(派发)」。
 
 | 我正在做 / 撞到 | 一跳读 | 关键坑(一句话,够判断要不要展开) |
 |---|---|---|
@@ -49,7 +49,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 
 **`memory.md` 必读** — 飞书执行记忆与所有踩坑(权限/建块/嵌图/导入导出/白名单边界)都在本技能同目录的 `memory.md` 里。**做文档/表格/图片任务前必看**,否则会重复踩已记录的坑。另:飞书写作硬规则在 `lark-doc-writer` 技能(§0 General 写作规则 + §1 飞书 XML 硬规则,为写作规则的唯一权威入口)。
 
-**`feishu-memory` 知识库先查(记忆优先)** — 字节广告算法 / 飞书工作的**内部知识记忆**沉淀在 `~/feishu-memory`(453 事实 / 8 域,本地 markdown + bge 中文语义索引)。**做飞书 / 广告算法相关任务前,先查它**——`~/feishu-memory/bin/bm tool search-notes "<你的问题>"`(或 MCP `mcp__basic-memory__search_notes`,`project=feishu-memory`):平台用途 / 指标口径 / 实验结论 / 机制原理 / 历史决策,命中就直接用、并核对该事实 `source.quote` 的时效,**避免重复研究**;遇到拿不准的字节工作背景,**先搜它、再外求**(web / 问人)。命中率最高的是"带名字 / 实体"的查询,描述式问法也已增强(每条事实正文带"常见问法")。与本技能 `memory.md` 区分清楚:`memory.md` = 飞书**执行踩坑**(怎么调 API / 建块);`feishu-memory` 系统 = **工作知识**(广告算法在讲什么)——两者互补、都先查。
+**`bytedance` 知识库先查(记忆优先)** — 字节广告算法工作知识在统一仓 `global-memory` 的 BM project **`bytedance`**（目录 `bytedance/`,原 feishu-memory）。**做飞书 / 广告算法相关任务前,先查它**——解析仓库根(hub 的 parent)后跑 `<repo>/bin/bm tool search-notes --project bytedance "<你的问题>"`(或 MCP `search_notes`,`project=bytedance`):平台用途 / 指标口径 / 实验结论 / 机制原理 / 历史决策,命中就直接用、并核对该事实 `source.quote` 的时效,**避免重复研究**;拿不准的字节背景,**先搜它、再外求**。命中率最高是带名字/实体的查询。与本技能 `memory.md` 区分:`memory.md` = 飞书**执行踩坑**; `bytedance` = **工作知识**——互补、都先查。
 
 **执行层规约:**
 

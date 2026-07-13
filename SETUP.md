@@ -13,7 +13,7 @@
 - [ ] 装 Codex，登录，运行一次 `codex`
 - [ ] 装 `ccstatusline` + `jq`（Claude Code 状态栏显示）
 - [ ] 克隆本仓库，执行 `./agent-config deploy`
-- [ ] 克隆 `global-memory`，软链 runtime 路径（见 [global-memory README](../global-memory/README.md)）
+- [ ] 克隆 `global-memory`，运行 `./bin/setup`（见 [global-memory README](../global-memory/README.md)）
 - [ ] 在 Cursor 里启用 parallel、browse 插件
 - [ ] 配置 Parallel CLI 并登录（Cursor 用 `/parallel-setup`，Claude/Codex 用终端）
 - [ ] browse 插件目录跑一次 `npm install`
@@ -66,14 +66,13 @@ cd ai-coding-config
 
 ### 全局记忆（global-memory）
 
-与 `ai-coding-config` **同级**克隆，正文在 `memory/` 子目录；agent 经软链读 `~/.claude/projects/-Users-yuanyunchen/memory/`。
+与 `ai-coding-config` **同级**克隆；`hub/` = 三库，`bytedance/` = 域知识。经 `bin/setup` 注册 BM project 并刷新 runtime 软链（可移植，不手写绝对路径）。
 
 ```bash
 cd ..    # 回到 Agent Development/（与 ai-coding-config 同级）
 git clone https://github.com/yuanyunchen/global-memory.git
-mkdir -p ~/.claude/projects/-Users-yuanyunchen
-ln -sfn "$(pwd)/global-memory/memory" ~/.claude/projects/-Users-yuanyunchen/memory
-cd ai-coding-config && ./agent-config memory status   # 验证
+cd global-memory && ./bin/setup
+cd ../ai-coding-config && ./agent-config memory status
 ```
 
 完整说明见 [global-memory/README.md](../global-memory/README.md)。

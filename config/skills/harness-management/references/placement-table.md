@@ -15,7 +15,7 @@
 | 跨 skill 但仅本任务语境成立 | 工作区 `.agent/memory/note/` | 一事一文件厚写,工作区 MEMORY.md 索引指向(记忆桶,归 workspace/memory 侧) |
 | 项目级行为约束 / 项目专属能力物 | 项目 agent 配置目录、项目 AGENTS/CLAUDE 指导文件、工作区 .agent/skills\|agents | auto 模式直改报备,none 模式走审批;工作区能力物执行规范 = workspace capability-layer |
 | 跨任务跨 skill 恒真 | **全局层** | 记忆桶 → 枢纽知识检索库(转 memory-management);harness 桶 → AGENTS.md 或全局 skill(全局级审批) |
-| 属某领域(飞书/字节广告/未来新域) | **域 store** | **域行为规则**(如飞书写作规范)→ 域 skill 文本;执行坑 → 域 skill memory;工作知识 → 域语义库(basic-memory project 硬隔离,记忆桶);全局只留一行指针,域细节零渗漏。**域新 skill**(整条新能力)→ 建成域入口 skill 的**内部伪 skill**(飞书域 = `feishu-task-management/subskills-local/<域>/`,摘除全局注册 + 登路由表),**禁止**注册为当前工具 home 的 `skills/` 直属全局 skill |
+| 属某领域(飞书/字节广告/未来新域) | **域 store** | **域行为规则**(如飞书写作规范)→ 域 skill 文本;执行坑 → 域 skill memory;工作知识 → `global-memory` 内 BM project(现役=`bytedance`,硬隔离,记忆桶);全局 hub 只留一行指针,域细节零渗漏。**域新 skill**(整条新能力)→ 建成域入口 skill 的**内部伪 skill**(飞书域 = `feishu-task-management/subskills-local/<域>/`,摘除全局注册 + 登路由表),**禁止**注册为当前工具 home 的 `skills/` 直属全局 skill |
 
 ## 三、升级时机规则(防两向失衡)
 

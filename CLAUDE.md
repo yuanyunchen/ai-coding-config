@@ -72,11 +72,12 @@ cd ai-coding-config
 3b. 若改了插件开关：`./agent-config plugins sync --force`（再 pull 亦可）
 4. 提交：`git add -A && git commit -m "sync config" && git push`
 
-### 全局记忆同步（`../global-memory/`，正文在 `memory/` 子目录）
+### 全局记忆同步（`../global-memory/`：`hub/` + `bytedance/`，BM 工具链）
 
 配置与路径说明见 [global-memory/README.md](../global-memory/README.md)。
 
 ```bash
+./agent-config memory setup   # 新机 / 迁移后注册 BM projects
 ./agent-config memory pull    # 多设备开工前
 ./agent-config memory push    # 收工后有改动
 ```

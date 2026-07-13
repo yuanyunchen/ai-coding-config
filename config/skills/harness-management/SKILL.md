@@ -40,7 +40,7 @@ recall / update 是内置子模块(`modules/`):手动 = 对话指令或 /project
 | 怎么写 SKILL.md(结构/description 触发预算/拆分纪律) | `subskills/skill-authoring/SKILL.md`(+ 同目录 writing-great-skills 两篇进阶) |
 | 建新 skill 的脚手架、跑 eval、description 调优 | `subskills/skill-creator/SKILL.md`(原全局 skill-creator,整目录收编) |
 | 写/审 AGENTS.md、CLAUDE.md 等 agent 指导文件 | `subskills/agent-file/SKILL.md`(原全局 write-agent-file) |
-| 三源同步 / deploy / pull / links / 从 GitHub 更新推三工具(任意 cwd) | `subskills/multi-source-sync/SKILL.md` |
+| 三源同步(+GitHub) / deploy / pull / links / 从 GitHub 更新推三工具(任意 cwd) | `subskills/multi-source-sync/SKILL.md` |
 | hook / 权限 / settings.json / env | 内置 update-config skill(session 内置,外部执行层;hook 过目后才落) |
 | 工作区 .agent/ 能力物的结构与登记规范 | workspace-management `references/capability-layer.md`(执行规范在彼;沉淀决策在本 skill) |
 

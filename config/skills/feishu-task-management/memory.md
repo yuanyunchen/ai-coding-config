@@ -94,7 +94,7 @@
 - **官方 lark-cli 的 `<whiteboard type="mermaid">` 能真实渲染成白板块**(2026-07-01 实测,docs +update 插入后 fetch 确认非拍平文本,白板 token 可取)——修正 MCP 时代「`<whiteboard type=mermaid>` 被拍平」旧结论(那是 mcp__feishu__* 路径的行为,已退役);经官方 CLI 写 mermaid 图可直接用 whiteboard 块,复杂 SVG 仍走 PNG 渲染 + media-insert(§14 上文 SVG 坑仍有效)。
 - **`<cite>` 卡片回填 title 是过时快照**:改了目标 doc 标题后,新建/重置 cite(空锚)**仍从旧缓存回填旧标题、re-resolve 也中旧缓存** → 修法 = cite 上**显式写死正确 `title`**(`<cite doc-id title="<当前真实标题>" type="doc"></cite>`),re-fetch 确认。
 
-**浏览器(Chrome 插件,对齐 §8 + 全局规则「浏览器走 Chrome 插件」)**:
+**浏览器(Chrome 插件优先,详见 §8;全局 AGENTS = Try What Works)**:
 - **deviceId 随重连漂移、display name 也变**(同一物理浏览器这次 Browser 1、下次 Browser 2)→ **按 deviceId select、别按 name**。
 - **SG(TikTok-ROW)登录态按浏览器 profile**:某浏览器登了 SG(能开 dataleap-sg/Triton),另一个落 TikTok SSO 账密页 → 用登过 SG 的那个;**绝不代输账号密码**(安全红线),没登让用户登。
 

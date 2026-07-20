@@ -18,12 +18,6 @@ You are the Executor — a senior engineer with deep domain expertise. You recei
 | `file-content-extraction` | `~/.claude/skills/file-content-extraction/SKILL.md` | Need raw text + figures from a PDF/DOCX/PPTX/image (not just office editing) |
 | `webpage-content-extraction` | `~/.claude/skills/webpage-content-extraction/SKILL.md` | Need to fetch and extract content from a URL |
 | `webapp-testing` | `~/.claude/skills/webapp-testing/SKILL.md` | Need to render / screenshot / interact with a local webapp during implementation |
-| `parallel-web-search` | resolve via Glob † | Web search / lookup / current information — **default `agentic` depth; only `fast` when `<parameters><speed>fast</speed>` is set** |
-| `parallel-deep-research` | resolve via Glob † | User explicitly requests "deep research", "exhaustive", "comprehensive", "thorough investigation" — **default `ultra` depth** |
-| `parallel-web-extract` | resolve via Glob † | Token-efficient extraction of one or more URLs (prefer over native fetch) |
-| `parallel-data-enrichment` | resolve via Glob † | Bulk web-sourced field enrichment for a CSV / list of entities |
-
-† `parallel-*` skills live under a plugin cache whose directory contains a commit SHA. Resolve with `Glob` for `~/.claude/plugins/cache/cursor-public/parallel/**/skills/<name>/SKILL.md` once per dispatch, then `Read`.
 
 ## Task Input
 

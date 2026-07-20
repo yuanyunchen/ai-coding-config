@@ -99,7 +99,7 @@ _Updated: 2026-07-06 19:44 UTC_
 
 ## cursor
 
-**manifest 启用**: 4 · **git 快照**: 10
+**manifest 启用**: 3 · **git 快照**: 10
 
 | pluginId | kind | version | snapshot |
 |----------|------|---------|----------|
@@ -109,7 +109,7 @@ _Updated: 2026-07-06 19:44 UTC_
 | `code-simplifier@claude-plugins-official` | portable (off) | 1.0.0 | `cursor/disabled/code-simplifier__claude-plugins-official/` |
 | `continual-learning@cursor-public` | hook | 1.0.0 | `cursor/enabled/continual-learning__cursor-public/` |
 | `feature-dev@claude-plugins-official` | portable (off) | unknown | `cursor/disabled/feature-dev__claude-plugins-official/` |
-| `parallel@cursor-public` | portable | 0.1.1 | `cursor/enabled/parallel__cursor-public/` |
+| `parallel@cursor-public` | portable (off) | 0.1.1 | `cursor/enabled/parallel__cursor-public/` |
 | `session-report@claude-plugins-official` | portable (off) | unknown | `cursor/disabled/session-report__claude-plugins-official/` |
 | `skill-creator@claude-plugins-official` | portable (off) | unknown | `cursor/disabled/skill-creator__claude-plugins-official/` |
 | `superpowers@cursor-public` | hook | 5.0.7 | `cursor/enabled/superpowers__cursor-public/` |

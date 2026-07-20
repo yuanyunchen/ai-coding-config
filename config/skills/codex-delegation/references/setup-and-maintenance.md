@@ -49,7 +49,7 @@ After a fresh install, run the official docs sync (§4.1) and the drift checklis
 
 Fetch the current official documentation and diff it against this skill's references:
 
-- **CLI docs**: developers.openai.com/codex — `/codex/cli/reference`, `/codex/noninteractive`, `/codex/config-reference` (the sources behind `cli-reference.md`). Fetch with WebFetch or `parallel-web-search`.
+- **CLI docs**: developers.openai.com/codex — `/codex/cli/reference`, `/codex/noninteractive`, `/codex/config-reference` (the sources behind `cli-reference.md`). Fetch with WebFetch or the built-in web search.
 - **Plugin docs**: the GitHub repo `openai/codex-plugin-cc` — README + CHANGELOG.md (the local marketplace clone at `~/.claude/plugins/marketplaces/openai-codex/` updates with the plugin; read CHANGELOG first, it lists what moved).
 
 Conflict resolution, in order:

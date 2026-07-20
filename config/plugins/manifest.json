@@ -17,7 +17,7 @@
   },
   "cursor": {
     "enabledPlugins": {
-      "parallel@cursor-public": true,
+      "parallel@cursor-public": false,
       "browse@cursor-public": true,
       "continual-learning@cursor-public": true,
       "claude-md-management@claude-plugins-official": false,

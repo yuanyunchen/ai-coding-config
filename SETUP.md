@@ -15,8 +15,7 @@
 - [ ] 装 `ccstatusline` + `jq`（Claude Code 状态栏显示）
 - [ ] 克隆本仓库，执行 `./agent-config deploy`
 - [ ] 克隆 `global-memory`，运行 `./bin/setup`（见 [global-memory README](../global-memory/README.md)）
-- [ ] 在 Cursor 里启用 parallel、browse 插件
-- [ ] 配置 Parallel CLI 并登录（Cursor 用 `/parallel-setup`，Claude/Codex 用终端）
+- [ ] 在 Cursor 里启用 browse 插件
 - [ ] browse 插件目录跑一次 `npm install`
 
 ---
@@ -100,10 +99,7 @@ cd ../ai-coding-config && ./agent-config memory status
 
 在 Cursor **Settings → Plugins** 里启用：
 
-- **parallel** — 斜杠命令（`/parallel-search` 等）和 `/parallel-setup`
 - **browse** — 浏览器自动化（本机要装 Chrome）
-
-> 先开插件，再配 Parallel CLI（下一步）。`/parallel-setup` 依赖 parallel 插件。
 
 启用 browse 后，在终端跑一次：
 
@@ -114,19 +110,11 @@ npm install
 
 ---
 
-## 4. Parallel CLI（必做）
+## 4. Parallel CLI（按需）
 
-网页搜索、抓取、深度研究都靠 `parallel-cli`。`deploy` 只同步 skill，**CLI 和账号要单独配**。
+Parallel skill 默认禁用。只有直接使用 `parallel-cli`，或使用 `webpage-content-extraction` 的纯文本快速路径时，才需要安装 CLI 和登录账号。
 
-**Cursor（推荐）** — 上一步插件开好后，在 Agent 对话跑：
-
-```
-/parallel-setup
-```
-
-它会检查/安装 CLI 并引导登录。若 sandbox 拦安装，关掉 sandbox 重跑，或改用手动方式。
-
-**Claude Code / Codex（或习惯终端）** — 直接在终端：
+需要时直接在终端安装：
 
 ```bash
 curl -fsSL https://parallel.ai/install.sh | bash
@@ -157,5 +145,5 @@ parallel-cli auth          # 确认已登录
 |---|---|
 | `找不到 ~/.claude` | 先跑一遍 `claude` 登录 |
 | sync 跳过了 cursor/codex | 先打开 Cursor、跑一遍 `codex` |
-| `parallel-cli` 找不到 | Cursor 里先开 parallel 插件再跑 `/parallel-setup`；或终端手动装 + 检查 PATH |
+| `parallel-cli` 找不到 | 仅在需要可选的纯文本网页提取路径时安装，并检查 `~/.local/bin` 是否在 PATH |
 | Codex 登录失败 | 确认 ChatGPT 付费档，或 `export OPENAI_API_KEY=sk-...` |

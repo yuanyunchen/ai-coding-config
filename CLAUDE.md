@@ -27,7 +27,7 @@ agent-config                   统一 CLI 入口
 scripts/                       deploy | pull | sync | plugins | memory | links
 config/AGENTS.md               部署到三工具的全局英文规则（主版本）
 config/AGENTS-cn.md            AGENTS.md 中文镜像（人读参考；pull/deploy/sync 随 AGENTS.md 一并处理）
-SETUP.md                       新机器首次配置（给人看；装工具、登录、Parallel、browse）
+SETUP.md                       新机器首次配置（给人看；装工具、登录、browse）
 ```
 
 ## 部署目录映射
@@ -62,7 +62,7 @@ cd ai-coding-config
 ./agent-config deploy          # 或 deploy --no-sync 跳过三工具 sync
 ```
 
-`deploy` 后 SETUP 还要求（`deploy` 不会自动完成）：Cursor IDE 启用 `parallel`/`browse`/`superpowers` 插件 → browse 目录 `npm install` → Parallel CLI 登录（见下 Gotchas）。Codex 侧在 IDE 启用 `superpowers@openai-curated` 后 `./agent-config plugins pull --platform codex`。
+`deploy` 后 SETUP 还要求（`deploy` 不会自动完成）：Cursor IDE 启用 `browse`/`superpowers` 插件 → browse 目录 `npm install`。Codex 侧在 IDE 启用 `superpowers@openai-curated` 后 `./agent-config plugins pull --platform codex`。
 
 ### 本机日常改配置
 
@@ -212,6 +212,6 @@ Claude 与 Codex 的个性化（默认模型、推理强度、状态栏等）用
 - **个性化深合并（Claude + Codex 同一套）**：`settings.personal.json` / `config.personal.toml` 经各自脚本 `deploy` **深合并**进本机 `settings.json` / `config.toml`，只覆盖纳管 key，不删本机未纳管 key（Claude 的 `hooks`/`enabledPlugins`、Codex 的 `auth`/`mcp_servers` 等）；增删纳管 key 改对应脚本的 `MANAGED_KEYS` / `MANAGED_SCHEMA`。勿把 `enabledPlugins`/`hooks` 写进 `settings.personal.json`。
 - **`ccstatusline` 要单独装**：`deploy` 只恢复 `~/.config/ccstatusline/` 配置，不装工具本身；新机器须 `npm i -g ccstatusline`（+ `jq`），见 SETUP。
 - **`SETUP.md`**：新机器给人看的 checklist；agent 改首次配置流程时同步更新 SETUP，细节放 SETUP 勿堆进本文件。
-- **Parallel**：`deploy` 只同步 `parallel-*` skill；`parallel-cli` + 账号需单独配。Cursor 须先在 IDE 开 `parallel@cursor-public`，再 `/parallel-setup`；Claude/Codex 终端 `curl …/install.sh | bash` + `parallel-cli login`。
-- **Cursor 首次插件**（SETUP 清单）：`parallel`、`browse`（browse 启用后在 `config/plugins/cursor/enabled/browse__cursor-public/` 跑 `npm install`）。`continual-learning` 在 manifest 但不在标准 SETUP 流程。
+- **Parallel**：`parallel-*` skill 与 Cursor 的 `parallel@cursor-public` 默认禁用；`parallel-cli` 仅作为 `webpage-content-extraction` 纯文本快速路径的可选依赖。
+- **Cursor 首次插件**（SETUP 清单）：`browse`（启用后在 `config/plugins/cursor/enabled/browse__cursor-public/` 跑 `npm install`）。`continual-learning` 在 manifest 但不在标准 SETUP 流程。
 - **Codex 包名**：`npm i -g @openai/codex`（无 scope 的 `codex` 是无关包）。

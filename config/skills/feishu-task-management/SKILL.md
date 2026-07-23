@@ -120,6 +120,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 | 伪 skill | 管什么(边界) |
 |---|---|
 | `sql-query` | 字节内网 SQL 取数统一入口:固定优先级 bytedcli CLI → Aeolus 网页 → iDA;覆盖鉴权、队列、单次/异步查询、并行、采样校验、方言、CSV 与降级条件。 |
+| `building-dorado-hive-tables` | Dorado/DataLeap Hive生产链路:建表、权限、smoke、正式任务、历史回填、bootstrap、首日接力和生产验收；业务SQL设计和通用取数走 `sql-query`。 |
 | `analytical-report` | 严肃数据分析报告引擎:自包含离线 HTML(core/full 双版、SVG 图表、可折叠 SQL、读图三拍、诚实口径)+ starter-kit + build→Playwright→对抗审查闭环。通用 HTML 报告引擎;端到端飞书数据分析编排走 `data-analysis-report` |
 | `bytedance-internal-hosting` | 把 HTML 报告/网页/交互产物托管到字节内网拿可分享 link 的双平台权威:Goofy 快速预览(gf-preview URL,create/redeploy 保 link,**≤50MB 死限**)vs 飞书云盘 Preview(单文件报告+真 ACL,Upload New Version 保 link);含决策树、file_upload 注入、大文件分层瘦身、keychain/误判成功/大文件冻结等踩坑 |
 

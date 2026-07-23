@@ -45,7 +45,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 2. **技能方法论(子技能 `SKILL.md` + `references/`)** — 每个子技能讲清"某类飞书工作怎么做"(写文档/建表/作图/各业务域/流程元)。**具体子技能不预加载**,按下面 (2) 的目录用文件路径 `Read` 按需打开。
 3. **执行层(官方 `lark-cli`)** — 真正读写飞书;技能给规则,CLI 执行(三层命令/鉴权/踩坑见同目录 `cli.md`)。
 
-**⭐ 写飞书文档 = 强制调用链(2026-06-24 钉死,违反即返工)** — 任何「写 / 改飞书文档」的任务,**包括方案 / 分析 / 总结 / 报告这类非 doc-trio 五类的文档**,动手前**必须**:① 调用并遵守 `lark-doc-writer` §0 通用写作通则(§0 在其 SKILL.md 开头)(可读性 · 文字密度 · 语言自然去 AI 味 · **多作图:DAG 表框架/结构、ASCII 展开细节、开头必有 DAG 全景、结尾必有图〔双收口〕**);② 属 doc-trio 五类(学习 / 操作 / checklist / 会议 / AI handoff)的**必须**先 `doc-trio` 判型取骨架;③ 执行落地用 `lark-cli docs`。**禁止**绕过 lark-doc-writer 直接 `docs +create` markdown 导入、或拿自定义 recipe 替代写作通则(实测绕过 → 出无开头 DAG、无结尾图、图密度不足的 AI 味文档)。
+**⭐ 写飞书文档 = 强制调用链(2026-06-24 钉死,违反即返工)** — 任何「写 / 改飞书文档」的任务,**包括方案 / 分析 / 总结 / 报告这类非 doc-trio 五类的文档**,动手前**必须**:① 调用并遵守 `lark-doc-writer` §0 通用写作通则(可读性 · 文字密度 · 语言自然去 AI 味 · 作图按文档类型分层；学习文档用双收口，技术数据链路交付读其 transcript + 三图金标准);② 属 doc-trio 五类(学习 / 操作 / checklist / 会议 / AI handoff)的**必须**先 `doc-trio` 判型取骨架;③ 执行落地用 `lark-cli docs`。**禁止**绕过 lark-doc-writer 直接 `docs +create` markdown 导入、或拿自定义 recipe 替代写作通则。
 
 **`memory.md` 必读** — 飞书执行记忆与所有踩坑(权限/建块/嵌图/导入导出/白名单边界)都在本技能同目录的 `memory.md` 里。**做文档/表格/图片任务前必看**,否则会重复踩已记录的坑。另:飞书写作硬规则在 `lark-doc-writer` 技能(§0 General 写作规则 + §1 飞书 XML 硬规则,为写作规则的唯一权威入口)。
 
@@ -68,7 +68,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 ### 写文档 / 内容
 | 技能 | 一句话用途 | 位置(SKILL.md) |
 |---|---|---|
-| `lark-doc-writer` | 飞书文档写作总入口 + 排版/格式权威规则 + 可读性方法;写/改任何飞书文档前必须调用其 §0 写作通则(强制调用链见 §1)。 | `subskills-workspace/lark-doc-writer/SKILL.md` |
+| `lark-doc-writer` | 飞书文档写作总入口 + 排版/格式权威规则 + 可读性方法；技术数据链路交付需读取其金标准 transcript 与三图模板。 | `subskills-workspace/lark-doc-writer/SKILL.md` |
 | `doc-trio` | 写飞书 5 类文档(学习/操作指南/checklist/会议 note/AI handoff)的判型 + 骨架 + 完整性查漏;写这五类前必须先调用判型取骨架(见 §1 调用链),写作通则再走 `lark-doc-writer`。 | `subskills-workspace/doc-trio/SKILL.md` |
 | `feishu-doc-gotchas` | 读写飞书文档/表格/画板遇到格式/blockID/颜色/上传/导入异常时查阅。 | `subskills-workspace/feishu-doc-gotchas/SKILL.md` |
 | `whiteboard-design` | 架构图/流程图/漏斗/金字塔/鱼骨/组织架构等结构化图示的设计方法论(原名 lark-whiteboard;落地=渲染 PNG 嵌 Image(27),ASCII 兜底;官方同名执行技能=伪 skill `lark-whiteboard`)。 | `subskills-workspace/whiteboard-design/SKILL.md` |
@@ -78,7 +78,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 | 技能 | 一句话用途 | 位置 |
 |---|---|---|
 | `ascii-strategy-diagram` | 算法/竞价/计费/排序/链路 的 ASCII 纯文本全景框架图(公式化、多阶段链路首选)。 | `subskills-workspace/ascii-strategy-diagram/SKILL.md` |
-| `dag-flow-diagram` | mermaid DAG:变量依赖图 / 端到端流程 / 概念关系图。 | `subskills-workspace/dag-flow-diagram/SKILL.md` |
+| `dag-flow-diagram` | DAG:变量依赖 / 端到端流程 / 技术数据链路三图 / 概念关系。 | `subskills-workspace/dag-flow-diagram/SKILL.md` |
 | `chart-gen` | 把数据/指标画成干净自包含的静态 SVG 图表(柱/折线/饼/桑基…),需要时再上传飞书。 | `subskills-workspace/chart-gen/SKILL.md` |
 
 ### 飞书各业务域 = 官方 `lark-*` 伪 skill(经 `subskills/` 软链,不注册全局)

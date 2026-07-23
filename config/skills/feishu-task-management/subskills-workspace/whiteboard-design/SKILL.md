@@ -40,6 +40,7 @@ Step 6  按落地路径出产物    → 见上方「落地路径」①②③
 
 | 你要表达的东西 | 选哪个原型 | scene 文件 |
 |---|---|---|
+| 原始表→中间表→最终表→下游，或计算收益 / 日更任务合同 | 技术数据链路三图 | [`../dag-flow-diagram/references/technical-data-pipeline-diagrams.md`](../dag-flow-diagram/references/technical-data-pipeline-diagrams.md) |
 | 分层架构、微服务、前后端模块划分 | 架构图 | [`scenes/architecture.md`](scenes/architecture.md) |
 | 业务流转、审批流、状态机、带条件判断的链路、复杂拓扑 | 流程图 | [`scenes/flowchart.md`](scenes/flowchart.md) |
 | 公司组织、模块依赖树、分类层级树 | 组织架构图 | [`scenes/organization.md`](scenes/organization.md) |

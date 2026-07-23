@@ -1,11 +1,18 @@
 ---
 name: dag-flow-diagram
-description: 将算法、策略、系统逻辑或概念依赖关系，画成 mermaid DAG 框架图(变量依赖图 / 端到端流程图 / 概念关系图)。当用户说"画 DAG 图""画依赖图""画概念图""画系统框架图""画流程图""把这套逻辑/变量关系用 mermaid 画出来""端到端流程图""把概念之间的依赖画清楚"，或想用图把"哪些变量由哪些变量经什么公式推出"表达清楚时，使用本 skill。尤其适用于:变量依赖关系(自变量→公式→因变量)、端到端服务拓扑、多阶段系统流程、概念关系网。需要纯文本等宽精确对齐、多阶段公式逐行推导的复杂链路用 ascii-strategy-diagram;数据→统计图表用 chart-gen、飞书原生结构图构图用 whiteboard-design;本 skill 负责 mermaid DAG（其余作图选型见 feishu-task-management 作图节）。
+description: 将算法、策略、系统逻辑、技术数据链路或概念依赖关系画成 DAG 框架图。当用户要画 DAG、依赖图、系统框架、端到端流程、数据表链路，或表达变量来源与公式关系时使用。适用于变量依赖、服务拓扑、原始表→中间表→最终表→下游、多阶段流程；公式逐行推导走 ascii-strategy-diagram，统计图走 chart-gen。
 ---
 
 # DAG 框架图专家(mermaid)
 
 把算法 / 策略 / 系统逻辑 / 概念依赖画成 mermaid DAG。读者看完应当一眼看懂:有哪些实体 → 谁由谁经什么公式/模块推出 → 外部对象供给哪些自变量 → 整体怎么闭环。
+
+## 场景路由
+
+| 场景 | 必读 |
+|---|---|
+| 技术数据链路正式交付：原始表→中间表→最终表→下游，含计算收益和日更任务 | [`references/technical-data-pipeline-diagrams.md`](references/technical-data-pipeline-diagrams.md)(先看三张金标准 PNG) |
+| 通用变量依赖、服务拓扑、开篇 / 收口 DAG | [`references/examples.md`](references/examples.md) |
 
 > **⭐ 开篇 / 定位 / 收口图 · 每次必读模版**(三类落地范例,做对应图前先读、照结构改):
 > - 「**开篇全景 / 体系总控图**」(总览入口用,全系统多路)→ [`templates/panorama_overview.svg`](templates/panorama_overview.svg)(配套同名 PNG)——见 [`references/examples.md`](references/examples.md) 范例三。
@@ -134,4 +141,4 @@ learning 文档每节用**双图配合**讲一个逻辑——DAG 给框架/依�
 | **开篇全景总控图**（总览入口,hero SVG）| **范例三（必读）** | [`templates/panorama_overview.svg`](templates/panorama_overview.svg) |
 | **全文结尾总收口 DAG**（hero）| **范例四（必读）** | [`templates/closing_summary_b1.png`](templates/closing_summary_b1.png) |
 | **板块定位图**（每篇开头）| **范例五（必读）** | [`templates/locator_b2.png`](templates/locator_b2.png) |
-
+| **技术数据链路三图**（主链路 / 计算收益 / 日更） | [`references/technical-data-pipeline-diagrams.md`](references/technical-data-pipeline-diagrams.md) | 先查看 reference 登记的三张金标准 PNG |

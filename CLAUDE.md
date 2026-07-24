@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 仓库定位
 
-本仓库是 **Cursor / Claude Code / Codex** 三工具的统一 agent 配置备份库，用于跨设备迁移与版本管理。
+本仓库是 **Cursor / Claude Code / Codex / Trae** 四工具的统一 agent 配置备份库，用于跨设备迁移与版本管理。
 
-- **真实配置**在部署目录 `~/.cursor` `~/.claude` `~/.codex`（各工具至少运行过一次才会创建）
+- **真实配置**在部署目录 `~/.cursor` `~/.claude` `~/.codex` `~/.trae`（各工具至少运行过一次才会创建；Trae IDE 与 Trae CLI/`traecli` 共用 `~/.trae`）
 - **git 快照**在 `config/`（真实文件，无软链，可 push 到其他设备）
 - **本机浏览**：`config-links/` 是指向 `config/` 的软链（gitignore，`./agent-config links` 创建），目录树与 `config/` 完全一致
 
@@ -32,17 +32,17 @@ SETUP.md                       新机器首次配置（给人看；装工具、�
 
 ## 部署目录映射
 
-| 配置类别   | cursor          | claude          | codex                       |
-|-----------|-----------------|-----------------|-----------------------------|
-| 斜杠命令   | `commands/*.md` | `commands/*.md` | `prompts/*.md`              |
-| subagents | `agents/*.md`   | `agents/*.md`   | （无此机制，跳过）            |
-| skills    | `skills/*`（启用）`skills-disabled/*`（禁用） | 同上 | 同上（`.system` 不动） |
-| 插件      | —               | `settings.json` | —                             |
-| 插件快照  | `config/plugins/cursor/` | `config/plugins/claude/` | `config/plugins/codex/` |
-| 全局规则   | `AGENTS.md`     | `AGENTS.md`     | `AGENTS.md`                 |
-| 中文镜像   | `AGENTS-cn.md`  | `AGENTS-cn.md`  | `AGENTS-cn.md`（人读，非加载） |
-| 个性化设置 | （暂不纳管）      | `settings.json`（深合并） | `config.toml`（深合并）       |
-| 状态栏显示 | （暂不纳管）      | `~/.config/ccstatusline/` | `config.toml` 的 `[tui]`     |
+| 配置类别   | cursor / claude / trae | codex                       |
+|-----------|------------------------|-----------------------------|
+| 斜杠命令   | `commands/*.md`        | `prompts/*.md`              |
+| subagents | `agents/*.md`          | （无此机制，跳过）            |
+| skills    | `skills/*` + `skills-disabled/*` | 同上（`.system` 不动） |
+| 插件      | claude:`settings.json`；其余 IDE 各自安装 | — |
+| 插件快照  | `config/plugins/{claude,cursor,codex}/`（trae 暂不纳管插件包） | 同左 |
+| 全局规则   | `AGENTS.md`            | `AGENTS.md`                 |
+| 中文镜像   | `AGENTS-cn.md`         | `AGENTS-cn.md`（人读，非加载） |
+| 个性化设置 | claude:`settings.json`；codex:`config.toml`；trae 暂不纳管 | 见左 |
+| 状态栏显示 | claude:`ccstatusline`；codex:`[tui]` | 见左 |
 
 **Canonical 源**：`~/.claude`。`config/plugins/claude|cursor|codex/` 存各平台**原始插件包**；`pull` 拉回、`deploy` 一键部署。hook 插件不跨平台 sync；portable 经 `vendor` + `sync`。
 
@@ -54,12 +54,12 @@ Claude Code 只读 `CLAUDE.md`，部署目录里用 `~/.claude/CLAUDE.md` 的 `@
 
 **给人配机器**：只维护 [SETUP.md](./SETUP.md)，勿在本文件重复展开安装步骤。
 
-前提：已安装三工具，且 `~/.cursor` / `~/.claude` / `~/.codex` 目录存在（各工具至少运行过一次）。
+前提：已安装目标工具，且对应 home 目录存在（`~/.cursor` / `~/.claude` / `~/.codex` / `~/.trae`；各工具至少运行过一次。Trae CLI：`traecli`，与 IDE 共用 `~/.trae`）。
 
 ```bash
 git clone https://github.com/yuanyunchen/ai-coding-config.git
 cd ai-coding-config
-./agent-config deploy          # 或 deploy --no-sync 跳过三工具 sync
+./agent-config deploy          # 或 deploy --no-sync 跳过跨工具 sync
 ```
 
 `deploy` 后 SETUP 还要求（`deploy` 不会自动完成）：Cursor IDE 启用 `browse`/`superpowers` 插件 → browse 目录 `npm install`。Codex 侧在 IDE 启用 `superpowers@openai-curated` 后 `./agent-config plugins pull --platform codex`。
@@ -82,11 +82,12 @@ cd ai-coding-config
 ./agent-config memory push    # 收工后有改动
 ```
 
-### 三工具互相同步（不写仓库）
+### 四工具互相同步（不写仓库）
 
 ```bash
-./agent-config sync --dry-run              # 默认 claude -> cursor + codex
+./agent-config sync --dry-run              # 默认 claude -> cursor + codex + trae
 ./agent-config sync --source cursor        # cursor 为源
+./agent-config sync --source claude --target trae
 ```
 
 ### 从 Cursor 初次迁移到 Claude（一次性）
@@ -103,9 +104,9 @@ cd ai-coding-config
 
 | 命令 | 方向 | 说明 |
 |------|------|------|
-| `deploy` | config/ → ~/.claude + ~/.codex (+ sync) | 新设备恢复（含 Claude/Codex 个性化深合并 + ccstatusline） |
+| `deploy` | config/ → ~/.claude (+ sync 到 cursor/codex/trae) | 新设备恢复（含 Claude/Codex 个性化深合并 + ccstatusline） |
 | `pull` | 本机配置 → config/ | 改完配置后拉回仓库（含 Claude/Codex 个性化 + ccstatusline） |
-| `sync` | 三工具互相同步 | 增量，只加不删 |
+| `sync` | 四工具互相同步 | 增量，只加不删 |
 | `plugins sync` | claude 插件 → cursor/codex | 镜像 manifest 开关；含 pull + 可选 deploy |
 | `migrate` | ~/.cursor → ~/.claude | 一次性迁移 |
 | `links` | `config-links` -> `config/` | 整理 skills 两层目录 + 相对软链 |

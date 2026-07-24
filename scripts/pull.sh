@@ -4,7 +4,7 @@
 # 默认以 ~/.claude 为 canonical 源；改完配置后运行此脚本再 git commit / push。
 # agents/commands/skills/skills-disabled/scripts 使用 rsync --delete，使 config/ 与源目录镜像一致。
 #
-# 用法：./agent-config pull [--source cursor|claude|codex] [--dry-run]
+# 用法：./agent-config pull [--source cursor|claude|codex|trae] [--dry-run]
 ################################################################################
 
 set -euo pipefail
@@ -20,7 +20,7 @@ RSYNC_EXCLUDE=(--exclude='node_modules' --exclude='__pycache__' --exclude='*.pyc
 while [ $# -gt 0 ]; do
     case "$1" in
         --source)
-            [ -n "${2:-}" ] || { echo "ERROR: --source 需要一个值 (cursor|claude|codex)"; exit 1; }
+            [ -n "${2:-}" ] || { echo "ERROR: --source 需要一个值 (cursor|claude|codex|trae)"; exit 1; }
             SOURCE="$2"; shift 2 ;;
         --dry-run)  DRY_RUN=1; shift ;;
         -h|--help)
@@ -31,7 +31,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-case "$SOURCE" in cursor|claude|codex) ;; *) echo "ERROR: --source 只能是 cursor|claude|codex"; exit 1 ;; esac
+case "$SOURCE" in cursor|claude|codex|trae) ;; *) echo "ERROR: --source 只能是 cursor|claude|codex|trae"; exit 1 ;; esac
 
 SRC_BASE="$HOME/.$SOURCE"
 [ -d "$SRC_BASE" ] || { echo "ERROR: 找不到源目录: $SRC_BASE"; exit 1; }

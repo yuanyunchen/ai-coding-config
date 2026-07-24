@@ -11,6 +11,7 @@
 - [ ] 装 Cursor，登录，打开一次
 - [ ] 装 Claude Code，登录，运行一次 `claude`
 - [ ] 装 Codex，登录，运行一次 `codex`
+- [ ] 装 Trae IDE（打开一次生成 `~/.trae`）与 Trae CLI（`traecli`）
 - [ ] 装 `bytedcli`，完成字节内部账号登录
 - [ ] 装 `ccstatusline` + `jq`（Claude Code 状态栏显示）
 - [ ] 克隆本仓库，执行 `./agent-config deploy`
@@ -20,9 +21,9 @@
 
 ---
 
-## 1. 装三工具并登录
+## 1. 装四工具并登录
 
-每个工具**至少打开/运行一次**，才会生成配置目录。不生成的话后面 `deploy` 会跳过它。
+每个工具**至少打开/运行一次**，才会生成配置目录。不生成的话后面 `deploy`/`sync` 会跳过它。
 
 ### Cursor
 
@@ -52,9 +53,28 @@ npm install -g @openai/codex    # 注意是 @openai/codex，需 Node 22+
 codex           # 选 Sign in with ChatGPT（Plus/Pro 等），或用 API Key
 ```
 
+### Trae（IDE + CLI）
+
+1. 安装 [Trae](https://www.trae.ai)（或国内版 trae.cn），打开一次以生成 `~/.trae`
+2. 安装 Trae CLI（`traecli`）。美区若 `trae.cn` 被拦，用：
+
+```bash
+curl -fsSL "https://lf-cdn.trae.ai/obj/trae-ai-us/trae-cli/install.sh" | bash
+export PATH="$HOME/.local/bin:$PATH"
+traecli doctor    # 首次需 /login 企业账号并选 model
+```
+
+可选：把 IDE 命令链到 PATH：
+
+```bash
+ln -sfn "/Applications/Trae.app/Contents/Resources/app/bin/trae" "$HOME/.local/bin/trae"
+```
+
+`deploy`/`sync` 会把 skill / commands / agents / AGENTS.md 写到 `~/.trae`（与 Claude/Cursor 同构）。
+
 ### bytedcli
 
-三工具共享同一份全局 CLI；`deploy` 负责同步 skill，不重复安装二进制。
+四工具共享同一份全局 CLI；`deploy` 负责同步 skill，不重复安装二进制。
 
 ```bash
 npm install -g @bytedance-dev/bytedcli@latest --registry https://bnpm.byted.org
@@ -78,7 +98,7 @@ cd ai-coding-config
 ./agent-config deploy
 ```
 
-这一条会把 skill、命令、规则写到三个工具，并安装 Claude 官方插件。
+这一条会把 skill、命令、规则写到四个工具（含 Trae），并安装 Claude 官方插件。
 
 ### 全局记忆（global-memory）
 

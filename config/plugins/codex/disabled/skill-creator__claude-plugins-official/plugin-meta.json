@@ -1,10 +1,8 @@
 {
   "pluginId": "skill-creator@claude-plugins-official",
   "platform": "codex",
-  "syncedFrom": "skill-creator@claude-plugins-official",
-  "syncedFromDir": "/Users/yuanyunchen/Desktop/AI Programing/Agent Development/ai-coding-config/config/plugins/claude/disabled/skill-creator__claude-plugins-official",
-  "version": "unknown",
+  "installPath": "/Users/bytedance/.codex/plugins/cache/claude-plugins-official/plugin-install-TSgzY4/skill-creator/local",
+  "version": "local",
   "hasHooks": false,
-  "enabled": false,
-  "copiedAt": "2026-07-04T10:00:11Z"
+  "copiedAt": "2026-07-31T00:23:28Z"
 }

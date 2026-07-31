@@ -16,7 +16,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 | 建表格(docx table) | `references/exec-blocks.md` | 树里塞 cell 必 **1770041**;table **裸建+回填**,逐列 patch 设宽;要真表头走原始 REST |
 | 建 callout / 设 emoji | `references/exec-blocks.md` | callout 别塞显式子块(撞 1770041);emoji 经原始 REST `children` 带 emoji_id 可设;**只用 MCP 路径退化为默认 🎁**——详见文件 |
 | 建嵌套块树 / 多处插入 | `references/exec-blocks.md` | descendant 一次建树;多处插入**先大 index 再小 index** |
-| 往 docx 嵌图 | `references/exec-blocks.md` | upload_all 绑 `parent_node=图片块ID`(不是文档ID),绑错 **1770013**;嵌前先 `Read` 看 PNG 防裁切 |
+| 往 docx 嵌图 | `references/exec-blocks.md` | **先试 `docs +media-insert --file … --selection-with-ellipsis "<caption 原文>"`**(一条命令封完四步 + 回滚,插到 caption 之下);它够不着时(插进 callout/表格内部、替换已有图块)才回落 curl 管线 —— upload_all 绑 `parent_node=图片块ID`(不是文档ID),绑错 **1770013**。嵌前一律先 `Read` 看 PNG 防裁切 |
 | 往「非 app owner / UAT 建的」文档插图,写报 **1061004** | `references/exec-blocks.md`(配方在 `references/exec-permission.md`) | UAT 建的文档 owner 是用户。**三步**:`GET /bot/v3/info` 取 bot open_id → UAT `permissionMember_create` 加 bot 为 `full_access` 协作者 → tenant 推图 → tenant `DELETE …/permissions/{token}/members/{bot}?type=docx&member_type=openid` 自删 |
 | 复用他人/源文档的图 | `references/exec-blocks.md` | 跨文档不能直接复用图片 token(relation mismatch);下字节用 user token 重新 upload |
 | **跨租户**原图复用拿不到(空数组) | `references/exec-blocks.md` | `.us.` token 对 CN/.sg 源图**静默返回空**;做不到 → 高质量重绘标「(重绘)」或让用户截图 |
@@ -53,7 +53,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 
 **执行层规约:**
 
-- 读写飞书**一律用官方 `lark-cli`**(`@larksuite/cli`,已装 `~/.local/bin`);**旧 `mcp__feishu__*` MCP 已退役,不再是执行路径**(全文唯一声明;MCP 时代台账见 `mira-sync-archive.md`)。三层调用法/自助发现(`schema`/`skills`)/鉴权/App 与 brand 细节/踩坑表全在同目录 `cli.md`;全接口面清单在 `~/feishu-cli/deliverables/cli-interface.md`。
+- 读写飞书**一律用官方 `lark-cli`**(`@larksuite/cli`,已装且在 PATH;绝对路径与版本见探针 `~/Library/Logs/harness/probe.md`,勿硬编码);**旧 `mcp__feishu__*` MCP 已退役,不再是执行路径**(全文唯一声明;MCP 时代台账见 `mira-sync-archive.md`)。三层调用法/自助发现(`schema`/`skills`)/鉴权/App 与 brand 细节/踩坑表全在同目录 `cli.md`;查全接口面用 `lark-cli <域> --help` / `lark-cli <域> schema` / `lark-cli skills read lark-<域>`(旧的 `~/feishu-cli/deliverables/cli-interface.md` 已随该任务区删除,不再存在)。
 - **身份**:`--as bot`(租户)/ `--as user`(用户 UAT);在用户 Drive/My Space 建东西走 `--as user`(tenant 撞 1255002)。**写类先 `--dry-run`**(高层 shortcut 无确认门会真执行)。
 - 起步只读体检:`lark-cli doctor` / `auth status`;两身份 `ready` 即可干活,不 ready 才按 `cli.md §4` 重登。
 
@@ -63,7 +63,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 
 按需路由用。**具体子技能不预加载**,按本目录用文件路径 `Read` 按需打开它的 `SKILL.md`(及其 `references/`)再干活。
 
-> 写文档 / 作图这组子技能(原飞书 workspace 子技能)已内迁本 skill 下 `subskills-workspace/`,不再远程引用工作区(旧 `feishu-mira-workspace/` 已归档)。用法同 lark-*:`Read subskills-workspace/<域>/SKILL.md`(及其 `references/`)再干活。下表「位置」列 `subskills-workspace/…` 均相对本 skill 根 `~/.codex/skills/feishu-task-management/`。通用工具(非飞书专属)单列一组,与飞书域分开。
+> 写文档 / 作图这组子技能(原飞书 workspace 子技能)已内迁本 skill 下 `subskills-workspace/`,不再远程引用工作区(旧 `feishu-mira-workspace/` 已归档)。用法同 lark-*:`Read subskills-workspace/<域>/SKILL.md`(及其 `references/`)再干活。下表「位置」列 `subskills-workspace/…` 均相对本 skill 根 `~/.claude/skills/feishu-task-management/`。通用工具(非飞书专属)单列一组,与飞书域分开。
 
 ### 写文档 / 内容
 | 技能 | 一句话用途 | 位置(SKILL.md) |
@@ -115,25 +115,28 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 | `lark-workflow-standup-report` | 指定日期日程 + 未完成任务摘要 |
 
 ### 飞书任务域本地伪 skill(`subskills-local/`)
-> **构建规则(钉死)**:凡飞书任务域的 skill,一律建成本 skill 内部伪 skill——物理放 `subskills-local/<skill>/` + 在本表登一行路由;**禁止**注册为 `~/.codex/skills/` 直属全局 skill(新建走 harness-management update 流程)。用法同 lark-*:`Read subskills-local/<域>/SKILL.md`,触发词/边界在各自 frontmatter。
+> **构建规则(钉死)**:凡飞书任务域的 skill,一律建成本 skill 内部伪 skill——物理放 `subskills-local/<skill>/` + 在本表登一行路由;**禁止**注册为 `~/.claude/skills/` 直属全局 skill(新建走 harness-management update 流程)。用法同 lark-*:`Read subskills-local/<域>/SKILL.md`,触发词/边界在各自 frontmatter。
 
 | 伪 skill | 管什么(边界) |
 |---|---|
 | `sql-query` | 字节内网 SQL 取数统一入口:固定优先级 bytedcli CLI → Aeolus 网页 → iDA;覆盖鉴权、队列、单次/异步查询、并行、采样校验、方言、CSV 与降级条件。 |
 | `building-dorado-hive-tables` | Dorado/DataLeap Hive生产链路:建表、权限、smoke、正式任务、历史回填、bootstrap、首日接力和生产验收；业务SQL设计和通用取数走 `sql-query`。 |
+| `bitcode-repository-publishing` | BitCode/Codebase 建仓与本地代码发布的经验型决策指南:按目标域、权限、CLI/UI 能力、Git/保护分支状态选路径；不固定流程，命令能力复用全局 `bytedcli`。 |
 | `analytical-report` | 严肃数据分析报告引擎:自包含离线 HTML(core/full 双版、SVG 图表、可折叠 SQL、读图三拍、诚实口径)+ starter-kit + build→Playwright→对抗审查闭环。通用 HTML 报告引擎;端到端飞书数据分析编排走 `data-analysis-report` |
 | `bytedance-internal-hosting` | 把 HTML 报告/网页/交互产物托管到字节内网拿可分享 link 的双平台权威:Goofy 快速预览(gf-preview URL,create/redeploy 保 link,**≤50MB 死限**)vs 飞书云盘 Preview(单文件报告+真 ACL,Upload New Version 保 link);含决策树、file_upload 注入、大文件分层瘦身、keychain/误判成功/大文件冻结等踩坑 |
+| `libra-experiment-weekly-report` | 按上一周/0721 模板原位更新 Libra 实验周会报告：读取实验记录与页面，采集决策 ADVV 和点击后的 p 值，按最后完整数据日计算 0.5d/关后回流，生成正确区域截图并保持飞书排版一致。 |
+| `ad-recall-experiment-debugging` | 广告召回实验端到端排查与证据整理:Libra 无 AID/CID 打点、召回量异常、Intent 有点但倒排无结果、跨 ROW/TTP/EU 差异,逐层查 Link / Intent Center / Engine / Targeting / DAG / TCC / 指标 / 源码,只做诊断和证据链(发布、改实验、改 TCC/代码须另行授权);周会报告走 `libra-experiment-weekly-report`。 |
 
 ### 通用工具(非飞书专属)
 > 已删/已迁物(long-task-workflow、choice-card、daily-report 拆分、frontend-design-pro 并入 frontend-pipeline)见 `mira-sync-archive.md` §1 沿革台账,不再占本表。
 | 技能 | 一句话用途 | 位置 |
 |---|---|---|
-| `workspace-management` | Agent 工作区文件系统唯一权威(双侧结构:本地 tasks/<kebab名> + 飞书 Task/<中文名>);建任务夹、收尾、归档、判断「这是什么任务」走它。 | `~/.codex/skills/workspace-management/SKILL.md`(全局) |
-| `harness-management` | harness 层(skill/command/hook/规则)一切变更的唯一入口;沉淀偏好/流程走其 update 流程。 | `~/.codex/skills/harness-management/SKILL.md`(全局) |
+| `workspace-management` | Agent 工作区文件系统唯一权威(双侧结构:本地 tasks/<kebab名> + 飞书 Task/<中文名>);建任务夹、收尾、归档、判断「这是什么任务」走它。 | `~/.claude/skills/workspace-management/SKILL.md`(全局) |
+| `harness-management` | harness 层(skill/command/hook/规则)一切变更的唯一入口;沉淀偏好/流程走其 update 流程。 | `~/.claude/skills/harness-management/SKILL.md`(全局) |
 | `feishu-daily-report` | **整理日报**(飞书域):口述清单 + 回读产出 → compile 成飞书日报落 Drive `Daily Report/WeekN`;「记录日报」走全局 `memory-management` 时间索引库。 | `subskills-workspace/feishu-daily-report/SKILL.md` |
 
 ### 其他全局技能
-非飞书任务回全局技能体系(`~/.codex/skills/` 注册表,按各自 description 触发),不经本入口、本表不复刻。
+非飞书任务回全局技能体系(`~/.claude/skills/` 注册表,按各自 description 触发),不经本入口、本表不复刻。
 
 ## 注意
 - 这些飞书子技能源文件只在工作区一份(非全局软链)。Codex/Cursor 在工作区目录下工作时,读工作区的 `AGENTS.md` 获得同样索引。

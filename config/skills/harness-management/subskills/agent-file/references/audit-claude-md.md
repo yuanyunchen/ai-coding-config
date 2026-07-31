@@ -115,6 +115,8 @@ After outputting the quality report, ask user for confirmation before updating.
    - The specific addition (as a diff or quoted block)
    - Brief explanation of why this helps future sessions
 
+See [update-guidelines.md](update-guidelines.md) for worked examples of each category and the pre-finalize validation checklist.
+
 **Diff Format:**
 
 ```markdown

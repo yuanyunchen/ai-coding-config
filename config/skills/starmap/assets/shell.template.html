@@ -1,0 +1,90 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>__TITLE__</title>
+<style>
+__FONTS__
+__CSS__
+</style></head><body>
+
+<canvas class="sm-sky"></canvas>
+<div class="sm-vignette"></div><div class="sm-grain"></div>
+
+<div class="sm-hud">
+  <div class="sm-brand">
+    <div class="sm-eyebrow">__EYEBROW__</div>
+    <h1>__H1__</h1>
+    <div class="sub">__SUB__</div>
+  </div>
+  <div class="sm-readout" id="ro"></div>
+</div>
+
+<div class="sm-tips"><b>拖拽</b> 平移 · <b>滚轮</b> 缩放 · <b>双击空白 / F</b> 全景
+  · <b>点击</b> 详情 · <b>双击节点</b> 放大 · <b>ESC</b> 关闭
+  <a id="aside">__ASIDE_LABEL__ ↗</a></div>
+<div class="sm-tip"></div>
+
+<div class="sm-find"><input id="q" placeholder="__SEARCH_PLACEHOLDER__" autocomplete="off"></div>
+
+<div class="sm-mini"><canvas width="360" height="200"></canvas>
+  <span class="hint">点击回中 · 双击全景</span></div>
+
+<div class="sm-zoom">
+  <button id="zIn" title="放大"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
+    stroke-width="1.4"><path d="M8 3v10M3 8h10"/></svg></button>
+  <button id="zOut" title="缩小"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
+    stroke-width="1.4"><path d="M3 8h10"/></svg></button>
+  <!-- 全景 = 四箭头向心收拢；全屏 = 四角括号外张。两者在 15px 下必须一眼可分 -->
+  <button id="zFit" title="恢复全景（F）"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
+    stroke-width="1.4" stroke-linecap="round"><path d="M6.5 2v4.5H2M9.5 2v4.5H14M6.5 14V9.5H2M9.5 14V9.5H14"/></svg></button>
+  <button id="zFull" title="全屏"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
+    stroke-width="1.4" stroke-linecap="round"><path d="M6 2H2v4M10 2h4v4M6 14H2v-4M10 14h4v-4"/></svg></button>
+</div>
+
+<div class="sm-insp">
+  <div class="sm-rz"></div>
+  <div class="sm-head"></div>
+  <button class="sm-x">✕</button>
+  <div class="sm-body"></div>
+</div>
+
+<dialog class="sm-dlg">
+  <div class="sm-dh"><b id="dt"></b><button onclick="this.closest('dialog').close()">CLOSE ✕</button></div>
+  <div class="sm-doc" id="db"></div>
+</dialog>
+
+<script>
+const DATA = __DATA__;
+__ENGINE__
+
+/* ── 接线：把业务语义喂给引擎 ─────────────────────────────────────── */
+const sm = Starmap({
+  nodes: DATA.nodes,
+  links: DATA.links,
+
+  radius: n => n.kind==='__PRIMARY_KIND__' ? 26 + __SIZE_EXPR__ * 22 : 13,
+  nodeGlow: n => n.kind==='__PRIMARY_KIND__' ? [143,198,255] : [195,168,255],
+  linkStyle: l => ({rgb: __LINK_RGB__, dash: __LINK_DASH__}),
+  dagIgnore: l => __DAG_IGNORE__,
+
+  // 标签外扩：横向按最长一行标签的半宽，纵向按标签栈的总高。
+  // 少给了自动取景会裁掉字，多给了会白白缩小。
+  labelBox: n => n.kind==='__PRIMARY_KIND__'
+    ? {halfW: Math.max(n.r+8,118), up: n.r+10, down: n.r+62}
+    : {halfW: Math.max(n.r+8, 86), up: n.r+10, down: n.r+26},
+
+  drawNode(ctx,n,st){ /* 见 references/visual-system.md 的"节点本体"一节 */ },
+  tooltip(x,isLink){ return isLink ? `...` : `<b>${x.name}</b>`; },
+  inspectNode(n,{ins,outs}){ return {k:'...', title:n.name, mono:n.id, one:n.one, body:'...'}; },
+  inspectLink(l){ return {k:'RELATION', title:'...', body:'...'}; },
+  searchMatch:(n,q)=>[n.name,n.raw,n.en].some(s=>String(s||'').toLowerCase().includes(q)),
+});
+
+zIn.onclick  = ()=>sm.zoomBy(1.28);
+zOut.onclick = ()=>sm.zoomBy(1/1.28);
+zFit.onclick = ()=>{ sm.closeInsp(); sm.fitView(true); };
+zFull.onclick= ()=>sm.toggleFullscreen();
+
+/* 顶栏读数：只放全局不变量 */
+ro.innerHTML = __READOUT__.map(([k,v],i)=>
+  (i?'<div class="sep"></div>':'')+`<div><span>${k}</span><b>${v}</b></div>`).join('');
+</script></body></html>

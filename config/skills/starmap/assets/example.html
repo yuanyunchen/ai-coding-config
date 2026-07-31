@@ -1,0 +1,157 @@
+<!-- ═══════════════════════════════════════════════════════════════
+  Starmap 接线示例 —— 已验证可运行的完整实现，拿它当起点比从
+  shell.template.html 从零填快得多。
+
+  装配：
+    python3 <skill>/scripts/build_page.py --shell example.html \
+        --data data.json --out dist/index.html [--fonts <woff2 目录>]
+
+  data.json 里每个节点用到的字段：
+    kind  实体类型（table / task）——决定形状
+    name  中文名 · raw 原始标识符 · en 英文名（tooltip 用）
+    rows  体量（决定半径，走对数）· nf 字段数 · tiers {core,usable,noise}
+    pkey  分区键 · days 窗口天数 · lag 数据滞后天数（决定新鲜度点颜色）
+    tid   任务号（kind=task）· ev 证据强度 · desc 说明
+  边字段：s / t / rel(produces|reads_from|measured) / ev
+  ═══════════════════════════════════════════════════════════════ -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Starmap 接线示例 · 数据血缘</title>
+<style>
+__FONTS__
+__CSS__
+</style></head><body>
+<canvas class="sm-sky"></canvas>
+<div class="sm-vignette"></div><div class="sm-grain"></div>
+<div class="sm-hud">
+  <div class="sm-brand">
+    <div class="sm-eyebrow">Lineage Starmap</div>
+    <h1>Starmap <em>接线示例</em></h1>
+    <div class="sub">一份跑得通的完整接线：13 节点 · 14 边 · 两类实体 · 四档证据强度</div>
+  </div>
+  <div class="sm-readout" id="ro"></div>
+</div>
+<div class="sm-tips"><b>拖拽</b> 平移 · <b>滚轮</b> 缩放 · <b>双击空白 / F</b> 全景
+  · <b>点击</b> 详情 · <b>双击节点</b> 放大 · <b>ESC</b> 关闭</div>
+<div class="sm-tip"></div>
+<div class="sm-find"><input id="q" placeholder="搜索" autocomplete="off"></div>
+<div class="sm-mini"><canvas width="360" height="200"></canvas>
+  <span class="hint">点击回中 · 双击全景</span></div>
+<div class="sm-zoom">
+  <button id="zIn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 3v10M3 8h10"/></svg></button>
+  <button id="zOut"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 8h10"/></svg></button>
+  <button id="zFit"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M6.5 2v4.5H2M9.5 2v4.5H14M6.5 14V9.5H2M9.5 14V9.5H14"/></svg></button>
+  <button id="zFull"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 2H2v4M10 2h4v4M6 14H2v-4M10 14h4v-4"/></svg></button>
+</div>
+<div class="sm-insp"><div class="sm-rz"></div><div class="sm-head"></div>
+  <button class="sm-x">✕</button><div class="sm-body"></div></div>
+<dialog class="sm-dlg"><div class="sm-dh"><b id="dt"></b>
+  <button onclick="this.closest('dialog').close()">CLOSE ✕</button></div>
+  <div class="sm-doc" id="db"></div></dialog>
+<script>
+const DATA = __DATA__;
+__ENGINE__
+
+const EVC={recorded:[143,198,255],named:[74,95,134],blocked:[255,201,138],measured:[255,143,163]};
+const EVN={recorded:'血缘边已记录',named:'产出边未记录',blocked:'代码不可读',measured:'实测数量关系'};
+const shortN=n=>n>=1e8?(n/1e8).toFixed(1)+'亿':n>=1e4?Math.round(n/1e4)+'万':String(n);
+const rl=Object.values(DATA.nodes).filter(n=>n.kind==='table').map(n=>Math.log10(n.rows));
+const rlo=Math.min(...rl), rhi=Math.max(...rl);
+
+const sm = Starmap({
+  nodes: DATA.nodes, links: DATA.links,
+  radius: n => n.kind==='table' ? 26+(Math.log10(n.rows)-rlo)/(rhi-rlo||1)*22 : 13,
+  nodeGlow: n => n.kind==='table' ? [143,198,255]
+                : (n.ev==='blocked' ? [255,201,138] : [195,168,255]),
+  linkStyle: l => ({rgb: EVC[l.ev], width: l.rel==='measured'?1.2:1.5,
+    dash: l.ev==='blocked'?[5,5]:(l.rel==='measured'?[2,6]:[]),
+    arrow: l.rel!=='measured', particles: l.rel!=='measured'&&l.ev!=='blocked',
+    particle: l.rel==='produces'?'#b4d6ff':'#ccbaff'}),
+  dagIgnore: l => l.rel==='measured' || (l.s==='t307341729'&&l.t==='registry'),
+  miniColor: n => n.kind==='table' ? '#8fc6ff' : '#c3a8ff',
+  labelBox: n => n.kind==='table'
+    ? {halfW: Math.max(n.r+8,118), up:n.r+10, down:n.r+62}
+    : {halfW: Math.max(n.r+8, 86), up:n.r+10, down:n.r+26},
+
+  drawNode(ctx,n,st){
+    const {on,sel,plate}=st;
+    if(n.kind==='table'){
+      ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,7);
+      const g=ctx.createRadialGradient(n.x-n.r*.4,n.y-n.r*.5,1,n.x,n.y,n.r*1.2);
+      g.addColorStop(0,'#16203a'); g.addColorStop(1,'#0a1020');
+      ctx.fillStyle=g; ctx.fill();
+      ctx.strokeStyle=sel?'rgba(143,198,255,.95)':'rgba(148,178,255,.26)';
+      ctx.lineWidth=sel?2:1.2; ctx.stroke();
+      const t=n.tiers, tot=n.nf||1; let a0=-Math.PI/2;
+      [[t.core,'#8fc6ff'],[t.usable,'#9ee493'],[t.noise,'rgba(93,106,143,.55)']].forEach(([v,c])=>{
+        if(!v) return; const a1=a0+v/tot*6.2832;
+        ctx.beginPath(); ctx.arc(n.x,n.y,n.r+6.5,a0,a1);
+        ctx.strokeStyle=c; ctx.lineWidth=3.2; ctx.stroke(); a0=a1;});
+      const lr=n.lag===0?[158,228,147]:n.lag<=2?[255,201,138]:[255,143,163];
+      ctx.beginPath(); ctx.arc(n.x+n.r*.7,n.y-n.r*.7,4,0,7);
+      ctx.fillStyle=`rgb(${lr})`; ctx.fill();
+      ctx.strokeStyle='#060913'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.textAlign='center';
+      ctx.fillStyle='#e9eefb'; ctx.font='500 12px "JetBrains Mono",monospace';
+      ctx.fillText(shortN(n.rows),n.x,n.y+4);
+      ctx.font='600 12.5px "Space Grotesk",sans-serif';
+      if(on) plate(n.name,n.x,n.y+n.r+27,7,15);
+      ctx.fillStyle=on?'#dfe7f7':'#4d5772'; ctx.fillText(n.name,n.x,n.y+n.r+26);
+      ctx.font='500 11px "JetBrains Mono",monospace';
+      if(on) plate(n.raw,n.x,n.y+n.r+42,8,15);
+      ctx.fillStyle=on?'#8fc6ff':'#43516d'; ctx.fillText(n.raw,n.x,n.y+n.r+41);
+      const meta=n.pkey+' · '+n.days+'天';
+      ctx.font='400 8.5px "JetBrains Mono",monospace';
+      if(on) plate(meta,n.x,n.y+n.r+55,6,11);
+      ctx.fillStyle=on?'rgba(93,106,143,.95)':'#343c52'; ctx.fillText(meta,n.x,n.y+n.r+54);
+    } else {
+      ctx.save(); ctx.translate(n.x,n.y); ctx.rotate(.7854);
+      const s=n.r; ctx.beginPath(); ctx.roundRect(-s,-s,s*2,s*2,3);
+      ctx.fillStyle=n.ev==='blocked'?'#1e1930':'#171334'; ctx.fill();
+      ctx.strokeStyle=sel?'rgba(195,168,255,.95)':(n.ev==='blocked'?'rgba(255,201,138,.5)':'rgba(195,168,255,.4)');
+      ctx.lineWidth=sel?2:1.2; if(n.ev==='blocked')ctx.setLineDash([3,3]);
+      ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+      ctx.textAlign='center'; ctx.font='500 9.5px "JetBrains Mono",monospace';
+      ctx.fillStyle=on?'#c3a8ff':'#4a4266'; ctx.fillText(n.tid,n.x,n.y+3.2);
+      ctx.font='400 10px "Space Grotesk",sans-serif';
+      if(on) plate(n.name,n.x,n.y+n.r+20,6,12);
+      ctx.fillStyle=on?'rgba(195,168,255,.72)':'#3f3a56'; ctx.fillText(n.name,n.x,n.y+n.r+19);
+    }
+  },
+  tooltip(x,isLink){
+    if(isLink) return `<b>${DATA.nodes[x.s].name} → ${DATA.nodes[x.t].name}</b><br>${EVN[x.ev]}`;
+    return x.kind==='table'
+      ? `<b>${x.name}</b> <s>${x.en}</s><br>${x.rows.toLocaleString()} 行/分区 · 滞后 ${x.lag} 天`
+      : `<b>任务 ${x.tid}</b><br>${x.name} · ${EVN[x.ev]}`;
+  },
+  inspectNode(n,{ins,outs}){
+    const rel=l=>`<div class="sm-rel"><div class="r">${DATA.nodes[l.s].name}<s>→</s>${DATA.nodes[l.t].name}</div>
+      <div class="m">${l.rel.toUpperCase()}<span class="sm-badge">${EVN[l.ev]}</span></div></div>`;
+    return {k: n.kind==='table'?'Data Table':'Production Task',
+      title:n.name, mono:n.table||('TASK '+n.tid), one:n.one||n.desc,
+      body:`<div class="sm-sec">概述</div><div class="sm-sum"><p>${n.one||n.desc||''}</p></div>
+        <div class="sm-sec">关键事实</div><div class="sm-pane"><div class="sm-chips">
+          ${n.rows?`<span class="sm-chip">行数 <b>${n.rows.toLocaleString()}</b></span>`:''}
+          ${n.pkey?`<span class="sm-chip ice">分区 <b>${n.pkey}</b></span>`:''}
+          ${n.days?`<span class="sm-chip">窗口 <b>${n.days} 天</b></span>`:''}
+          ${n.lag!=null?`<span class="sm-chip hot">滞后 <b>${n.lag} 天</b></span>`:''}</div></div>
+        ${ins.length?`<div class="sm-sec">上游</div>${ins.map(rel).join('')}`:''}
+        ${outs.length?`<div class="sm-sec">下游</div>${outs.map(rel).join('')}`:''}
+        <details class="sm-more"><summary>统计明细</summary><div class="in">
+          <div class="sm-pane">字段数 ${n.nf||'—'}</div></div></details>`};
+  },
+  inspectLink(l){
+    return {k:'Relation', title:`${DATA.nodes[l.s].name} → ${DATA.nodes[l.t].name}`,
+      mono:l.rel.toUpperCase(), one:EVN[l.ev],
+      body:`<div class="sm-sec">证据强度</div><div class="sm-pane">${EVN[l.ev]}</div>`};
+  },
+  searchMatch:(n,q)=>[n.name,n.raw,n.en,n.tid].some(s=>String(s||'').toLowerCase().includes(q)),
+});
+zIn.onclick=()=>sm.zoomBy(1.28); zOut.onclick=()=>sm.zoomBy(1/1.28);
+zFit.onclick=()=>{sm.closeInsp();sm.fitView(true);}; zFull.onclick=()=>sm.toggleFullscreen();
+const nT=Object.values(DATA.nodes).filter(n=>n.kind==='table').length;
+ro.innerHTML=[['Tables',nT],['Tasks',Object.keys(DATA.nodes).length-nT],
+  ['Edges',DATA.links.length]].map(([k,v],i)=>
+  (i?'<div class="sep"></div>':'')+`<div><span>${k}</span><b>${v}</b></div>`).join('');
+
+</script></body></html>

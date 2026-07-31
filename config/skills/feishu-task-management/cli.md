@@ -1,20 +1,21 @@
 # 飞书 CLI 使用手册(官方 lark-cli,独立于 MCP)
 
 > 飞书执行层的 **官方 CLI 形态**实操 + 避坑。与同目录 `memory.md`(MCP 执行记忆)**物理分开、互不并入**。
-> 用的是飞书**官方** `lark-cli`(`@larksuite/cli`),自带鉴权 / HTTP / 分页 / 上传下载 / 三层命令 + 27 个内置 agent skill。**全接口面清单见 `~/feishu-cli/deliverables/cli-interface.md`**(333 shortcut + 225 API 方法,逐接口可测);**全接口直测结论见 `~/feishu-cli/deliverables/cli-test-report.md`**(逐个安全探测 = 0 不可用,见 §7)。
+> 用的是飞书**官方** `lark-cli`(`@larksuite/cli`),自带鉴权 / HTTP / 分页 / 上传下载 / 三层命令 + 27 个内置 agent skill。**查接口面用官方自带入口**(与当前 CLI 版本同步,见 §3):`lark-cli <域> --help` / `lark-cli schema <service.resource>` / `lark-cli skills read lark-<域>`。旧的 `~/feishu-cli/deliverables/*` 两份清单已随该任务区删除,不要再引用;当年的直测结论(333 shortcut + 225 API,0 不可用)保留在 §7 正文里。
 
 ---
 
 ## 1. 是什么 + 起步
 
-**官方 `lark-cli`**(实测 `v1.0.56`,Go 单二进制,npm 分发)已装到 `~/.local/bin`(在 PATH 里),终端直接敲 `lark-cli`:
+**官方 `lark-cli`**(`@larksuite/cli`,Go 单二进制,npm 分发)已装且在 PATH 里,终端直接敲 `lark-cli`。**绝对路径与版本以探针为准,不要在本文硬编码**:`~/Library/Logs/harness/probe.md` 的「运行时/飞书」段(刷新 = `python3 ~/.claude/skills/harness-management/scripts/harness-probe.py`)。历史教训:本行曾写死 `~/.local/bin`,而实际安装位置是 `~/.local/node/bin`,照抄绝对路径必 no such file。
 
 ```
-~/.local/bin/lark-cli   # 官方二进制
+lark-cli                 # 官方二进制,在 PATH 里,直接敲
+command -v lark-cli      # 要绝对路径时现算,别抄死值
 ```
 
 - **app** `cli_aaad33abb3f81bd7`,**brand=feishu**(默认走 `open.feishu.cn`,实测直达本租户;`open.feishu.cn` / `open.larkoffice.com` / `open.larksuite.com` 是同一租户同后端的三个区域前门,brand=feishu 即够,无需切 larkoffice)。
-- **配置 / 凭据**存 `~/.lark-cli/`(`config.json` + token cache + Keychain；沙箱兼容模式为 `~/Library/Application Support/lark-cli/master.key.file`),**独立于 MCP**(MCP 用自己的 keychain,二者不共享 token)。
+- **配置 / 凭据**存 `~/.lark-cli/`(`config.json` + token cache + keychain),**独立于 MCP**(MCP 用自己的 keychain,二者不共享 token)。
 - **身份**:`--as bot`(租户/机器人,token 自动获取)/ `--as user`(用户 UAT,走 device-flow 一次登录)。bot + user 当前都 `ready`。
 - **scope** 已补齐(181 项),**user token 有效期**:access ~1h(`expiresAt`)、refresh 到 **2026-06-27**(`auth status` 的 `refreshExpiresAt`);**到期后重 `auth login`**(见 §4)。读类全域覆盖;**写类有一处缺口**:user token 无 `im:message.send_as_user`,以 user 身份发 IM(`im +messages-send --as user`)会 `missing_scope`,改用 `--as bot`(见 §5 踩坑表)。
 
@@ -26,14 +27,6 @@ lark-cli auth status     # bot/user 是否 ready、user token 剩余有效期(ex
 ```
 
 两个身份都 `ready` 就能直接干活(§2)。只有没配 / 过期时才碰 §4。
-
-若在 Codex 等沙箱中报 Keychain 访问被拒绝，agent 自行执行一次：
-
-```bash
-lark-cli config keychain-downgrade
-```
-
-它把 CLI master key 从系统 Keychain 复制到 `~/Library/Application Support/lark-cli/master.key.file`，后续同一用户进程从文件读取，不再触发系统 Keychain。代价是同机同用户进程可读该文件；不打印、不复制文件内容。`auth status` 显示 user 为 `needs_refresh` 不是失败，下一次 user API 会自动刷新。若随后报 `lookup open.feishu.cn: no such host` / `ENOTFOUND`，这是执行环境断网，不是鉴权；禁止反复登录或再次 downgrade，也不要把命令转交用户。agent 应自动切换到自己可控制的非沙箱 CLI 进程；若当前运行时没有该通道，则按本 skill 的浏览器降级规则在已登录会话完成同一操作，并做远端回读。
 
 ---
 
@@ -129,10 +122,12 @@ cd /tmp && lark-cli drive +export --token <doc> --type docx --extension pdf -o .
 > 仅在没配 / token 过期时执行。只动 CLI 自己的 `~/.lark-cli`,不碰 MCP。
 
 **配 app 身份**(secret 走 stdin 不回显):
+
+⚠ **凭据来源已失效,这一步现在需要人工提供 secret。** 原配方从 `~/.config/lark-mcp/env` 读 APP_ID/APP_SECRET,该文件随 MCP 退役已删除(2026-07-30 实测不存在);照抄会把空串喂进 `--app-secret-stdin`。app id 是 `cli_aaad33abb3f81bd7`(见上文),secret 请用户从密码管理器或飞书开放平台取,agent 不要去别处翻。
+
 ```bash
-APP_ID=$(grep -E '^export +APP_ID=' ~/.config/lark-mcp/env | sed -E 's/.*APP_ID=//; s/"//g')
-grep -E '^export +APP_SECRET=' ~/.config/lark-mcp/env | sed -E 's/.*APP_SECRET=//; s/"//g' \
-  | lark-cli config init --app-id "$APP_ID" --app-secret-stdin --brand feishu
+# secret 由用户在交互式终端粘贴,不落文件、不进 agent 上下文
+lark-cli config init --app-id cli_aaad33abb3f81bd7 --app-secret-stdin --brand feishu
 ```
 - 落 `~/.lark-cli/config.json`(`brand:"feishu"`)。bot/tenant token 之后**自动获取 + 刷新**,`auth status` 显示 `bot.status:"ready"` 即可用。
 - `config init` 在检测到 Agent 工作区 env(`OPENCLAW_HOME`/`HERMES_HOME`)时会拒绝,改用 `lark-cli config bind`;普通终端不触发。
@@ -141,7 +136,7 @@ grep -E '^export +APP_SECRET=' ~/.config/lark-mcp/env | sed -E 's/.*APP_SECRET=/
 ```bash
 # 第一段:发起,立即返回 verification_url + device_code(不阻塞)
 lark-cli auth login --no-wait --json --domain all \
-  --scope "$(grep -v '^#' ~/feishu-cli/src/scope-gap.txt | tr '\n' ' ')"
+  --scope "$(lark-cli auth scopes 2>/dev/null | tr '\n' ' ')"   # scope 清单现算;原 ~/feishu-cli/src/scope-gap.txt 已随该任务区删除,展开为空串会静默请到零 scope
 ```
 - 浏览器打开 `verification_url` → Authorize 批准(**走 Chrome 插件 `mcp__Claude_in_Chrome__*`,不用 computer-use**)。device-flow 无 redirect,**无需往 app 加白名单**。
 ```bash
@@ -161,7 +156,6 @@ lark-cli auth login --device-code <device_code>
 | 坑 | 现象 | 规避 |
 |---|---|---|
 | **brand 与本租户** | 文档只说 feishu/lark 两 brand,看似不支持 larkoffice | brand=feishu 即直达本租户(`open.feishu.cn` 与 `open.larkoffice.com` 同后端);**别去找 larkoffice 切域入口**(没有,`FEISHU_DOMAIN` 是 no-op) |
-| **沙箱 Keychain 与网络是两层问题** | 先报 Keychain blocked；downgrade 后又报 `no such host`，容易误判为鉴权仍坏 | Keychain blocked → agent 执行 `lark-cli config keychain-downgrade`；随后先看 `auth status`。DNS/连接失败属于沙箱网络，禁止重登或让用户代跑；自动换 agent 可控的非沙箱 CLI 通道，无此通道时按浏览器降级并回读验真 |
 | **裸 POST 缺 body → 9499** | body 必填的 POST(如 `bitable .../records/search`)不带 `--data` → `9499 Invalid request parameters`,空 body 也得发 | 裸 `api` 打这类 POST **必须手动 `--data '{}'`**(实测:不带=9499,带 `{}`=ok)。高层 `+record-search` shortcut 已自带 body,无此坑 |
 | **个别端点 `.data` 恒空** | 个别端点(如 `GET /open-apis/bot/v3/info`)`ok:true` 但 CLI 返回 JSON 里 `.data` = `{}`,且顶层只有 `ok/identity/data` 三键(无 `.bot` 等额外字段,`-q '.bot'` 取到 `null`) | 先 `-q '.'` 看清真实返回结构再取字段,别假设 payload 在某顶层键;取 bot/用户信息改走有正常 `.data` 的端点,如 `lark-cli contact +get-user --as user -q '.data.user.name'`(实测返回用户名) |
 | **tenant-only 端点 `--as user` 无效** | 部分 im/contact 端点只认 tenant(`im chats create`、`im messages merge_forward/read_users/urgent_*`、`im images create`、`contact .../batch_get_id`),传 `--as user` 也被当 bot | `schema` 看 `access_tokens` 仅 `["tenant"]` 的就 **`--as bot`**;读用户私聊 / bot 不在的群正文 CLI 做不到,走 Chrome 插件读网页(`memory.md` §7/§8) |
@@ -197,18 +191,18 @@ lark-cli schema <service.resource>           # 参数/类型/必填/scope/身份
 lark-cli skills list / lark-cli skills read <name>   # 官方内置 agent skill
 
 # 重新授权(token 过期 / 补 scope)
-lark-cli auth login --no-wait --json --domain all --scope "$(grep -v '^#' ~/feishu-cli/src/scope-gap.txt | tr '\n' ' ')"
+lark-cli auth login --no-wait --json --domain all --scope "$(lark-cli auth scopes 2>/dev/null | tr '\n' ' ')"
 # 浏览器(Chrome 插件)批准 verification_url 后:
 lark-cli auth login --device-code <code>
 ```
 
-**铁律**:写类先 `--dry-run`(shortcut 无确认门会真执行);只动 CLI 自己的配置与凭据，不碰 MCP 配置；Keychain blocked 时允许执行官方 `config keychain-downgrade`，但不读取或输出 master key 内容。全接口面 + 测试清单见 `~/feishu-cli/deliverables/cli-interface.md`。
+**铁律**:写类先 `--dry-run`(shortcut 无确认门会真执行);只动 CLI 自己的 `~/.lark-cli`,不碰 MCP 配置 / keychain / 凭据;查接口面用 `lark-cli <域> --help` / `lark-cli schema <service.resource>` / `lark-cli skills read lark-<域>`(旧的 `~/feishu-cli/deliverables/*` 已随该任务区删除)。
 
 ---
 
 ## 7. 全接口直测结论(摘要,详见 cli-test-report.md)
 
-558 个一级接口(333 shortcut + 225 API)逐个安全探测,结论 **0 不可用**——全部 wired 且可达后端,跑不出数据只因 scope 没开或 flag 传错,非 CLI 缺陷。完整分域表 / scope 缺口可解锁性 / flag 汇总 / 安全核验见 **`~/feishu-cli/deliverables/cli-test-report.md`**。三件要点:
+558 个一级接口(333 shortcut + 225 API)逐个安全探测,结论 **0 不可用**——全部 wired 且可达后端,跑不出数据只因 scope 没开或 flag 传错,非 CLI 缺陷。该结论是 2026-06 对 v1.0.56 的一次性直测,当年的完整分域表 / scope 缺口 / flag 汇总随 `~/feishu-cli/` 任务区一并删除,未留副本;要重新核验就用 §3 的自助发现入口。原报告见 **`~/feishu-cli/deliverables/cli-test-report.md`**。三件要点:
 
 - **已知 scope 缺口**(app 未申请,非缺陷,console 加 scope + 重授可解锁):**OKR 全域**(5 scope)、**attendance**(`attendance:task:readonly`)、**base 6 类读**(block/history/dashboard/form/role/workflow read)、**mail 发送**(`mail:user_mailbox.message:send`)、**im user 发消息**(`im:message.send_as_user`,走 `--as bot` 可绕)。`auth scopes` 需的管理员 scope 属 app 根本没有。
 - **flag 名常非直觉**(猜错报 unknown flag):base 多个写类用 `--json` 整对象而非 `--name`;sheets `--cells`/`--font-weight`/`--replacement`/`--index`;task `--task-guid`/`--add`/`--set`;calendar `--rsvp-status`;approval `--instance-code` 等。**传参前先 `lark-cli <域> +<shortcut> --help` 或 `schema <svc> <res> <method>` 或 `skills read lark-<域>` 查准**,别靠记忆(§3 三入口都与版本同步)。

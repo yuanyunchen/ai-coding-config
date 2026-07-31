@@ -48,7 +48,7 @@ init / recall / update 是本 skill 的三个内置子模块(`modules/`):**手�
 | 建/改工作区能力物(skill·命令·派发类型·hook)/ 查路由表机制 | `references/capability-layer.md`(路由表加载;hook 一律给用户过目) |
 | 查规范细则(结构/模式/索引/归档/接缝) | `references/spec.md`(§ 编号与设计稿一致) |
 | MEMORY.md / 派发 task.md / 指针行 模板 | `templates/` |
-| 巡检(结构/新鲜度/死链/索引/留档/能力层) | `scripts/lint.sh <根>`(memory-weekly-check 周度执行,R11 裁决) |
+| 巡检(结构/新鲜度/死链/索引/留档/能力层) | `scripts/lint.sh <根>`(无自动执行:update 例程末步顺手跑或人调触发) |
 | 结构摘要 / 状态文件新鲜度速看 | `scripts/tree-summary.sh <根>` |
 
 ## 硬纪律(全文见 references/spec.md,此处只列绝不可违)

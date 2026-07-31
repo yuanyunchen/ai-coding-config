@@ -26,7 +26,7 @@
    - 需读文件的 path 清单(充分利用工作区文件索引;首行引本 protocol);
    - 输出文件 path(对外写域 = 仅此);
    - 需遵守的规则/skill 文件 path(如 lark-doc-writer、浏览器走 Chrome 插件禁令等,按任务点名)。
-3. **回传处理**:读 result.md(及其引用文件);有价值内容由你提炼——可复用理解 → `.agent/memory/note/`;派发中反复出现的规则文本 → 下沉为 `.claude/agents/` 类型定义(capability-layer.md 生长阶梯),brief 只写本次差异。
+3. **回传处理**:读 result.md(及其引用文件);有价值内容由你提炼——可复用理解 → `.agent/memory/note/`;派发中反复出现的规则文本 → 下沉为 `.agent/agents/` 类型定义(capability-layer.md 生长阶梯),brief 只写本次差异。
 4. **写域约定为约定级**:靠 task.md 模板钉死 + 巡检(lint ⑤ 派发留档完整性)+ update 时抽查;hook 硬拦截暂不设、按需再议(留实现选项)。
 5. **留档即日志**:task.md / result.md / message/ 为日志型,只追加不回改;全过程可审计、可复用、可跨会话续跑。
 6. **长轮询任务别信子智能体自唤醒**(2026-07-04 实测,search-pixel-ad-side-increment):子智能体用后台 `sleep` 计时器自唤醒可能失灵(计时器到点不回醒,任务静默悬停)。凡「提交远端作业→等→收割」型任务,二选一:① 令子智能体**回合内持续工作不 yield**(轮流检查各作业即天然间隔);② 主 agent 自挂监督计时器核产物落盘进度,断更即 SendMessage 唤醒。派发 prompt 里写明所选模式。

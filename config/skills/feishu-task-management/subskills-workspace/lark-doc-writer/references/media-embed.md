@@ -1,12 +1,20 @@
 # 媒体嵌图管线(本地图 / 渲染 PNG → 飞书 Image 块)
 
-> canonical 落地配方。执行层走官方 `lark-cli`(旧 `mcp__feishu__*` MCP 已退役;下文 MCP/REST 记法仅作动作语义参考,实际以 `lark-cli` 对应命令为准,见 `cli.md`)。高层接口只暴露 `media_uploadPrepare/uploadFinish`,**没有推字节的接口**,本地图必须走下面的 curl 管线。源自 module5 image_recipe(本机实跑通并回读验证)。执行路径与凭据细节呼应 §3 执行层映射、§6b 插本地图;本篇是单一完整序列 + 坑表。
+> canonical 落地配方。执行层走官方 `lark-cli`(旧 `mcp__feishu__*` MCP 已退役;下文 MCP/REST 记法仅作动作语义参考,实际以 `lark-cli` 对应命令为准,见 `cli.md`)。源自 module5 image_recipe(本机实跑通并回读验证)。执行路径与凭据细节呼应 §3 执行层映射、§6b 插本地图;本篇是单一完整序列 + 坑表。
+
+> ⭐ **先试一条命令的官方路径,不行才回落本篇五步管线(2026-07-29 实测,lark-cli 1.0.65)**:
+> ```bash
+> lark-cli docs +media-insert --doc <doc> --type image --file ./fig.png \
+>   --selection-with-ellipsis "图 1 · <caption 原文>" --align center --as user
+> ```
+> 它把「加协作者 → 建空块 → 推字节 → 绑 token」四步连回滚一起封好,**自己不用碰 TAT / `parent_node` / `1061004`**;`--selection-with-ellipsis` 传 caption 段落的纯文本即可精准插到**该段之下**(caption 在上、图在下,正合 §10 自检),多张图各锚各自 caption、互不干扰,无需算 index。整篇正文同样一条命令:`docs +create --doc-format xml --content @body.xml --parent-token <folder>` 直接落 callout / 原生 table / checkbox / cite,**不必逐块建**。
+> **仍需回落本篇五步 curl 管线的情形**:要把图插进 callout / 表格单元格等容器内部(`+media-insert` 落的是顶层块)、要替换已有图块的 token、或 `+media-insert` 报错需要自己拆步排查。
 
 ---
 
 ## 0. 前置:凭据与身份(每会话一次)
 
-- App 凭据在 `~/.config/lark-mcp/env`(`APP_ID`/`APP_SECRET`)。换 `tenant_access_token`(下称 TAT,有效 ~2h):POST `{BASE}/open-apis/auth/v3/tenant_access_token/internal`,body `{app_id, app_secret}`。
+- App 凭据:用 `lark-cli --as bot` 现取 tenant token(旧配方读的 `~/.config/lark-mcp/env` 已随 MCP 退役删除,2026-07-30 实测不存在)(`APP_ID`/`APP_SECRET`)。换 `tenant_access_token`(下称 TAT,有效 ~2h):POST `{BASE}/open-apis/auth/v3/tenant_access_token/internal`,body `{app_id, app_secret}`。
 - `{BASE}` 按租户(如 `https://open.larkoffice.com`);取 bot open_id:TAT `GET {BASE}/open-apis/bot/v3/info` 取 `bot.open_id`。
 - **读写用户文档**:MCP 工具传 `useUAT:true`(`useUAT` 建的文档 owner 是用户,不是 app)。
 - **curl 推字节 / REST patch**:用 TAT。

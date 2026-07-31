@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="648" viewBox="0 0 1160 648" font-family="'Hiragino Sans GB','PingFang SC',sans-serif">
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M2.2 1.6L8 5L2.2 8.4" fill="none" stroke="context-stroke" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<rect width="1160" height="648" fill="#FBFAF8"/>
+
+<text x="48" y="52" font-size="27" font-weight="600" fill="#16323F">V2 量差归因：4 倍 → 2 倍</text>
+<text x="49" y="80" font-size="14.5" fill="#7C8A91">两条归因把 4 倍讲干净，双向覆盖率提供判定依据，去重规则仍是一处没定的口径</text>
+
+<g font-size="12.5" fill="#5C6870">
+  <rect x="912" y="34" width="15" height="11" rx="2.5" fill="#E4F1F7" stroke="#2C7A9B" stroke-width="1.4"/>
+  <text x="934" y="44">V1 基线链路</text>
+  <rect x="912" y="58" width="15" height="11" rx="2.5" fill="#FDF1DE" stroke="#C8811F" stroke-width="1.4"/>
+  <text x="934" y="68">V2 与 V1 的差异点</text>
+</g>
+
+<line x1="48" y1="98" x2="1112" y2="98" stroke="#E6E2DB" stroke-width="1.4"/>
+
+<g font-size="12.5" font-weight="600" fill="#9AA5AB" letter-spacing="1.2">
+  <text x="48" y="126">链 路</text>
+  <text x="168" y="126">源 表</text>
+  <text x="392" y="126">过 滤</text>
+  <text x="616" y="126">用 户 归 属</text>
+  <text x="846" y="126">日 均 行 数</text>
+</g>
+
+<!-- ===== row 1 : V1 baseline ===== -->
+<rect x="48" y="140" width="104" height="82" rx="9" fill="#E4F1F7" stroke="#2C7A9B" stroke-width="1.4"/>
+<text x="100" y="176" font-size="14.5" font-weight="600" fill="#14495E" text-anchor="middle">V1 基线</text>
+<text x="100" y="197" font-size="11.5" fill="#4F7789" text-anchor="middle">现网口径</text>
+
+<rect x="168" y="140" width="200" height="82" rx="9" fill="#FFFFFF" stroke="#C7CFD3" stroke-width="1.3"/>
+<text x="188" y="172" font-size="14.5" font-weight="600" fill="#3F4E56">T 表</text>
+<text x="188" y="194" font-size="12" fill="#75838B">原源表，只含 T</text>
+
+<path d="M368 181 H392" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="392" y="140" width="200" height="82" rx="9" fill="#FFFFFF" stroke="#C7CFD3" stroke-width="1.3"/>
+<text x="412" y="168" font-size="13.5" font-weight="600" fill="#3F4E56">三道过滤</text>
+<text x="412" y="188" font-size="12" fill="#75838B">Golden Table · DWS</text>
+<text x="412" y="206" font-size="12" fill="#75838B">· enrich type</text>
+
+<path d="M592 181 H616" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="616" y="140" width="200" height="82" rx="9" fill="#FFFFFF" stroke="#C7CFD3" stroke-width="1.3"/>
+<text x="636" y="172" font-size="13.5" font-weight="600" fill="#3F4E56">事件归 1 个用户</text>
+<text x="636" y="194" font-size="12" fill="#75838B">enrich 侧的归属口径</text>
+
+<rect x="846" y="169" width="60" height="24" rx="4" fill="#8FB6C6"/>
+<text x="916" y="186" font-size="14" font-weight="600" fill="#3F4E56">≈ 400 万</text>
+
+<!-- ===== row 2 : V2 first run ===== -->
+<rect x="48" y="240" width="104" height="82" rx="9" fill="#FDF1DE" stroke="#C8811F" stroke-width="1.6"/>
+<text x="100" y="276" font-size="14.5" font-weight="600" fill="#6E4408" text-anchor="middle">V2 首跑</text>
+<text x="100" y="297" font-size="11.5" fill="#96661A" text-anchor="middle">= V1 的 4 倍</text>
+
+<rect x="168" y="240" width="200" height="82" rx="9" fill="#EAEEF7" stroke="#4A5E8C" stroke-width="1.4"/>
+<text x="188" y="272" font-size="14.5" font-weight="600" fill="#2C3A5C">TNT 表</text>
+<text x="188" y="294" font-size="12" fill="#54637F">T + NT 合表，更全</text>
+
+<path d="M368 281 H392" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="392" y="240" width="200" height="82" rx="9" fill="#FDF1DE" stroke="#C8811F" stroke-width="1.6"/>
+<text x="412" y="268" font-size="13.5" font-weight="600" fill="#6E4408">只过 Pixel ID</text>
+<text x="412" y="288" font-size="12" fill="#8A5610">少了那三道过滤</text>
+<text x="412" y="308" font-size="12" font-weight="600" fill="#B5462F">→ 差出约 5 倍</text>
+
+<path d="M592 281 H616" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="616" y="240" width="200" height="82" rx="9" fill="#FDF1DE" stroke="#C8811F" stroke-width="1.6"/>
+<text x="636" y="268" font-size="13.5" font-weight="600" fill="#6E4408">事件平均归 2 个用户</text>
+<text x="636" y="288" font-size="12" fill="#8A5610">TNT 的归属口径不同</text>
+<text x="636" y="308" font-size="12" font-weight="600" fill="#B5462F">→ 行数再翻一倍</text>
+
+<rect x="846" y="269" width="240" height="24" rx="4" fill="#D98C6A"/>
+<text x="866" y="286" font-size="14" font-weight="600" fill="#FFFFFF">1600 万</text>
+
+<!-- ===== row 3 : V2 fixed ===== -->
+<rect x="48" y="340" width="104" height="82" rx="9" fill="#E7F1E8" stroke="#3F7A4E" stroke-width="1.6"/>
+<text x="100" y="376" font-size="14.5" font-weight="600" fill="#234A2C" text-anchor="middle">V2 修正后</text>
+<text x="100" y="397" font-size="11.5" fill="#436B4E" text-anchor="middle">= V1 的 2 倍</text>
+
+<rect x="168" y="340" width="200" height="82" rx="9" fill="#F4F5F2" stroke="#C7CFD3" stroke-width="1.3" stroke-dasharray="5 3.5"/>
+<text x="188" y="378" font-size="12.5" fill="#8B9298">源表不变（TNT）</text>
+
+<path d="M368 381 H392" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="392" y="340" width="424" height="82" rx="9" fill="#E7F1E8" stroke="#3F7A4E" stroke-width="1.6"/>
+<text x="412" y="370" font-size="14" font-weight="600" fill="#234A2C">在 TNT 内再筛一道：T 只取 base　·　NT 只取 top</text>
+<text x="412" y="394" font-size="12" fill="#436B4E">抹掉「归属翻倍」这条，量级回到可用区间；余下的差由下方覆盖率解释</text>
+<text x="412" y="412" font-size="11.5" fill="#436B4E">去重字段与 V1 一致：user ID + Pixel ID + event type + product ID</text>
+
+<rect x="846" y="369" width="120" height="24" rx="4" fill="#7FA98B"/>
+<text x="976" y="386" font-size="14" font-weight="600" fill="#3F4E56">≈ 800 万</text>
+
+<!-- ===== bottom : evidence + open question ===== -->
+<rect x="48" y="446" width="530" height="120" rx="10" fill="#FFFFFF" stroke="#2C7A9B" stroke-width="1.4"/>
+<text x="70" y="474" font-size="14.5" font-weight="600" fill="#14495E">判定依据 · 双向覆盖率</text>
+<text x="70" y="495" font-size="12" fill="#5C7381">多出来的量是 TNT 本来更全，不是算错</text>
+
+<text x="70" y="522" font-size="12" fill="#3F4E56">enrich 事件 → 能在 TNT 找到</text>
+<rect x="290" y="512" width="200" height="11" rx="5.5" fill="#E6EAEC"/>
+<rect x="290" y="512" width="182" height="11" rx="5.5" fill="#2C7A9B"/>
+<text x="500" y="522" font-size="12.5" font-weight="600" fill="#14495E">90%+</text>
+
+<text x="70" y="549" font-size="12" fill="#3F4E56">TNT 事件 → 能被 enrich 覆盖</text>
+<rect x="290" y="539" width="200" height="11" rx="5.5" fill="#E6EAEC"/>
+<rect x="290" y="539" width="80" height="11" rx="5.5" fill="#C8811F"/>
+<text x="500" y="549" font-size="12.5" font-weight="600" fill="#8A5610">40%</text>
+
+<rect x="600" y="446" width="512" height="120" rx="10" fill="#FDF1DE" stroke="#C8811F" stroke-width="1.6"/>
+<text x="622" y="474" font-size="14.5" font-weight="600" fill="#6E4408">仍未定 · 去重保留哪一次</text>
+<text x="622" y="497" font-size="12.5" fill="#8A5610">现状：保留当日最早一次（对齐 V1），理由是「除 timestamp 外字段一致」</text>
+<text x="622" y="518" font-size="12.5" fill="#8A5610">mentor：应保留最后一次，且 timestamp 本身对做特征有用</text>
+<text x="622" y="543" font-size="12.5" font-weight="600" fill="#B5462F">影响：一旦要用时序特征，现在这条规则就不成立 —— 本周必须定</text>
+
+<text x="48" y="600" font-size="11.5" fill="#9AA5AB">来源：07-29 周会逐字稿。行数为日均值、口径为原文确证；用户数差距明显小于行数差距（具体取值待复核，故未在图中给数）。</text>
+</svg>

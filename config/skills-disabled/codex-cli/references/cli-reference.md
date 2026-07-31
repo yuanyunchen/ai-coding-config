@@ -73,7 +73,7 @@ Codex's interactive slash commands (`/model`, `/diff`, `/undo`, `/review`, `/app
 
 ## Auth
 
-`codex login` stores credentials in `~/.codex/auth.json` (ChatGPT subscription or API key). Don't pass `OPENAI_API_KEY` unless overriding intentionally. In CI, prefer `CODEX_API_KEY` scoped to the single command (not a job-level env var) — see community-patterns.md.
+`codex login` stores credentials in `~/.claude/auth.json` (ChatGPT subscription or API key). Don't pass `OPENAI_API_KEY` unless overriding intentionally. In CI, prefer `CODEX_API_KEY` scoped to the single command (not a job-level env var) — see community-patterns.md.
 
 ## Models (do NOT hardcode)
 
@@ -81,7 +81,7 @@ The model lineup drifts fast and differs by auth tier; the current best on your 
 
 ## Config precedence (config.toml)
 
-CLI `-c key=value` overrides > `--profile` block > base `~/.codex/config.toml`. Relevant keys seen in practice: `model`, `model_reasoning_effort`, `approval_policy`, `sandbox_mode`, `model_reasoning_summary` (`"none"` to drop explanations in CI), `project_doc_max_bytes` (AGENTS.md byte cap, default ~32 KiB — oversized files silently truncate). `[profiles.<name>]` blocks let you snapshot approval+sandbox combos, e.g. a `ci` profile (`never` + `workspace-write`) vs a `paranoid` profile (`untrusted` + `read-only`).
+CLI `-c key=value` overrides > `--profile` block > base `~/.claude/config.toml`. Relevant keys seen in practice: `model`, `model_reasoning_effort`, `approval_policy`, `sandbox_mode`, `model_reasoning_summary` (`"none"` to drop explanations in CI), `project_doc_max_bytes` (AGENTS.md byte cap, default ~32 KiB — oversized files silently truncate). `[profiles.<name>]` blocks let you snapshot approval+sandbox combos, e.g. a `ci` profile (`never` + `workspace-write`) vs a `paranoid` profile (`untrusted` + `read-only`).
 
 ## Sources
 - Official: developers.openai.com/codex/cli/reference, /codex/noninteractive, /codex/config-reference, /codex/cli/features

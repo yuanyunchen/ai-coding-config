@@ -36,7 +36,7 @@
 → 全文见 `references/exec-workflow-internal.md` §6.3(skills-first 并声明 / find-skills / preflight / 搜索带引用 / 材料自取 / 产出默认飞书 docx)。
 
 ### 6.4 飞书域补充备忘(全局规则见 AGENTS.md 沟通板块 + Memory/Harness 板块,本节只放全局没有的增量)
-- **长任务 / 任务文档组织**:唯一权威 = 全局 `workspace-management` skill(`~/.codex/skills/workspace-management/`);`long-task-workflow` 已于 2026-07-01 按用户指令禁用(overhead 大、文档分散;不激活,恢复见其 `SKILL.md.disabled`)。
+- **长任务 / 任务文档组织**:唯一权威 = 全局 `workspace-management` skill(`~/.claude/skills/workspace-management/`);`long-task-workflow` 已于 2026-07-01 按用户指令禁用(overhead 大、文档分散;不激活,恢复见其 `SKILL.md.disabled`)。
 - **响应速度**:用户问问题时**能直接回答就不要调用工具或查 context**,实在不确定再查文件。
 - **记录方法论**:把需求/偏好/准则/坑沉淀为记忆或写入 skill 时,要**完整且合理抽象,保留情境/原因/行动三要素**,在完整与抽象间取平衡,避免过度简化导致误用(与全局 Harness 板块红线「最小改动、不简化到失真」同向;三要素为本域补充)。
 
@@ -114,22 +114,3 @@
 - **情境**:主 agent 本会话反复(≥8 次)把工具调用写成 `count` 换行 + 裸 `<invoke name="X">` / `<parameter name="Y">`(漏 `antml:` 命名空间前缀),尤其 Agent 派发和 ScheduleWakeup。**后果**:报「Your tool call was malformed and could not be parsed」、或当纯文本漏给用户、**根本没执行** → 子任务没启动、定时器没排上,被用户多次发现。
 - **规则**:每次工具调用必须用带 antml 命名空间的 `<invoke name="X">` + `<parameter name="Y">...`;绝不写 `count` 或漏前缀的裸 invoke/parameter;多工具并发时**每个**都带前缀。写完扫一眼开头不是 `count`。
 - **例**:❌ `count` 换行 `<invoke name="Agent">` → ✅ `<invoke name="Agent">`(带 antml 前缀)。
-
-## 17. lark-cli 沙箱鉴权：Keychain downgrade 与网络隔离分层处理（2026-07-23）
-
-情境：Codex 沙箱内执行 `lark-cli`，系统 Keychain 不允许 CLI 读取 master key；用户态终端运行命令正常。若只看最终错误，容易把 Keychain、token 刷新和沙箱网络混成一个问题，并反复让用户代跑。
-
-固定处理：
-
-1. Keychain blocked 时，agent 自行执行一次：
-
-   ```bash
-   lark-cli config keychain-downgrade
-   ```
-
-   实测输出 `OK: downgraded` 后，master key 被复制到 `~/Library/Application Support/lark-cli/master.key.file`，后续同机同用户进程从文件读取。不得打印、上传或复制 key 内容。
-2. 立即执行 `lark-cli auth status`。user 为 `needs_refresh` 仍表示 refresh token 可用，下一次 user API 会自动刷新；它不等于重新登录。
-3. downgrade 后若 user API 报 `lookup open.feishu.cn: no such host`、`ENOTFOUND` 或固定 IP 也无法连接，结论是当前执行环境被硬性断网，不是鉴权失败。禁止继续 `auth login`、切 brand、重复 downgrade。
-4. 不把 CLI 命令交给用户。优先由 agent 切到自己可控的非沙箱 CLI 进程执行；当前运行时没有该通道时，按 SKILL.md 的浏览器降级顺序，在已登录飞书会话完成同一变更，并以远端回读/可见状态验真。
-
-2026-07-23 实测：`keychain-downgrade` 成功解决 master key 读取；Codex shell 与 Node 随后仍无法解析或连接 `open.feishu.cn`，证明剩余阻塞属于沙箱网络。交付文档改动通过已登录飞书会话完成并回读，未再次要求用户执行命令。

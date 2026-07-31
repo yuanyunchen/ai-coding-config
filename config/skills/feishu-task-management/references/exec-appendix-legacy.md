@@ -22,6 +22,6 @@
 
 **需要的功能不在上面 → 扩载流程**:
 1. 查全量目录确认工具点号名:`~/.npm/_npx/*/node_modules/@larksuiteoapi/lark-mcp/docs/tools-zh.md`(或 `dist/.../zod/<domain>_v1.js` grep 工具名)。lark-mcp 远多于这 66 个(如 `im.v1.message.get/readUsers`、`sheets` 单元格读写、`calendar` freebusy 等)。
-2. 把点号名(如 `im.v1.message.get`)加进**三处配置**的 `-t`:`~/.claude.json`、`~/.cursor/mcp.json`、`~/.codex/config.toml`(都在那串 `npx ... lark-mcp ... -t a,b,c` 里;每处只出现一次,改完用 python 校验 JSON 合法)。
+2. 把点号名(如 `im.v1.message.get`)加进**三处配置**的 `-t`:`~/.claude.json`、`~/.claude/mcp.json`、`~/.claude/config.toml`(都在那串 `npx ... lark-mcp ... -t a,b,c` 里;每处只出现一次,改完用 python 校验 JSON 合法)。
 3. **重启 Claude / 重连 MCP** 后才会出现在工具列表(`select:mcp__feishu__<name>`);改完不重启当场调不到。
 4. 凭据/身份不变:App `cli_aaad33abb3f81bd7`、域 `open.larkoffice.com`、`~/.config/lark-mcp/env` 存 APP_ID/SECRET;OAuth 的 user token 加密存 `~/Library/Application Support/lark-mcp-nodejs/storage.json`(`iv:密文`,取不出明文,要测 UAT 接口得靠 MCP 自己跑或重新 OAuth)。读用户数据传 `useUAT:true`。

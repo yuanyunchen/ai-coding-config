@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="626" viewBox="0 0 1160 626" font-family="'Hiragino Sans GB','PingFang SC',sans-serif">
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M2.2 1.6L8 5L2.2 8.4" fill="none" stroke="context-stroke" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<rect width="1160" height="626" fill="#FBFAF8"/>
+
+<text x="48" y="52" font-size="27" font-weight="600" fill="#16323F">EU 商品召回：挤压是效率序的问题</text>
+<text x="49" y="80" font-size="14.5" fill="#7C8A91">同权重平铺让低效率信号挤掉高效率信号，解法是取序加收紧，而不是继续放量</text>
+
+<g font-size="12.5" fill="#5C6870">
+  <rect x="866" y="34" width="15" height="11" rx="2.5" fill="#2C7A9B"/>
+  <text x="888" y="44">Pixel 意图（效率高）</text>
+  <rect x="866" y="58" width="15" height="11" rx="2.5" fill="#D9A15A"/>
+  <text x="888" y="68">search 意图（效率中）</text>
+</g>
+
+<line x1="48" y1="98" x2="1112" y2="98" stroke="#E6E2DB" stroke-width="1.4"/>
+
+<!-- ===== left : efficiency ladder ===== -->
+<text x="48" y="126" font-size="12.5" font-weight="600" fill="#9AA5AB" letter-spacing="1.2">效 率 序</text>
+<rect x="48" y="140" width="292" height="196" rx="10" fill="#FFFFFF" stroke="#D5DBDE" stroke-width="1.3"/>
+
+<text x="70" y="172" font-size="12.5" fill="#3F4E56">Pixel 意图</text>
+<rect x="160" y="161" width="156" height="14" rx="7" fill="#2C7A9B"/>
+<text x="70" y="204" font-size="12.5" fill="#3F4E56">search 意图</text>
+<rect x="160" y="193" width="100" height="14" rx="7" fill="#D9A15A"/>
+<text x="70" y="236" font-size="12.5" fill="#3F4E56">主路</text>
+<rect x="160" y="225" width="64" height="14" rx="7" fill="#C3CACE"/>
+
+<line x1="70" y1="256" x2="316" y2="256" stroke="#EAE7E0" stroke-width="1.2"/>
+<text x="70" y="280" font-size="12" fill="#75838B">search 的效率高于主路、低于 Pixel；</text>
+<text x="70" y="299" font-size="12" fill="#75838B">意图量在换新接口后约为 Pixel 的 1/3</text>
+<text x="70" y="318" font-size="12" fill="#75838B">（旧接口时约 1/2 ~ 2/3）</text>
+
+<!-- ===== right : quota bars ===== -->
+<text x="380" y="126" font-size="12.5" font-weight="600" fill="#9AA5AB" letter-spacing="1.2">商 品 召 回 的 quota 怎 么 被 占 掉</text>
+
+<!-- bar A : current -->
+<text x="380" y="162" font-size="14" font-weight="600" fill="#3F4E56">现状 · 两路同权重平铺进池</text>
+<rect x="380" y="174" width="600" height="42" rx="6" fill="#F1EFEA"/>
+<rect x="380" y="174" width="300" height="42" rx="6" fill="#2C7A9B"/>
+<rect x="674" y="174" width="300" height="42" fill="#E5B87C"/>
+<rect x="968" y="174" width="12" height="42" rx="6" fill="#E5B87C"/>
+<text x="530" y="200" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">Pixel 意图</text>
+<text x="827" y="200" font-size="12.5" font-weight="600" fill="#7A5417" text-anchor="middle">search 意图（含大量不 match 的弱意图）</text>
+<text x="380" y="238" font-size="12" fill="#8A5610">两路 merge 权重相同、等价竞争；单用户 city 意图截断给到 100 等于没截，弱意图整片进池挤掉 Pixel 的透出</text>
+<rect x="998" y="180" width="114" height="30" rx="15" fill="#FBEAE6" stroke="#B5462F" stroke-width="1.4"/>
+<text x="1055" y="200" font-size="13.5" font-weight="600" fill="#7A2A18" text-anchor="middle">整体偏负</text>
+
+<!-- bar B : after -->
+<text x="380" y="292" font-size="14" font-weight="600" fill="#3F4E56">改法 · 先取 Pixel，取不到再取 search，且只留头部强意图</text>
+<rect x="380" y="304" width="600" height="42" rx="6" fill="#F1EFEA"/>
+<rect x="380" y="304" width="372" height="42" rx="6" fill="#2C7A9B"/>
+<rect x="752" y="304" width="150" height="42" fill="#E5B87C"/>
+<text x="566" y="330" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">Pixel 意图优先占位</text>
+<text x="827" y="330" font-size="12.5" font-weight="600" fill="#7A5417" text-anchor="middle">search 补位</text>
+<text x="941" y="330" font-size="12" fill="#9AA5AB" text-anchor="middle">留白</text>
+<text x="380" y="368" font-size="12" fill="#4F7789">强意图先占满 quota，search 只在取不到 Pixel 时补位，弱意图不再挤占</text>
+<rect x="998" y="310" width="114" height="30" rx="15" fill="#E7F1E8" stroke="#3F7A4E" stroke-width="1.4"/>
+<text x="1055" y="330" font-size="13.5" font-weight="600" fill="#234A2C" text-anchor="middle">预期正向</text>
+
+<!-- ===== bottom : three moves ===== -->
+<text x="48" y="410" font-size="12.5" font-weight="600" fill="#9AA5AB" letter-spacing="1.2">本 周 要 做 的 三 件 事</text>
+
+<g>
+  <rect x="48" y="424" width="340" height="112" rx="10" fill="#E4F1F7" stroke="#2C7A9B" stroke-width="1.4"/>
+  <text x="70" y="452" font-size="14.5" font-weight="600" fill="#14495E">① 取序而非平铺</text>
+  <text x="70" y="475" font-size="12.5" fill="#3A6072">把 Pixel / search 打包成一路，按优先级取</text>
+  <rect x="70" y="486" width="296" height="34" rx="6" fill="#FDF1DE" stroke="#C8811F" stroke-width="1.1"/>
+  <text x="82" y="500" font-size="11.5" fill="#8A5610">当前链路不支持 —— 需推动链路侧</text>
+  <text x="82" y="515" font-size="11.5" fill="#8A5610">（Wang Ning 等）支持</text>
+</g>
+<g>
+  <rect x="410" y="424" width="340" height="112" rx="10" fill="#E4F1F7" stroke="#2C7A9B" stroke-width="1.4"/>
+  <text x="432" y="452" font-size="14.5" font-weight="600" fill="#14495E">② 只留头部强意图</text>
+  <text x="432" y="476" font-size="12.5" fill="#3A6072">city 截断　100　→　5 – 6 个</text>
+  <text x="432" y="498" font-size="12.5" fill="#3A6072">时间窗　收到 ~2.5 周</text>
+  <text x="432" y="520" font-size="12.5" fill="#3A6072">time decay　维持 0.985</text>
+</g>
+<g>
+  <rect x="772" y="424" width="340" height="112" rx="10" fill="#E4F1F7" stroke="#2C7A9B" stroke-width="1.4"/>
+  <text x="794" y="452" font-size="14.5" font-weight="600" fill="#14495E">③ CAD 保量保送粗排</text>
+  <text x="794" y="476" font-size="12.5" fill="#3A6072">CAD 只取头部最强 city 对应信号，</text>
+  <text x="794" y="497" font-size="12.5" fill="#3A6072">把召回结果保送进粗排先拿到量，</text>
+  <text x="794" y="518" font-size="12.5" fill="#3A6072">再叠商品召回开联合实验</text>
+</g>
+
+<text x="48" y="580" font-size="11.5" fill="#9AA5AB">来源：07-29 周会逐字稿。quota 条为机制示意 —— 现状按「两路同权重」画作等分，非实测占比；截断值、time decay 与信号量级比例为原文确证。</text>
+</svg>

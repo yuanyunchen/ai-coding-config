@@ -18,7 +18,7 @@ description: "字节内网数据分析项目的端到端工作流:SQL 取数 →
 ## 1 · 取数 → 用 `sql-query`
 - **先定数据源口径**:底表 + 分区(p_date)+ 关键 flag(如 recall_flag / 信号定义),记进报告附录供复现。
 - 固定执行优先级为 **bytedcli CLI → Aeolus 网页 → iDA**；鉴权、队列、单次/异步查询、并行与降级条件均以 `sql-query` 为准。
-- 大窗超时 → 一致采样 `mod(user_id,N)=0` 压到 1/N,**先在有全量答案的窗校验无偏再外推**(全局 Rule 11)。
+- 大窗超时 → 一致采样 `mod(user_id,N)=0` 压到 1/N,**先在有全量答案的窗校验无偏再外推**(全局 `Sample to Beat Limits`)。
 - **地理字段是 geoname id**:画图/写国名/大洲前必须 id→name,否则轴和结论里是裸 id。
 
 ## 2 · 分析方法(本域硬约定)
@@ -40,7 +40,7 @@ description: "字节内网数据分析项目的端到端工作流:SQL 取数 →
 ### 3.2 语言风格
 - **去 AI 味**:自然语言,不加「一图带走/如图所示」这类元解释旁注;**无 emoji**;不堆空泛形容。
 - **平白 + 控制字数 + 可读性优先**:短句、可扫读;密表压成「一句结论 + 图」。
-- **具体例 + 真实数字**,多源材料消化后**综合**成自己的论述,不拼接原文。(全局 AGENTS Rule 7/8)
+- **具体例 + 真实数字**,多源材料消化后**综合**成自己的论述,不拼接原文。(全局 AGENTS `Writing & Expression` / `User-Facing Messages`)
 
 ### 3.3 质量 / 口径要求(诚实是底线)
 - 采样数标「估计/上界」;**反例不藏**(南美·大洋洲 pixel 反超、27 国反占优);推导值标「已校验」;断线不插值。
@@ -49,10 +49,10 @@ description: "字节内网数据分析项目的端到端工作流:SQL 取数 →
 - 图要直观且**成比例**(面积精确维恩:圆面积∝用户数、透镜面积∝交集,别用固定重叠画示意,见 references/area-venn.js)。
 
 ### 3.4 检查逻辑
-- **先定可验证成功标准,再循环到达成**(全局 Rule 1);自己做计划 → 执行 → 审查。
+- **先定可验证成功标准,再循环到达成**(全局 `Goal-Driven Execution`);自己做计划 → 执行 → 审查。
 - **跨图对数(出厂前必做)**:同一个量在 KPI 卡/维恩/覆盖图/正文必须是同一个数,或各自显式标算法。
 - 改结构时**数字多重集核对改前后一致**(只搬不改、零丢失)。
-- **≥4 路并行子智能体对抗审查**(内容口径 / 视觉 / 结构逻辑 / 质疑);**每路 agent 的 prompt 自带本报告口径事实 + 验收标准**(子智能体不自动继承,全局 Rule 6)。
+- **≥4 路并行子智能体对抗审查**(内容口径 / 视觉 / 结构逻辑 / 质疑);**每路 agent 的 prompt 自带本报告口径事实 + 验收标准**(子智能体不自动继承,全局 `subagent (dispatch)`)。
 - 采样**先在有全量答案的窗校验无偏**再外推;结构有争议**取 raw-dump 真值**,别信单个 agent 的解读。
 
 ## 4 · 报告产出
@@ -61,7 +61,7 @@ description: "字节内网数据分析项目的端到端工作流:SQL 取数 →
 
 ## 5 · 飞书交付 → 用 `feishu-task-management`(官方 lark-cli)
 - 飞书 docx 是**原生在线文档,本身即可分享链接**(无需 HTML 托管 / Goofy / Preview 渲染那一套);章序/图序/结论行与 §0 模版一致。
-- **lark-cli 执行 + 同步坑见全局** `~/.codex/skills/feishu-task-management/memory.md`(block_move OT 冲突→create+delete;raw-dump 验真;权限/分享不自动改)。
+- **lark-cli 执行 + 同步坑见全局** `~/.claude/skills/feishu-task-management/memory.md`(block_move OT 冲突→create+delete;raw-dump 验真;权限/分享不自动改)。
 
 ## 6 · 收尾 → 用 `/workspace-checkpoint`(task-workspace v2;原 `record` 已于 2026-07-02 禁用)。
 

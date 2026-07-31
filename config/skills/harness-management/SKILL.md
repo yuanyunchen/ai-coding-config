@@ -37,6 +37,7 @@ recall / update 是内置子模块(`modules/`):手动 = 对话指令或 /project
 | 长对话累积 / 上下文压缩后 / 怀疑行为漂移、约束丢失(重读核心文件) | `modules/recall.md`(手动 = 对话指令或 /project-recall) |
 | 沉淀/修改任何 harness 物:判桶判层、冲突检查、审批、执行、验证登记 | `modules/update.md`(手动 = 对话指令或 /project-update;auto 模式自调) |
 | 落点速查(哪层/什么形态/何时升级) | `references/placement-table.md` |
+| 环境事实(某 CLI 装在哪/版本多少/某能力路径在不在/某依赖有没有) | `scripts/harness-probe.py` 的输出 `~/Library/Logs/harness/probe.md`;陈旧就重跑 `python3 scripts/harness-probe.py [--net]` |
 | 怎么写 SKILL.md(结构/description 触发预算/拆分纪律) | `subskills/skill-authoring/SKILL.md`(+ 同目录 writing-great-skills 两篇进阶) |
 | 建新 skill 的脚手架、跑 eval、description 调优 | `subskills/skill-creator/SKILL.md`(原全局 skill-creator,整目录收编) |
 | 写/审 AGENTS.md、CLAUDE.md 等 agent 指导文件 | `subskills/agent-file/SKILL.md`(原全局 write-agent-file) |
@@ -52,3 +53,4 @@ recall / update 是内置子模块(`modules/`):手动 = 对话指令或 /project
 2. hook 一律过目;不静默改 AGENTS.md(全局级永远先给方案)。
 3. 冲突禁并存(原则 3);删除/归档 skill 只出建议,不静默删。
 4. subskills 已摘全局注册,只经本 skill 路由 Read 加载;新增 subskill 与路由表同笔更新(登表即存在)。
+5. **能力边界断言必须带时效三件套**:任何「本机能/不能做 X」的话都要写明日期 + 依据的工具版本 + 怎么验的,否则不许写进 skill;能机器验的一律指向 `scripts/harness-probe.py` 的输出而不是硬编码。依据(2026-07-29 审查实测):带日期标注的内容无一过期,过期的**全部**是没标日期的能力断言——作者以为它是永恒事实。同类反面样本:「经飞书 API 做不出画板」原始实测在 `document_convert` 路径上成立,被过度推广成无条件断言后套到 `docs +create --doc-format xml` 默认路径,连累 11 个文件 20+ 处。

@@ -36,7 +36,7 @@ The prompt is the entire briefing — Codex sees none of your conversation.
 - Surface **constraints** — what must not change, libraries to use.
 - Demand **verification** — "run the tests and confirm they pass".
 
-**Directing Codex to its skills**: Codex has its own skills in `~/.codex/skills/` (`ls` it to see what's installed). It won't reliably invoke them on its own — when a task matches one, name it in the prompt: "Use your `pdf` skill to ...".
+**Directing Codex to its skills**: Codex has its own skills in `~/.claude/skills/` (`ls` it to see what's installed). It won't reliably invoke them on its own — when a task matches one, name it in the prompt: "Use your `pdf` skill to ...".
 
 ## Multi-turn interaction
 

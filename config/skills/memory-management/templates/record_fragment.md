@@ -1,6 +1,6 @@
-<!-- 每日文件 global-memory/hub/timeline-records/{YYYY-MM-DD}.md 里的一条记录
+<!-- 每日文件 global-memory/hub/timeline/records/{YYYY-MM-DD}.md 里的一条记录
      (经 runtime 软链等价;见 memory-management §路径解析)
-     (由 memory-management 的 time 子模块维护)。
+     (格式权威 = memory-management references/time-index.md §五)。
      一天一个文件,每次记录追加一条 ## 块,前置 --- 分隔。
      文件首行写一次:# 日报记录 {YYYY-MM-DD} -->
 

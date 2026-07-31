@@ -52,8 +52,8 @@ Rule the docs stress: **never pair `-a never` with `-s danger-full-access`** out
 ## AGENTS.md precedence
 
 Codex reads `AGENTS.md` for project/user instructions, nearest-wins:
-1. `~/.codex/AGENTS.override.md` (highest)
-2. `~/.codex/AGENTS.md`
+1. `~/.claude/AGENTS.override.md` (highest)
+2. `~/.claude/AGENTS.md`
 3. Project-level `AGENTS.md`, the file closest to the working directory winning.
 
 Subsystem overrides work: drop `services/payments/AGENTS.override.md` to tighten rules in a sensitive dir without touching the rest. Watch `project_doc_max_bytes` (~32 KiB default) — an oversized AGENTS.md silently truncates.

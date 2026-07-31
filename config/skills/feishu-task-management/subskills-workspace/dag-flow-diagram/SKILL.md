@@ -13,6 +13,7 @@ description: 将算法、策略、系统逻辑、技术数据链路或概念依�
 |---|---|
 | 技术数据链路正式交付：原始表→中间表→最终表→下游，含计算收益和日更任务 | [`references/technical-data-pipeline-diagrams.md`](references/technical-data-pipeline-diagrams.md)(先看三张金标准 PNG) |
 | 通用变量依赖、服务拓扑、开篇 / 收口 DAG | [`references/examples.md`](references/examples.md) |
+| **事务型 hero 图**:状态全景 / 归因分解 / 机制对照 / 多人待办节奏(信息密度高、mermaid 与 dot 排不出的那类) | [`references/hero-svg-design-system.md`](references/hero-svg-design-system.md)(四种原型 + 配色 + 字号闸 + 渲染脚本,**手绘 SVG 前必读**) |
 
 > **⭐ 开篇 / 定位 / 收口图 · 每次必读模版**(三类落地范例,做对应图前先读、照结构改):
 > - 「**开篇全景 / 体系总控图**」(总览入口用,全系统多路)→ [`templates/panorama_overview.svg`](templates/panorama_overview.svg)(配套同名 PNG)——见 [`references/examples.md`](references/examples.md) 范例三。
@@ -95,6 +96,7 @@ mermaid 用 `flowchart`(不用旧 `graph`)。**方向默认 LR(左右),不用 TD
   - ⚠️ **小图(≤6 节点的时序/流程图)放宽到 ~1.2 即可,别硬凑 1.3–1.8(F4,produce_strategy 提炼)**:1.3–1.8 是"理想带",但**节点数少**时(6 节点 2 行 3 列这种紧凑布局)自然就落在 **w:h≈1.2–1.3**,再想更扁只能砍节点或缩字、反而损可读。硬边界(h/w≤1.2 不超高、w/h≤3 不超扁)是必须过的闸;**理想带 1.3–1.8 是大图/长链的目标,小图 ~1.2(过硬闸、视觉清晰)就可交付**,不必为凑理想带牺牲内容。produce_strategy 的 6 节点时序图取 w/h=1.29 即交付。
 - **尺寸预算**:宽 ≤ **700px**(此处是「图片渲染宽度」,非表格列宽;按飞书内容列宽,更宽缩放糊字)、高 ≤ **500px**(更高成竖条要滚屏);**按 2× 渲染**(如 1400×1000 源)保证字清晰,长宽比仍须落在上面区间。
 - **纯线性短流(`A→B→C`)优先 ASCII**(`ascii-strategy-diagram` 进 `<code language="text">`):永不被压成竖条、不用上传、可编辑、随处一致渲染;PNG 留给**有分支/汇合/并行泳道**、ASCII 排不清楚的流程。
+- **字号闸(与长宽比闸并列的第二道硬闸,2026-07-29 实测补)**:飞书正文列 ~700px,**逻辑画布宽 W 的图显示时缩放 = 700/W**,逻辑字号乘这个系数才是读者看到的像素。W=1160 时系数 ≈0.61 —— **逻辑正文字号 < 11.5 一律不许出现**(10.5 落到 ~6.4px,实测肉眼吃力);放不下就删字、拆图、加画布高度,**不许缩字**。手绘 SVG 的完整字号表见 [`references/hero-svg-design-system.md`](references/hero-svg-design-system.md) 四。
 
 ## 布局对齐(强制)
 
@@ -108,10 +110,11 @@ mermaid 用 `flowchart`(不用旧 `graph`)。**方向默认 LR(左右),不用 TD
 
 手写 SVG 的 hero 图(或 mermaid/dot 先导出 SVG)落 PNG 走 **headless Chrome 截图**,字体最稳、可控 2×:
 
-- **headless Chrome 渲 SVG → PNG**:`chrome --headless --screenshot --window-size=W,H --force-device-scale-factor=2 file.svg`(或包成 HTML 内嵌 SVG 再截),比 `rsvg`/`cairosvg` 更贴浏览器实渲,中文不缺字。
+- **headless Chrome 渲 SVG → PNG**:`"$CHROME" --headless --screenshot --window-size=W,H --force-device-scale-factor=2 file.svg`(或包成 HTML 内嵌 SVG 再截),比 `rsvg`/`cairosvg` 更贴浏览器实渲,中文不缺字。**`chrome` 不在 PATH 里**,必须用全路径(本机 `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`,以探针 `~/Library/Logs/harness/probe.md` 作图段为准);同目录 `templates/render_svg.sh` 已写对,照抄它即可。该脚本末尾用 Python `PIL` 量成图尺寸——**PIL 缺失时脚本在最后一步 crash 而 PNG 其实已经生成**,别误判为渲染失败,探针的「作图」段会显示 PIL 在不在。
 - **CJK 字体钉死 `Hiragino Sans GB`**(macOS 自带,黑体、笔画清晰):SVG 里 `font-family="Hiragino Sans GB, sans-serif"`,不靠默认 fallback(易踩到衬线或缺字方框)。
 - **按 2× 渲染**:`--force-device-scale-factor=2`,源 1400×1000 出 PNG 字才清晰(同「布局与长宽比」尺寸预算)。
 - **长宽比闸值见上「布局与长宽比」**(此处不重复)。**唯一新增例外:开篇导览 DAG 这种横向阶段带**(节点少、天然又宽又扁),长宽比放宽到 **≤3** 即可,不必硬折行凑理想带。
+- **手绘 hero 图走 2.5×、不是 2×**(1160 逻辑宽 → 2900px PNG,飞书列宽内不糊、点开看原图清晰);可直接抄的脚本 = [`templates/render_svg.sh`](templates/render_svg.sh)(包 HTML 再截图,顺带打印尺寸与 w/h 过闸),设计系统见 [`references/hero-svg-design-system.md`](references/hero-svg-design-system.md)。
 
 ## 分层展示(强制)
 

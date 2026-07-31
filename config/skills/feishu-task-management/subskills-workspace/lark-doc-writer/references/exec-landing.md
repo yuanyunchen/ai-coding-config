@@ -180,7 +180,7 @@
 
 ### 6b. 插本地图片(高层接口缺推字节,必须走 curl 管线)
 
-`media_uploadPrepare/uploadFinish` 这类高层接口**没有推字节的 `upload_all`**,光靠它们传不了本地图。凭据:APP_ID / APP_SECRET → tenant_access_token(`~/.config/lark-mcp/env`);useUAT 建的文档 owner 是用户,curl 推字节前须先把 bot 加为 full_access 协作者(否则写报 `1061004`、读静默返 `1770032`)。
+`media_uploadPrepare/uploadFinish` 这类高层接口**没有推字节的 `upload_all`**,光靠它们传不了本地图。凭据:tenant_access_token 用 `lark-cli --as bot` 现取(旧配方读的 `~/.config/lark-mcp/env` 已随 MCP 退役删除);useUAT 建的文档 owner 是用户,curl 推字节前须先把 bot 加为 full_access 协作者(否则写报 `1061004`、读静默返 `1770032`)。
 
 **完整五步管线 + 坑表(跨文档 token 不可复用 / `1770013` / `1061004` / CJK 弯引号 / childrenCreate 拒批量 / 图块无移动 API)见 canonical [`references/media-embed.md`](references/media-embed.md)**;其它踩坑(code 速查、画板节点 JSON 规则)见 `feishu-doc-gotchas` 与飞书 memory。
 

@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="662" viewBox="0 0 1160 662" font-family="'Hiragino Sans GB','PingFang SC',sans-serif">
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M2.2 1.6L8 5L2.2 8.4" fill="none" stroke="context-stroke" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<rect width="1160" height="662" fill="#FBFAF8"/>
+
+<!-- header -->
+<text x="48" y="52" font-size="27" font-weight="600" fill="#16323F">07-29 周会全景</text>
+<text x="49" y="80" font-size="14.5" fill="#7C8A91">三条主线共用同一张上游表 TNT · 本周要交的是三件不同的东西</text>
+
+<g font-size="12.5" fill="#5C6870">
+  <rect x="806" y="34" width="15" height="11" rx="2.5" fill="#EAEEF7" stroke="#4A5E8C" stroke-width="1.4"/>
+  <text x="828" y="44">公共上游</text>
+  <rect x="912" y="34" width="15" height="11" rx="2.5" fill="#E4F1F7" stroke="#2C7A9B" stroke-width="1.4"/>
+  <text x="934" y="44">主线现状</text>
+  <rect x="1018" y="34" width="15" height="11" rx="2.5" fill="#E7F1E8" stroke="#3F7A4E" stroke-width="1.4"/>
+  <text x="1040" y="44">本周交付</text>
+  <rect x="806" y="58" width="15" height="11" rx="2.5" fill="#FDF1DE" stroke="#C8811F" stroke-width="1.4"/>
+  <text x="828" y="68">受限 / 待定</text>
+  <rect x="912" y="58" width="15" height="11" rx="2.5" fill="#F1F0EC" stroke="#8B8F86" stroke-width="1.2" stroke-dasharray="3.5 2.5"/>
+  <text x="934" y="68">横切要求</text>
+</g>
+
+<line x1="48" y1="98" x2="1112" y2="98" stroke="#E6E2DB" stroke-width="1.4"/>
+
+<!-- column captions -->
+<g font-size="12.5" font-weight="600" fill="#9AA5AB" letter-spacing="1.2">
+  <text x="48" y="124">公 共 上 游</text>
+  <text x="406" y="124">三 条 主 线 · 现 状</text>
+  <text x="886" y="124">本 周 要 交 的</text>
+</g>
+
+<!-- ============ col1 upstream ============ -->
+<g>
+  <rect x="48" y="140" width="250" height="96" rx="10" fill="#EAEEF7" stroke="#4A5E8C" stroke-width="1.4"/>
+  <text x="66" y="169" font-size="15.5" font-weight="600" fill="#2C3A5C">白盒商品库</text>
+  <text x="66" y="192" font-size="12.5" fill="#54637F">商品属性 city · SKU · geoname</text>
+  <text x="66" y="213" font-size="12.5" fill="#54637F">Hotel BI 只作补充校准，</text>
+  <text x="66" y="230" font-size="12.5" fill="#54637F">本周起不再当过滤器用</text>
+</g>
+
+<g>
+  <rect x="48" y="260" width="250" height="96" rx="10" fill="#E1E7F5" stroke="#3B4F7D" stroke-width="2.2"/>
+  <text x="66" y="289" font-size="15" font-weight="600" fill="#263352">TNT 表</text>
+  <rect x="128" y="276" width="66" height="17" rx="8.5" fill="#3B4F7D"/>
+  <text x="161" y="288.5" font-size="11.5" fill="#FFFFFF" text-anchor="middle">公共依赖</text>
+  <text x="66" y="312" font-size="12.5" fill="#4A5A7A">Polo 生产 · T + NT 合表</text>
+  <text x="66" y="331" font-size="12.5" fill="#4A5A7A">只 mask message ID / URL，</text>
+  <text x="66" y="348" font-size="12.5" fill="#4A5A7A">是否另有过滤待问 owner</text>
+</g>
+
+<g>
+  <rect x="48" y="380" width="250" height="96" rx="10" fill="#EAEEF7" stroke="#4A5E8C" stroke-width="1.4"/>
+  <text x="66" y="409" font-size="14.5" font-weight="600" fill="#2C3A5C">全量消耗 + VERTICAL 事件表</text>
+  <text x="66" y="432" font-size="12.5" fill="#54637F">用户序列与去重口径的基准，</text>
+  <text x="66" y="452" font-size="12.5" fill="#54637F">embedding 链路的口径全部</text>
+  <text x="66" y="469" font-size="12.5" fill="#54637F">对齐它的生产逻辑</text>
+</g>
+
+<!-- ============ edges col1 -> col2 ============ -->
+<!-- u1 -> A -->
+<path d="M298 176 H406" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="304" y="169" font-size="11.5" fill="#7B8890">拼接商品属性</text>
+<!-- u2 -> A -->
+<path d="M298 288 H372 V202 H406" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="304" y="281" font-size="11.5" fill="#7B8890">取代 T 表</text>
+<!-- u2 -> C -->
+<path d="M298 324 H390 V416 H406" fill="none" stroke="#C8811F" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#ar)"/>
+<text x="304" y="342" font-size="11.5" fill="#B0741C">NT 侧事件源</text>
+<!-- u3 -> C -->
+<path d="M298 448 H406" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="304" y="441" font-size="11.5" fill="#7B8890">去重口径对齐</text>
+
+<!-- ============ col2 lanes ============ -->
+<g>
+  <rect x="406" y="140" width="380" height="96" rx="10" fill="#E4F1F7" stroke="#2C7A9B" stroke-width="1.4"/>
+  <rect x="406" y="140" width="4.5" height="96" rx="2" fill="#4A5E8C"/>
+  <text x="426" y="169" font-size="15" font-weight="600" fill="#14495E">A · V2 特征表</text>
+  <rect x="704" y="155" width="66" height="18" rx="9" fill="#4A5E8C"/>
+  <text x="737" y="168" font-size="11.5" fill="#FFFFFF" text-anchor="middle">Xiang Gao</text>
+  <text x="426" y="192" font-size="12.5" fill="#3A6072">口径换成 Industrial 4.0 的 L2，只留 travel 一层</text>
+  <text x="426" y="212" font-size="12.5" fill="#3A6072">源表换成 TNT · 量差已从 4 倍收到 2 倍</text>
+  <text x="426" y="229" font-size="12.5" fill="#3A6072">Hotel BI 用法、去重规则两处口径仍未定</text>
+</g>
+
+<g>
+  <rect x="406" y="260" width="380" height="96" rx="10" fill="#E4F1F7" stroke="#2C7A9B" stroke-width="1.4"/>
+  <rect x="406" y="260" width="4.5" height="96" rx="2" fill="#2C7A9B"/>
+  <text x="426" y="289" font-size="15" font-weight="600" fill="#14495E">B · 商品 / CID 召回实验</text>
+  <rect x="716" y="275" width="54" height="18" rx="9" fill="#2C7A9B"/>
+  <text x="743" y="288" font-size="11.5" fill="#FFFFFF" text-anchor="middle">Yunchen</text>
+  <text x="426" y="312" font-size="12.5" fill="#3A6072">RW 平 · TDP 跑 4.5 天微涨 · EU 偏负</text>
+  <text x="426" y="332" font-size="12.5" fill="#3A6072">候选池取自白盒商品库；EU 偏负已定位到 search</text>
+  <text x="426" y="349" font-size="12.5" fill="#3A6072">对 Pixel 的信号挤压</text>
+</g>
+
+<g>
+  <rect x="406" y="380" width="380" height="96" rx="10" fill="#E4F1F7" stroke="#2C7A9B" stroke-width="1.4"/>
+  <rect x="406" y="380" width="4.5" height="96" rx="2" fill="#2C7A9B"/>
+  <text x="426" y="409" font-size="15" font-weight="600" fill="#14495E">C · embedding 邻近召回链路</text>
+  <rect x="716" y="395" width="54" height="18" rx="9" fill="#2C7A9B"/>
+  <text x="743" y="408" font-size="11.5" fill="#FFFFFF" text-anchor="middle">Yunchen</text>
+  <text x="426" y="432" font-size="12.5" fill="#3A6072">注册表 → 用户序列 → 邻近商品检索 → ADID / PID</text>
+  <text x="426" y="452" font-size="12.5" fill="#3A6072">schema 与 Dorado 调度已过小规模测试</text>
+  <rect x="426" y="457" width="310" height="19" rx="4" fill="#FDF1DE" stroke="#C8811F" stroke-width="1"/>
+  <text x="435" y="471" font-size="11.5" fill="#8A5610">受限：TNT 仅 7/3 起有数据，长周期序列拿不到</text>
+</g>
+
+<!-- ============ edges col2 -> col3 ============ -->
+<path d="M786 188 H886" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="792" y="181" font-size="11.5" fill="#7B8890">口径查清才敢上线</text>
+<path d="M786 308 H886" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="800" y="301" font-size="11.5" fill="#7B8890">先在 EU 做正</text>
+<path d="M786 428 H886" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="792" y="421" font-size="11.5" fill="#7B8890">链路稳定后复制</text>
+
+<!-- A -> B weak dependency chip -->
+<rect x="556" y="240" width="188" height="18" rx="9" fill="#F4F3EF" stroke="#B9C0C4" stroke-width="1" stroke-dasharray="4 3"/>
+<path d="M566 245.5 L571.5 252.5 L577 245.5" fill="none" stroke="#8A959B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="584" y="253" font-size="11.5" fill="#78848A">特征上线后才轮到喂召回</text>
+
+<!-- ============ col3 deliverables ============ -->
+<g>
+  <rect x="886" y="140" width="226" height="96" rx="10" fill="#E7F1E8" stroke="#3F7A4E" stroke-width="1.4"/>
+  <text x="902" y="169" font-size="15.5" font-weight="600" fill="#234A2C">V2 全链路验证并上线</text>
+  <text x="902" y="192" font-size="12.5" fill="#436B4E">今晚 19:00 特征专项会</text>
+  <text x="902" y="211" font-size="12.5" fill="#436B4E">先把特征含义与构造</text>
+  <text x="902" y="228" font-size="12.5" fill="#436B4E">对齐，再谈上线流程</text>
+</g>
+<g>
+  <rect x="886" y="260" width="226" height="96" rx="10" fill="#E7F1E8" stroke="#3F7A4E" stroke-width="1.4"/>
+  <text x="902" y="289" font-size="15.5" font-weight="600" fill="#234A2C">EU 联合实验做正</text>
+  <text x="902" y="312" font-size="12.5" fill="#436B4E">头部强意图截断 +</text>
+  <text x="902" y="331" font-size="12.5" fill="#436B4E">CAD 保量保送粗排；</text>
+  <text x="902" y="348" font-size="12.5" fill="#436B4E">TDP 只挂大盘保量</text>
+</g>
+<g>
+  <rect x="886" y="380" width="226" height="96" rx="10" fill="#E7F1E8" stroke="#3F7A4E" stroke-width="1.4"/>
+  <text x="902" y="409" font-size="15.5" font-weight="600" fill="#234A2C">大规模跑通 + 跨机房</text>
+  <text x="902" y="432" font-size="12.5" fill="#436B4E">EU 复制现有 LW 链路，</text>
+  <text x="902" y="451" font-size="12.5" fill="#436B4E">TDP 走 ABase 同步</text>
+  <text x="902" y="468" font-size="12.5" fill="#436B4E">邻近商品表</text>
+</g>
+
+<!-- ============ bottom band ============ -->
+<rect x="48" y="508" width="1064" height="66" rx="10" fill="#F1F0EC" stroke="#8B8F86" stroke-width="1.3" stroke-dasharray="5 3.5"/>
+<text x="70" y="534" font-size="14.5" font-weight="600" fill="#4E5249">横切要求 · 团队公共资产（本周开始沉淀）</text>
+<text x="70" y="558" font-size="12.5" fill="#6B7168">Todo 共享 doc　·　常用业务表字典（用途 / 上游 / 字段 / 口径）　—— Xiang Gao 汇总　　　　AI 自动化案例（记忆系统 · GUI 操作 · 周报自动化）　—— Yunchen</text>
+
+<text x="48" y="612" font-size="11.5" fill="#9AA5AB">来源：07-29 周会逐字稿（17:31–19:05 GMT-04）与 AI 智能纪要。所有取值以逐字稿为准；未闭环的口径在正文标注。</text>
+</svg>

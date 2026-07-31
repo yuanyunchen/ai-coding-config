@@ -150,7 +150,8 @@ AI 生成的飞书文档有**两个反向失败**:常见的是**格式规范但�
 ### 1.3 飞书原生组件
 
 - 勾选项用 `<checkbox done="false">`,不用表格 + ☐。
-- 颜色用语义化命名色 `light-green/light-yellow/light-red/light-blue/light-gray`(及 `light-orange`),不用数字背景色。
+- 颜色用语义化命名色 `light-green/light-yellow/light-red/light-blue/light-gray`(及 `light-orange`),不用数字背景色。**经 `lark-cli docs +create/+update --doc-format xml` 落地时只用命名色**(callout 填充 = `gray`/`light-{色}`/`medium-{色}`,border/text = 基础七色):§1.4 模板里的精确 `rgb(...)` 是 Mira 方言,CLI XML 路径不保证生效;2026-07-29 实测 `light-blue`+`blue`+📘 / `light-orange`+`orange`+💡 / `light-gray`+`gray`+📌 三套渲染正确。
+- **草稿 / 未分享的文档不写 `<cite type="user">` @人,用纯文本姓名**(2026-07-29):@ 一落地就给真人发通知,写会议 note / 个人 note 时等于替用户提前打扰同事。要 @ 由用户明确确认后再补。改写他人已有文档时相反 —— 原文的 `<cite type="user">` 一律原样保留(`references/update-workflow.md` R1)。
 - 表格用 markdown pipe 或 HTML `<table>`(→ 原生 Table(31)),⛔ 不用 `<lark-table>`(拍平)。**经 block API 落地必须裸建+回填、逐列设可读列宽** → 配方见 [`references/mcp-recipes.md`](references/mcp-recipes.md) 配方2(省掉则退回 100px 窄列、长中文竖排不可读)。
 - 流程图 ⛔ 不用 `<whiteboard type="mermaid">`(经飞书 API 拍平,机制权威见 mcp-recipes 执行覆盖层):要图渲染成 PNG 嵌 Image(27),纯文本兜底 `<code language="text">` ASCII,**公式化多阶段链路首选 ASCII** → 选型见 §0.6、PNG 紧凑/长宽比闸见 `dag-flow-diagram`、落地 JSON 见 mcp-recipes 配方3。
 - 文档开头用 callout front-load 结论。
@@ -177,6 +178,8 @@ AI 生成的飞书文档有**两个反向失败**:常见的是**格式规范但�
    - **Context 只放「直接用到的原始材料」**;**「相关文档」(同主题其他文档)放概述里、不进 Context**(见上 1);正文也不单开「相关文档」节。
    - **内容多时只概括、不堆砌**(每条一句话),但**格式必须统一**。
 
+> **`<title>` 之后不再重复一个同名 `<h1>`**(2026-07-29 实测):飞书页面顶部已把文档标题渲染成大标题,再来一个 h1 = 同一句话读两遍、还把开头概述压到折叠线以下。模板里的 `<h1>` 只在**标题与正文大标题确实不同**(如 title 带 📖 前缀+文件名、h1 是另一句主张)时才留;通常删掉、直接进蓝色概述框。
+>
 > ⛔ **不要自创开头结构变体**(如「N 字段执行坐标表」)替代对应 profile。执行细节(owner / 平台 / job / 状态 / 上下游表名)**放正文对应章节**,不塞进开头；技术交付只回答“讲什么 + 核心合同 + 相关文档”，来源驱动文档再补 Context。
 
 **来源驱动文档可直接套用模版**(换内容不换骨架;颜色属性照抄——fetch 会丢色,见末尾 callout 颜色 gotcha;cite 锚文本留空让飞书回填真实标题)。技术数据链路交付只使用其中的蓝色概述框，并按金标准 reference 组织正文；cite 锚文本留空让飞书回填真实标题。线上范例 = 入口文档 `HYsidfVKPobRumxr5HVuzbRJsy4`(及范例 `ErwadUO2yogZBHxC9pGuT0hXs5c`):

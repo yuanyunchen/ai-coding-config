@@ -6,7 +6,24 @@
   },
   "permissions": {
     "allow": [],
-    "deny": [],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~/)",
+      "Bash(rm -rf $HOME)",
+      "Bash(git push --force)",
+      "Bash(git push --force*)",
+      "Bash(git push -f)",
+      "Bash(git push -f*)",
+      "Bash(gh pr create*)",
+      "Bash(gh pr comment*)",
+      "Bash(gh pr merge*)",
+      "Bash(gh release create*)",
+      "Bash(launchctl bootout*)",
+      "Write(~/Library/LaunchAgents/**)",
+      "Edit(~/Library/LaunchAgents/**)"
+    ],
     "ask": [],
     "defaultMode": "bypassPermissions"
   },
@@ -15,7 +32,7 @@
     "command": "ccstatusline",
     "padding": 0
   },
-  "skillListingBudgetFraction": 0.03,
+  "skillListingBudgetFraction": 0.05,
   "skipDangerousModePermissionPrompt": true,
   "verbose": true,
   "agentPushNotifEnabled": true

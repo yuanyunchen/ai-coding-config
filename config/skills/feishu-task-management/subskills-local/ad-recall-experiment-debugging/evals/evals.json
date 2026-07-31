@@ -1,0 +1,23 @@
+{
+  "skill_name": "ad-recall-experiment-debugging",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "EU 的 713 Search Travel 小流量实验已经有 Intent Center L1/L2 非空打点，但没有 AID/CID。请给出下一步排查顺序和需要的证据链接。",
+      "expected_output": "先核对实际生效时间和同机房对照，再区分 Engine normal/strategy source，检查 PrepareXidOp 与 100921，只有 Prepare 成功后才检查 Fetch/倒排；输出最后正常层、第一个异常层和证据模板。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "TTP 的 713 有 AID/CID，EU 同样 DAG 和字段却没点。发布内容看起来一样，帮我判断是不是倒排或 EU 专属模型问题。",
+      "expected_output": "不因字段或发布文本相同直接判断倒排；比较各机房 Online Engine profile、source 指标和 Targeting Prepare/Fetch 分界，并用同机房健康支路排除公共故障。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "713 一小时只有 36 个 reranker 错误，但最终完全没有 AID/CID；709 同时段正常。请判断这个错误是不是根因，并整理给 mentor 的结论。",
+      "expected_output": "将 36 次/小时换算量级，说明不足以解释主链全量无输出；沿上游找最早断点，使用 709 同机房对照，并按结论、证据、排除项、下一步输出。",
+      "files": []
+    }
+  ]
+}

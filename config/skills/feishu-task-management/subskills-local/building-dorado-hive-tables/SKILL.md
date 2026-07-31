@@ -27,7 +27,7 @@ description: "Dorado/DataLeap Hive 生产链路建设。触发:Dorado 建表、�
 
 - SG Dorado/DataLeap 控制台：<https://dataleap-sg.tiktok-row.net/dorado>
 - 官方鉴权说明：<https://cloud.bytedance.net/docs/dorado/docs/642811ff34fc6f02f390c219/6428122034fc6f02f390cd41>
-- CLI 细节：`~/.codex/skills/bytedcli/references/subskills/bytedance-dorado/GUIDE.md`、`~/.codex/skills/bytedcli/references/subskills/bytedance-hive/GUIDE.md`
+- CLI 细节：`~/.claude/skills/bytedcli/references/subskills/bytedance-dorado/GUIDE.md`、`~/.claude/skills/bytedcli/references/subskills/bytedance-hive/GUIDE.md`
 
 ## 1. 先判断现在能不能建
 

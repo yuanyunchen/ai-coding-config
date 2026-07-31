@@ -1,0 +1,8 @@
+{
+  "pluginId": "superpowers@claude-plugins-official",
+  "platform": "claude",
+  "installPath": "/Users/bytedance/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1",
+  "version": "6.1.1",
+  "hasHooks": true,
+  "copiedAt": "2026-07-31T00:23:26Z"
+}

@@ -5,14 +5,14 @@
       "claude-md-management@claude-plugins-official": false,
       "code-review@claude-plugins-official": false,
       "code-simplifier@claude-plugins-official": false,
-      "codex@openai-codex": true,
+      "codex@openai-codex": false,
       "feature-dev@claude-plugins-official": false,
-      "hookify@claude-plugins-official": false,
-      "learning-output-style@claude-plugins-official": false,
-      "ralph-loop@claude-plugins-official": false,
+      "hookify@claude-plugins-official": true,
+      "learning-output-style@claude-plugins-official": true,
+      "ralph-loop@claude-plugins-official": true,
       "session-report@claude-plugins-official": false,
       "skill-creator@claude-plugins-official": false,
-      "superpowers@superpowers-marketplace": true
+      "superpowers@claude-plugins-official": true
     }
   },
   "cursor": {

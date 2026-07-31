@@ -11,9 +11,9 @@ lark-cli drive +create-folder --as user --name "<夹名>"        # 拿 folder_to
     --file "./<相对名>" --folder-token "<t>" --name "<飞书文件名>" )
 ```
 - 在用户 Drive 建/传须 `--as user`(tenant 撞 1255002)。
-- `--file` **只认相对路径** → 用子 shell `( cd 目录 && ... )`(裸 `cd` 后 PATH 可能丢,必要时用 lark-cli 绝对路径 `/Users/<u>/.local/node/bin/lark-cli`)。
+- `--file` **只认相对路径** → 用子 shell `( cd 目录 && ... )`(裸 `cd` 后 PATH 可能丢,必要时先 `LC=$(command -v lark-cli)` 再用 `"$LC"`;别写死安装路径,它变过一次)。
 - 覆盖已有文件:`--file-token <token>`(原地替换,不改权限)。
-- **坑 — keychain 被沙箱锁**:报「keychain access blocked」时由 agent 自行执行一次 `lark-cli config keychain-downgrade`(把密钥落本地文件;代价:同机同用户进程可读该文件)。随后先跑 `auth status`；若报 DNS/连接失败则是沙箱网络，不是鉴权，禁止反复登录或让用户代跑，按主 skill 的执行通道降级规则处理。CLI 通道确实不可达时走网页版(B)。
+- **坑 — keychain 被沙箱锁**:报「keychain access blocked」(沙箱内外、`dangerouslyDisableSandbox` 都不行)。**需用户在交互式终端跑一次** `lark-cli config keychain-downgrade`(把密钥落本地文件;代价:同机同用户进程可读该文件)。锁着时只能走网页版(B)。
 
 ### B. 网页版(keychain 锁时)
 - 文件夹「Upload → **Upload Files**」= **showOpenFilePicker 原生选择器**,注入不了;拖拽走 **webkitGetAsEntry**,合成 DataTransfer 也喂不进。→ **网页版没法直接传新文件**。

@@ -1,0 +1,8 @@
+{
+  "pluginId": "codex@openai-codex",
+  "platform": "claude",
+  "installPath": "/Users/bytedance/.claude/plugins/cache/openai-codex/codex/1.0.5",
+  "version": "1.0.5",
+  "hasHooks": true,
+  "copiedAt": "2026-07-31T00:23:25Z"
+}

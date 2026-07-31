@@ -95,21 +95,21 @@ auto/full 模式下的自动更新 = agent 直接执行 `modules/update.md` 例�
 ## §9 生命周期与巡检
 
 - **开工**:init 例程(手动 = 对话指令或 /project-init,含 --mode 定模式)。建 `.agent/MEMORY.md`(含模式行)+ context/ + deliverables/(任务 profile 另建飞书任务夹,沿用双侧机制)+ AGENTS.md/CLAUDE.md 指针行;`.agent/` 其余子目录按需出现(首次派发才建 subagent/,首条 note 才建 note/,首个能力物才建 skills/)。
-- **生长**:单文件超规模→拆;子任务完结→task/Archive/;结论被第二处引用→抽 note/;可复用流程/派发模板成熟→固化进 .claude/ 能力层;废稿→就地清理或随节点归档。会话恢复/新 session 接入→recall 例程(手动 = 对话指令或 /project-recall;full 模式自动);阶段收口/移交→update 例程(手动 = 对话指令或 /project-update;auto/full 模式按 §8 自动)。
+- **生长**:单文件超规模→拆;子任务完结→task/Archive/;结论被第二处引用→抽 note/;可复用流程/派发模板成熟→固化进 .agent/ 能力层;废稿→就地清理或随节点归档。会话恢复/新 session 接入→recall 例程(手动 = 对话指令或 /project-recall;full 模式自动);阶段收口/移交→update 例程(手动 = 对话指令或 /project-update;auto/full 模式按 §8 自动)。
 - **收尾**:update 例程(工作区内状态型终更 + 交付发布到本任务飞书夹 + 台账同步 + 末步冲突检查)→ 工作区级归档沿用双侧机制(tasks/_archive/ + 飞书 Archive/)。全局 AI 索引登记由周一飞书文档整理任务(原 doc-curation-daily,2026-07-02 降频合并)周度增量兜底,不是 update 例程职责;全局记忆更新也不在本例程(归 project-update 编排或 memory-management 自身纪律,2026-07-03 用户裁决)。**归档时能力层处置**:`.agent/skills|agents` 走路由表、无 harness 注册,随目录归档零残留;仅当工作区建过根级 `.claude/`(hooks 等)时才需归档改名 `.claude.archived/`、hookify 规则停用,恢复时改回。
-- **巡检六项**(scripts/lint.sh;由 memory-weekly-check 每周对各工作区执行,R11 裁决):① 结构合规(含双根 MEMORY.md+memory.md 并存 = error);② 状态型新鲜度(none 模式常态偏旧属预期,只对 auto/full 报);③ 死链(索引引用 path 存在性);④ 可推导索引核对;⑤ 派发留档完整性(task.md/result.md 成对;越界写由 update 时 agent 判断);⑥ 能力层对账(.agent/skills|agents 实物 ↔ MEMORY.md 路由表;归档区无活跃根级 .claude/)。
+- **巡检六项**(scripts/lint.sh;**无自动执行**——由 update 例程末步顺手跑或人调触发,没有定时任务对各工作区跑它,别按「每周自动」预期):① 结构合规(含双根 MEMORY.md+memory.md 并存 = error);② 状态型新鲜度(none 模式常态偏旧属预期,只对 auto/full 报);③ 死链(索引引用 path 存在性);④ 可推导索引核对;⑤ 派发留档完整性(task.md/result.md 成对;越界写由 update 时 agent 判断);⑥ 能力层对账(.agent/skills|agents 实物 ↔ MEMORY.md 路由表;归档区无活跃根级 .claude/)。
 
 ## §10 接缝与切换
 
 - **update 边界(钉死)**:只更新工作区内部文件,含其线上对应的飞书任务夹(交付发布、台账同步);**不碰**全局枢纽记忆、时间线、harness auto-memory、全局 AI 索引、mira-sync——全局层维护不属本系统(定时任务兜底存量 + 用户显式指令)。
-- **全局项目记忆(定位卡)**:细节唯一权威 = 工作区 MEMORY.md,枢纽只留定位卡(≤6 行:path/token/现状行);维护 = memory-management 按其模式(缺省 auto 里程碑无痕 + 对话指令/项目命令手动)+ memory-weekly-check 周度对账,2026-07-02 起生效。
+- **全局项目记忆(定位卡)**:细节唯一权威 = 工作区 MEMORY.md,枢纽只留定位卡(≤6 行:path/token/现状行);维护 = memory-management 按其模式(缺省 auto 里程碑无痕 + 对话指令/项目命令手动),对账随其 update 例程或人调做、无自动执行,2026-07-02 起生效。
 - **飞书双侧不动**:Task/<中文名> 结构(根=交付 + context/ + refs/ + agent/)、「中间过程与记忆不上飞书」原则、双侧归档全部沿用。
 - **老规范兼容(软切换)**:根为 memory.md 的存量任务 = 旧规范,维持原样、不按新规范"纠正";巡检对其只查死链;迁移仅在用户要求时做(scaffold 遇 memory.md 拒绝执行并提示走迁移)。
 - **三层元系统**:harness-management(harness 桶变更唯一入口 + 落点决策表;2026-07-03 替代 continue-learning)与 memory-management(全局记忆 Meta skill,三库)分工见各自 SKILL.md;原独立 record skill 已归档(2026-07-02),工作区收尾由本 skill update 子模块承接(v3)、全局侧按 memory-management 双触发。
 
 ## §11 命令层(v3:薄 command + 内置子模块)
 
-三个内置子模块 = `modules/init.md`(开工)、`modules/recall.md`(定向)、`modules/update.md`(落盘,末步冲突检查)。**手动入口** = 对话指令或上层 /project-* 命令分发(单层薄 command 已于 2026-07-03 撤销;原三个命令 skill 已归档 `~/.claude/skills-archive/`);**自动入口** = auto/full 模式下 agent 按 §8 纪律直接执行模块例程(none 模式不自调)。工具脚本在本 skill `scripts/`,模板在 `templates/`。
+三个内置子模块 = `modules/init.md`(开工)、`modules/recall.md`(定向)、`modules/update.md`(落盘,末步冲突检查)。**手动入口** = 对话指令或上层 /project-* 命令分发(单层薄 command 已于 2026-07-03 撤销;原三个命令 skill 已删除、不保留副本);**自动入口** = auto/full 模式下 agent 按 §8 纪律直接执行模块例程(none 模式不自调)。工具脚本在本 skill `scripts/`,模板在 `templates/`。
 
 ## §12 能力层管理
 

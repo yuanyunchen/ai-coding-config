@@ -73,7 +73,7 @@ The prompt is the entire briefing — Codex sees none of your conversation.
 - Surface **constraints** — what must not change, libraries to use.
 - Demand **verification** — "run the tests and confirm they pass".
 
-**Directing Codex to its skills**: Codex has its own skills in `~/.codex/skills/`. It won't reliably invoke them on its own — when a task matches one, name it in the prompt: "Use your `pdf` skill to ...".
+**Directing Codex to its skills**: Codex has its own skills in `~/.claude/skills/`. It won't reliably invoke them on its own — when a task matches one, name it in the prompt: "Use your `pdf` skill to ...".
 
 For any prompt where quality matters — nontrivial delegation, review contracts, research — not just high-stakes ones, read the XML prompt-contract templates first (path in the references table).
 

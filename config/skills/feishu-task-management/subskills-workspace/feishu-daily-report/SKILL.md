@@ -10,7 +10,7 @@ description: "把当天工作整理成一篇飞书日报。触发:「整理日�
 
 ## 触发 / 边界
 - 「整理日报 / 写今天日报 / 汇总日报 / 出日报」→ 读 `references/compile.md` 执行。
-- 「记录日报 / 记一下 / 把这个记进日报」= 记当日 record → **走全局 `memory-management` 时间索引库**(`~/.codex/skills/memory-management/references/time-index.md`),**不在本 skill**。
+- 「记录日报 / 记一下 / 把这个记进日报」= 记当日 record → **走全局 `memory-management` 时间索引库**(`~/.claude/skills/memory-management/references/time-index.md`),**不在本 skill**。
 
 ## 来源(三方整合,冲突以原始文件为准)
 1. 用户口述当天清单(主线)+ 产出文件链接(**必读回读**)。

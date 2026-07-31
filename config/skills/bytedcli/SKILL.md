@@ -27,6 +27,14 @@ NPM_CONFIG_REGISTRY=http://bnpm.byted.org npx -y @bytedance-dev/bytedcli@latest 
 
 ## How to use
 
+0. **`bytedance` 知识库先查(记忆优先)** — 本 skill 覆盖的是**官方接口面**(命令、参数、schema);官方文档没写的那一层——平台实际怎么用、指标口径、实验结论、机制原理、历史决策、踩过的坑——在统一仓 `global-memory` 的 BM project **`bytedance`**(目录 `bytedance/`)。**做内网平台 / 广告算法任务前先查它**:
+   ```
+   <repo>/bin/bm tool search-notes --project bytedance "<你的问题>"
+   ```
+   (`<repo>` = `global-memory` 仓根;或 MCP `search_notes`,`project=bytedance`)。命中就直接用,并核对该事实 `source.quote` 的时效;命中率最高是带名字/实体的查询。
+   现有域与它们大致对应本 skill 的哪些命令域:`platforms`(内部平台目录,167 张)· `ad-algo-core`(广告算法机制/公式/结构,145 张)· `psort-recall` · `project-cid-recall` · `signal-pixel` · `experiment-method`(AB 实验方法与参数)· `ads-foundation` · `ops` · `weekly-notes`。
+   **两者是互补不是替代**:本 skill 告诉你命令怎么敲,`bytedance` 告诉你这条命令在真实环境里会怎么翻车、以及这个数该怎么算。跳过它的典型代价是重复研究一件已经研究过的事。
+
 1. 先判断任务属于哪个平台或对象类型。
 2. 先选对命令域，再调用对应的 bytedcli 命令。
 3. 需要稳定机器可读输出时，默认加 `--json`，并把它放在 `<domain>` 前面。

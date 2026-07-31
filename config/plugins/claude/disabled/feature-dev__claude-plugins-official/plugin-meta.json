@@ -1,8 +1,8 @@
 {
   "pluginId": "feature-dev@claude-plugins-official",
   "platform": "claude",
-  "installPath": "/Users/yuanyunchen/.claude/plugins/cache/claude-plugins-official/feature-dev/unknown",
+  "installPath": "/Users/bytedance/.claude/plugins/cache/claude-plugins-official/feature-dev/unknown",
   "version": "unknown",
   "hasHooks": false,
-  "copiedAt": "2026-07-06T19:44:02Z"
+  "copiedAt": "2026-07-31T00:23:25Z"
 }

@@ -38,7 +38,7 @@
 
 > 算不动就一致采样压规模,再用全量校验无偏,并标注口径。
 
-大数据 / 重计算超时或撞资源上限 → 用**一致采样**(对稳定主键取模或哈希,如 `mod(user_id,N)=0`)把基数压到 1/N;**先在有全量答案的子集上跑采样版校验无偏**(同口径窗最强、跨窗次之),再推到算不动的窗;**结果显式标采样口径**——比率 / 占比可直接报(采样无偏),放大绝对数标「上界 / 估计」。与「目标驱动」一脉:那次校验就是可验证标准。SQL 取数的具体坑见 `feishu-task-management` 内的 `ida-presto-query` 伪 skill(经其路由表加载,非全局注册)。
+大数据 / 重计算超时或撞资源上限 → 用**一致采样**(对稳定主键取模或哈希,如 `mod(user_id,N)=0`)把基数压到 1/N;**先在有全量答案的子集上跑采样版校验无偏**(同口径窗最强、跨窗次之),再推到算不动的窗;**结果显式标采样口径**——比率 / 占比可直接报(采样无偏),放大绝对数标「上界 / 估计」。与「目标驱动」一脉:那次校验就是可验证标准。SQL 取数的具体坑见 `feishu-task-management` 内的 `sql-query` 伪 skill(经其路由表加载,非全局注册)。
 
 ---
 
@@ -93,9 +93,10 @@
 
 > 长期记忆三库:项目定位 / 时间索引 / 知识检索。
 
-- **轻量 recall(不需加载 skill)**:枢纽 = runtime 软链到 `global-memory/hub/MEMORY.md`(`bin/setup` 后常见 `~/.claude/projects/-Users-$(whoami)/memory/MEMORY.md`;按 `memory-management` §路径解析,禁止写死用户名)。需要前史/项目定位/工作知识时 Read 它,按问题类型跳三库,单层索引只跳点名的。非 ~ 目录工作先读枢纽再取记忆。
+- **轻量 recall(不需加载 skill)**:枢纽 = `bin/setup` 为当前用户在 `~/.claude/projects/` 下建的 runtime 软链,指向 `global-memory/hub/`,入口文件 `MEMORY.md`。该链路按 `memory-management` §路径解析 求解——禁止写死用户名,也禁止照抄仍带 shell 语法的路径模板(未展开的那个已经造出一个幽灵 project 目录)。recall 是层级的:`MEMORY.md` 路由索引 → `ns/<域>/INDEX.md` → `ns/<域>/<slug>.md` 卡片 → 卡片指向时再进 `_detail/<slug>/` 切片。任一张卡两跳可达,只跳点名的指针。非 ~ 目录工作先读枢纽再取记忆。
+- **写入形态(不加载 skill 也约束)**:`type` / `status` / `updated` / 多值 `topics` 是 frontmatter **顶层键**——嵌进 `metadata:` 则所有检索过滤器都看不见。卡片正文 ≤6,000 字符(全文索引在此截断);超出部分按 `## ` 段落切到 `_detail/<slug>/<段>.md`,每片仍进索引。分类由 `topics` 承载,域目录只是它的主归属投影;之所以仍按域建目录,是因为目录名本身是很强的检索信号。
 - **update 判断**:出现值得全局记录的信息(项目状态定型、跨任务恒真事实、用户偏好)→ invoke memory-management 走其 update 例程;模式与触发判据细节都在 skill 内。
-- **auto-memory 双轨定死**:harness 每会话注入的 per-project auto-memory 指引不改变落点——记忆一律写全局枢纽(`global-memory/hub/`,经上述 runtime 软链);确需在项目目录就地写记忆文件时,必须同步在枢纽 `MEMORY.md` 登一行索引,防止记忆分裂。
+- **auto-memory 双轨定死**:harness 每会话注入的 per-project auto-memory 指引不改变落点——记忆一律写全局枢纽(`global-memory/hub/`,经上述 runtime 软链);确需在项目目录就地写记忆文件时,必须同步在枢纽 `MEMORY.md` 登一行索引,防止记忆分裂。**该路径直写的记忆不会自动进索引**:只带 `name` / `description` / `metadata.type` 的文件落了盘也检索不到,要等一次 reindex 才可见——所以每一次这样的写入都要补齐到上一条的写入形态,不能停在 auto-memory 的原始形态。
 - **加载时机**:上一条 update 判断命中、主动深 recall、/project-* 命令。
 
 ## 六、Harness 板块(行为约束层;变更机制 = `harness-management` skill)
@@ -140,4 +141,4 @@
 | 全局记忆 | memory-management | auto | 对话指令(recall/补记)或经 /project-* |
 | 行为约束 | harness-management | none | 对话指令(记下来/改 skill…)或经 /project-* |
 
-收尾:三层齐 = /project-update(或对话指令走单层 update 例程);周度纠错 = memory-weekly-check。
+收尾:三层齐 = /project-update(或对话指令走单层 update 例程)。记忆索引维护走 `global-memory/bin/maintain.sh`(hub reindex + 派生索引与 lint 检查);未注册并验证调度器之前,它是手动步骤。不要写本文件兜不住的频率——规范断言一个未注册的执行器,正是本板块要防的失效。

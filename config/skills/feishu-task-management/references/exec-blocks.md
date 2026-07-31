@@ -24,7 +24,7 @@
 ## §B 嵌图 / 图片复用管线(原 memory.md §3,已跑通,务必照搬)
 
 MCP 的 `media_uploadPrepare/uploadFinish` 不推字节,光靠 MCP 传不了图。正解:
-1. `~/.config/lark-mcp/env` 的 APP_ID/APP_SECRET → POST `/open-apis/auth/v3/tenant_access_token/internal` 换 `tenant_access_token`。
+1. tenant token 用 `lark-cli --as bot` 现取(旧配方读的 `~/.config/lark-mcp/env` 已随 MCP 退役删除) → POST `/open-apis/auth/v3/tenant_access_token/internal` 换 `tenant_access_token`。
 2. 建空 image 块(block_type 27)→ 拿 `block_id`。
 3. curl POST `/open-apis/drive/v1/medias/upload_all`,**关键绑定**:`parent_type=docx_image`、`parent_node=图片块ID`(不是文档ID!)、`extra={"drive_route_token":"文档ID"}`、multipart `file`。绑错→ `1770013 relation mismatch`。
 4. `docx_v1_documentBlock_patch` `{"replace_image":{"token":新token}}` 绑定。

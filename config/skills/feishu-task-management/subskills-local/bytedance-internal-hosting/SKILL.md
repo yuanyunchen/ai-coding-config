@@ -49,8 +49,8 @@ description: "把 HTML 报告/网页/交互产物托管到字节内网拿可分�
 ## 3. 飞书云盘(要存档 / 真权限)
 
 上传 HTML **文件本体**(别 import 成 docx,会降级丢图),点文件 **Preview** 渲染。
-- **CLI 首选**:`lark-cli drive +upload --as user`(在用户 Drive 建须 `--as user`)。Keychain 被沙箱锁时由 agent 执行 `lark-cli config keychain-downgrade`；若随后仍是 DNS/网络隔离，按主 skill 的执行降级规则处理，不把命令转交用户。
-- **CLI 执行通道不可达时走网页版**:新文件网页上传注入不进(showOpenFilePicker/webkitGetAsEntry),用「**Make a Copy → Upload New Version**」技法绕。
+- **CLI 首选**:`lark-cli drive +upload --as user`(在用户 Drive 建须 `--as user`)——但 **keychain 可能被沙箱锁**,需用户跑 `lark-cli config keychain-downgrade`。
+- **keychain 锁时走网页版**:新文件网页上传注入不进(showOpenFilePicker/webkitGetAsEntry),用「**Make a Copy → Upload New Version**」技法绕。
 - **保 link 覆盖** = 文件「**⋯ → Upload New Version**」(同 token/URL 不变,旧版进版本历史,评论保留,自动改名为上传文件名)。
 全部命令、绕过技法、权限、踩坑在 `references/feishu-drive.md`。
 

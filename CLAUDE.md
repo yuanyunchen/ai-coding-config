@@ -7,24 +7,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 本仓库是 **Cursor / Claude Code / Codex / Trae** 四工具的统一 agent 配置备份库，用于跨设备迁移与版本管理。
 
 - **真实配置**在部署目录 `~/.cursor` `~/.claude` `~/.codex` `~/.trae`（各工具至少运行过一次才会创建；Trae IDE 与 Trae CLI/`traecli` 共用 `~/.trae`）
-- **git 快照**在 `config/`（真实文件，无软链，可 push 到其他设备）
-- **本机浏览**：`config-links/` 是指向 `config/` 的软链（gitignore，`./agent-config links` 创建），目录树与 `config/` 完全一致
+- **git 快照**在 `config/`（真实文件，无软链，可 push 到其他设备）；直接浏览/编辑此目录
 
 所有操作通过**唯一入口** `./agent-config` 完成，实现脚本在 `scripts/` 子目录。
 
 ## 目录结构
 
 ```
-config/                        git 快照（跨设备迁移）
+config/                        git 快照（跨设备迁移；唯一配置树）
   agents/  commands/  AGENTS.md  AGENTS-cn.md
   skills/*（启用，扁平）  skills-disabled/*（禁用，同级目录）
   plugins/manifest.json  plugins/README.md
   plugins/{claude,cursor,codex}/{enabled,disabled}/
   claude-personal/settings.personal.json  claude-personal/ccstatusline/   Claude Code 个性化 + 状态栏
   codex-personal/config.personal.toml      Codex 个性化
-config-links/ -> config/       本机软链（gitignore，`./agent-config links`）
 agent-config                   统一 CLI 入口
-scripts/                       deploy | pull | sync | plugins | memory | links
+scripts/                       deploy | pull | sync | plugins | memory | migrate
 config/AGENTS.md               部署到三工具的全局英文规则（主版本）
 config/AGENTS-cn.md            AGENTS.md 中文镜像（人读参考；pull/deploy/sync 随 AGENTS.md 一并处理）
 SETUP.md                       新机器首次配置（给人看；装工具、登录、browse）
@@ -66,7 +64,7 @@ cd ai-coding-config
 
 ### 本机日常改配置
 
-1. 直接改 `~/.claude/...` 或 `~/.codex/config.toml`（本仓库内改 `config/...`，或经 `config-links/` 浏览——与 `config/` 为同一路径）
+1. 直接改 `~/.claude/...` 或 `~/.codex/config.toml`（本仓库内改 `config/...`）
 2. 或在 Cursor 里改完后：`./agent-config sync --source cursor`
 3. 拉回仓库快照：`./agent-config pull`
 3b. 若改了插件开关：`./agent-config plugins sync --force`（再 pull 亦可）
@@ -109,7 +107,6 @@ cd ai-coding-config
 | `sync` | 四工具互相同步 | 增量，只加不删 |
 | `plugins sync` | claude 插件 → cursor/codex | 镜像 manifest 开关；含 pull + 可选 deploy |
 | `migrate` | ~/.cursor → ~/.claude | 一次性迁移 |
-| `links` | `config-links` -> `config/` | 整理 skills 两层目录 + 相对软链 |
 | `plugins` | pull / sync / deploy / install / apply | 见「插件统一」；`plugins status` 看快照 |
 
 各命令均支持 `--dry-run` 预览；`deploy --no-sync` 跳过三工具 sync；`sync --no-backup` 覆盖前不备份。详细参数：`./agent-config <command> -h`
@@ -132,7 +129,6 @@ cd ai-coding-config
 ./agent-config plugins install           # Claude marketplace
 ./agent-config plugins vendor [--force]  # claude portable -> config/
 ./agent-config deploy                    # 含 plugins deploy + install + sync
-./agent-config links                     # config-links -> config/
 ```
 
 portable 更新：`pull` → `vendor --force` → `deploy`
@@ -200,10 +196,9 @@ Claude 与 Codex 的个性化（默认模型、推理强度、状态栏等）用
 - **hook 插件**：见 `manifest.json` 的 `hookPlugins`；原始包在 `config/plugins/{claude,cursor,codex}/`，不 vendor、不跨平台 sync。
 - **portable 插件**：`plugins pull` → `vendor` → `sync`；如 code-review 三工具 prompt 一致。
 - **`feature-dev` 已禁用**：manifest 中 `feature-dev@claude-plugins-official: false`。
-- **`config/` 不用软链**：绝对路径软链无法跨设备；本机用 `config-links` -> `config` 相对软链浏览。
-- **`config-links` 无独立结构**：不要往 `config-links/` 里放 replicas、plugins-enabled 等旧目录；只保留指向 `config/` 的一条链。
+- **`config/` 不用软链**：绝对路径软链无法跨设备；仓内只维护 `config/` 这一份快照树。
 - **`node_modules` 未纳入 git**：`frontend-pipeline/.../ui-ux-design-pro/cli` 需要时在目标机器 `npm install`。
-- **脚本有副作用**：除 `pull` 和 `links` 外都会写部署目录；执行前先 `--dry-run`。
+- **脚本有副作用**：除 `pull` 外都会写部署目录；执行前先 `--dry-run`。
 - **改结构前先看部署目录**：工具实际加载的布局以 `~/.{tool}/skills/` 等为准，`config/` 必须镜像之；不匹配会**静默坏掉**（如 skill 整批不加载，无报错）。本次 skills 扁平化即源于此。
 - **改脚本后验证**：`bash -n scripts/*.sh` 过语法 + 相关命令 `--dry-run` 核对路径，再跑真实部署。
 - **`plugins apply`**：以 manifest 为准写 `~/.claude/settings.json`；会删除 manifest 已移除的插件项。

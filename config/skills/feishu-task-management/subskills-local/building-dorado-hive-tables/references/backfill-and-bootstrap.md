@@ -68,3 +68,51 @@
 - UPDATE 应复用哪一条有效 ADD。
 
 不能只改表 TTL 而保留相互矛盾的“永久注册”业务描述。
+
+---
+
+## 回填时「盯错对象」—— 一轮里复发五次的同一根源(2026-07-31 实测)
+
+> 时效:2026-07-31 · bytedcli 0.111.0 · region sg。
+> 五次复发中,前四次浪费时间(单次最多 60 分钟),第五次**差点让一处生产门禁修法静默失效**。
+> 五次的共同点:**判据里没有「这就是我刚提交的那一个」的锚点**。
+> 而挑错的那次**看起来和挑对时一模一样** —— 这是它必须靠写法而非细心来防的原因。
+
+### 五种面孔
+
+| # | 写法 | 为什么错 |
+|---|---|---|
+| 1 | 取 `instance list` **第一行** | 列表把**尚未到点的 pending 自然周期实例排在最前**,它要到次日 cron 才动 |
+| 2 | 用**默认分页** | 默认只回最近约 20 个 schedule 日;回填旧日期**整段在页外**,表现与「实例不存在」完全相同 |
+| 3 | 按 **schedule 日期**匹配 | 每个 p_date 都有历史自然周期留下的**同日期 succeed 实例**,会撞上它 |
+| 4 | 用「**今天**跑过」判断分区是否已用新 SQL 产出 | 当天早于部署时刻的那次用的是**旧 SQL** |
+| 5 | 匹配不到时**继续等** | 提交因网络错误静默失败,轮询空转到**撞上一个同日期旧实例**为止,报「完成」 |
+
+### 正确写法(四步,缺一不可)
+
+```bash
+# 1. 提交前取实例 id 集合
+ids_before=$(bytedcli dorado instance list --task-id $T --project-id $P -r $R --page-size 80 -j \
+  | python3 -c "import json,sys;r=(json.loads(sys.stdin.read(),strict=False) or {}).get('data') or [];r=r.get('instances') if isinstance(r,dict) else r;print(' '.join(str(x.get('id')) for x in (r or [])))")
+
+# 2. 提交必须确认成功 —— 网络错误会让它静默失败
+sub=$(bytedcli dorado task rerun $T --project-id $P -r $R --biz-date $B --trigger-type rerun --scope single_task_rerun 2>&1)
+echo "$sub" | grep -q "Rerun submitted" || { echo "提交未确认，STOP"; exit 1; }
+
+# 3. 集合差取【唯一】新 id;取不到唯一 id 就 STOP,拒绝降级为按日期匹配
+#    「降级路径」本身就是缺陷,不是容错 —— 它正是错误的来源
+
+# 4. 轮询只按该 id 查;查不到 = MISSING = 异常 STOP,不当作「还没好」
+```
+
+**规则要两半,缺一不可**:
+> **判据必须锚定身份,且「锚点匹配不到」必须是失败,不能是等待。**
+> 前半防止看错对象;后半防止**一直等到看错对象为止**。
+
+### 顺带两条回填硬事实
+
+- **`--biz-date` 是调度日,写的分区是 `p_date = biz_date − 1`。**
+  证据不是推断:实例 `Schedule 2026-07-30` 在 `07-31 00:25` 跑,写出 `p_date=20260729`。
+  搞反会**静默填错整段日期**,而每一天都照样报 succeed。
+- **`instance list` 判断「某分区是否已用新版 SQL 产出」时,判据必须含部署时刻**:
+  `startTime ≥ 部署完成时刻`,而不是「日期是今天」。

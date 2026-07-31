@@ -179,9 +179,8 @@ echo ""
 echo "[rules]"
 RULES_FILE="$CLAUDE_BASE/AGENTS.md"
 CLAUDE_MD="$CLAUDE_BASE/CLAUDE.md"
-WS_LINK="$REPO_ROOT/config-links/AGENTS.md"
 if [ "$DRY_RUN" -eq 1 ]; then
-    echo "  [dry-run] 写 ${RULES_FILE}（若不存在）；确保 ${CLAUDE_MD} 含 @AGENTS.md；链 ${WS_LINK}（需先 ./agent-config links）"
+    echo "  [dry-run] 写 ${RULES_FILE}（若不存在）；确保 ${CLAUDE_MD} 含 @AGENTS.md"
 else
     if [ -f "$RULES_FILE" ]; then
         echo "  已存在，保留不覆盖: $RULES_FILE"
@@ -224,10 +223,6 @@ AGENTS_EOF
     else
         echo "  $CLAUDE_MD 已含 @AGENTS.md 导入"
     fi
-    # 工作区链接，便于直接查看/编辑
-    mkdir -p "$(dirname "$WS_LINK")"
-    ln -sf "$RULES_FILE" "$WS_LINK"
-    echo "  工作区链接: $WS_LINK -> $RULES_FILE"
 fi
 
 # --- hooks (如源里有 hooks.json 则合并进 settings.json) ---

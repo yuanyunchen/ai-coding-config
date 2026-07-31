@@ -40,6 +40,18 @@ State assumptions explicitly; ask when unsure. Multiple interpretations exist �
 
 Big-data / heavy computation timing out or hitting resource limits → use **consistent sampling** (modulo or hash on a stable primary key, e.g. `mod(user_id,N)=0`) to cut cardinality to 1/N; **first validate unbiasedness on a subset where the full answer exists** (same-window strongest, cross-window next), then extend to the window you cannot compute; **label the sampling basis explicitly in results** — ratios/shares can be reported directly (sampling-unbiased), scaled-up absolute numbers get "upper bound / estimate". Same vein as "Goal-Driven Execution": that validation is the verifiable criterion. SQL-specific pitfalls: see the `sql-query` pseudo-skill inside `feishu-task-management` (loaded via its routing table, not globally registered).
 
+### Rules Go Where They Cannot Be Forgotten
+
+> A decision that only survives if someone remembers to pass a flag is not a decision.
+
+Once the user settles something, put it where the default path already obeys it — a default value, a config the build reads, a check that fails. **Documenting it is the weakest form and the first to rot.** Evidence: a "don't draw these nodes" ruling lived only in a CLI flag while the documented build command omitted that flag; a later rebuild followed the documented command and silently reverted the ruling — twice. Fix the placement, not just the instance. Corollary: when you do write it down, also fix the *other* place that contradicts it — the revert above was helped by a stale note recording the opposite resolution.
+
+### One-Sided Declarations Are a Signal, Not a Gap
+
+> When two sides of a relationship disagree, decide which side is right — do not fill in the quieter one.
+
+A checker reporting "only declared on one side" is telling you something is contested. Reconciling it by copying the claim to the missing side makes **both sides wrong** and permanently silences the warning. Verify against the authoritative source first (code > doc > inference), then either remove the claim or complete it. Same shape as: verification tooling must be updated alongside the artifact it verifies — after adding a wrapper layer, an unadjusted integrity check flagged every wrapped item as "content changed". **A false positive costs more than a miss: it sends someone to fix what is not broken.**
+
 ---
 
 ## 2. Communication
@@ -56,17 +68,26 @@ Big-data / heavy computation timing out or hitting resource limits → use **con
 - **Synthesis, not collage**: digest multiple sources into your own argument; don't stitch original text together.
 - **Clean formatting**: no emoji anywhere (code comments / output / replies); professional tone and presentation.
 
-### User-Facing Messages
+### Human-Centered Interaction
 
-> On top of "Writing & Expression": give only what the user needs — signal, not detail.
+> Everything a person receives — replies, reports, pages, diagrams — is designed around how they take it in, not narrated the way I produced it.
 
-Building on "Writing & Expression", replies and reports written for the user additionally follow:
+**Replies.** One progress update answers three things: **what is done · where it is stuck · what needs your decision.** The rest is my bookkeeping.
 
-- Conclusion and the current problem first, then concrete, informative next steps.
-- Technical detail — tool names, error codes, internal mechanics — stays out of user-visible text; it lives in workspace files, provided when asked.
-- Readability first: short, scannable, plain language.
-- Structure deliberately: layering and diagrams where they clarify.
-- Scope: chat replies, plus any report or summary written for the user.
+- Conclusion and blocker first, then the concrete next step.
+- **State the effect, not the mechanism.** Subagent ids, file paths, function names, internal layer names (compiler / renderer / leaf), tool names, error codes, flags stay out of user-visible text; they live in workspace files, provided when asked. Not "`baseDash()` has no `planned` branch" — "one class of edges is drawn with the wrong line style".
+- Length follows the news, not the effort. Don't narrate tool calls, retries, or self-corrections; report the outcome.
+
+**Artifacts built for people** (report / page / deck / dashboard / visualization / doc), in priority order:
+
+1. **Decide the reader first** — a specific person, not "the user". Two checks that constrain each other: would a non-target reader be stopped by the first screen? having cut that far, can someone who needs it still get what they came for? Both must hold.
+2. **Visual before verbal** — structure goes into a diagram or table; prose restating a diagram is deleted.
+3. **Control text density** — first screen plus an expandable rest. Shrink in this order: remove duplication → move into diagrams → collapse → reduce precision (never on numbers that change a decision) → and only then cut content.
+4. **Natural language** — vary sentence shape; one template repeated across sections reads as machine-written even when every sentence is fine. Keep qualifiers ("not verified", "no counterexample found") even when they read awkwardly.
+
+Detail lives where it is used: `starmap` → `references/content.md` (第零原则) · `frontend-pipeline` → `references/content-for-readers.md` · `lark-doc-writer` §0.3 / §0.5.
+
+**The dividing line.** Content written for an agent to consume — skill bodies, knowledge leaves, machine-read specs — takes the opposite standard: technical, exhaustive, every qualifier intact. Serve human readers with a projection layer, never by degrading the source.
 
 ---
 

@@ -91,3 +91,81 @@ Presto 档与 Hive/Calcite 档的函数面不同;bytedcli 的 `--engine`、Aeolu
 - **大结果必下 CSV**(明细 / 多行 / 热力图 pair):点「下载: 文件名.csv」→ `~/Downloads/` → `mv` 到 `data/csv_*/` 改 canonical 名。单行结果读屏记数即可。
 - **并行 = 多 tab**:Chrome 单会话不可并行;开多个 iDA 标签页各跑一批(各自独立 session),云端并发。
 - **每个新 tab/会话默认模型要重选 GPT-5.5**。
+
+---
+
+## 四、bytedcli 通道自身的信号可信度(2026-07-31 实测 · bytedcli 0.111.0 · ROW/sg)
+
+> 本组不讲 SQL 怎么写,讲**通道返回的信号能不能信**。
+> 本轮 22 天逐日验证 + 30 亿 item 全量重算全程实测得出;每条都带复现方式。
+> 时效:2026-07-31 · bytedcli 0.111.0 · region sg。换版本或换机房前先重验。
+
+### K. 【最要紧】`dorado adhoc` 与 `aeolus query-editor` 的**运行身份不同**
+
+| 通道 | 实际身份 | 怎么验 |
+|---|---|---|
+| `dorado adhoc exec` | **项目 PSM**(如 `dorado.project.xxx`) | 无权限时报错串尾部有 `username=dorado.project.xxx` |
+| `aeolus query-editor` | **个人账号**(复用 `bytedcli auth login` 的 token) | `bytedcli aeolus query-editor whoami -r sg` |
+
+**`--username` 参数改不了 adhoc 的身份**(实测传了仍是 PSM)。
+载体任务的 `conf.authParam` 也改不了 —— adhoc **恒用 PSM**。
+
+⇒ **表只对个人账号授权、PSM 无权限时,QE 是唯一能查的通道**,且不需要任何审批。
+本轮正是靠这条解开了一个被误判为「需要提权工单」的死锁 —— 而该工单此前已被证实建单即拒。
+
+**判别方法**:`adhoc` 报 `No valid privileges ... username=<PSM>` 而同一条 SQL 在 QE 能跑
+⇒ 就是身份问题,不是权限缺失,**不要去申请 PSM 权限**。
+
+### L. `adhoc exec` 在同任务已有查询运行时,**挂到旧实例并返回别人的结果**
+
+实测:提交第二条 SQL,CLI 正常返回、`exit 0`、打印结果 —— 但那是**第一条**的
+debug id、列名与数据。第二条 SQL **一行都没执行**。
+唯一可辨识的证据是 `adhoc history` 里始终只有一条记录。
+
+**纪律**:
+1. 同一载体任务上**串行**提交,提交前确认 `adhoc history` 无 `running`;
+2. 结果 SQL 里**自带身份列**(如 `SELECT '<预期日期>' AS probe_p_date`),判读时比对它 ——
+   **一行自证身份的数据比核对 debug id 更难骗**。
+
+### M. 四类瞬时故障,**全部会伪装成失败或成功**
+
+| 现象 | 真实状态 | 处置 |
+|---|---|---|
+| `AEOLUS_TIMEOUT`(默认轮询 600 秒) | **服务端仍在跑** | 调大 `--timeout`;或按 taskId 事后 `query status` 取回 |
+| `HTTP 403` | 会话瞬断 | 重试 |
+| `Request timeout after 20000ms` | **提交阶段超时,查询根本没起来** | 重试(与上两类不同:没有服务端作业可取回) |
+| 写操作报超时**但已成功** | 操作完成,只是响应超时 | **独立核实内容**,不看返回码 |
+
+⇒ **QE/adhoc 查询失败必须先重试再下结论**;但**重试不得掩盖真失败** ——
+判据永远是「拿到结果行」,不是「命令退出码为 0」。
+
+### N. `query one -j` 的输出是**多段 JSON**,不是一个对象
+
+文件里依次可能有:进度行 `[2s] Status: RUNNING...` → 提交回执 → 结果 → 超时错误。
+`json.loads(raw[raw.find('{'):])` 会在第二段上抛 **`Extra data`**,
+**把一个完全正常的结果判成「不可读」**。
+
+正确写法:用 `json.JSONDecoder().raw_decode` 逐段解出,**取有 `rows` 的那一段**。
+形状还有两种:`query one` 是 `data.columns` / `data.rows`;
+`query status` 是 `data.results.columns` / `data.results.data`。两种都要认。
+
+### O. 平台偶发返回 `data: null` 且**内嵌服务端错误串含裸控制字符**
+
+实测报文:`{"status":"success","data":null,...  failed to get c.Cache.Get()GWCtx, err: key not found ...}`
+—— 顶层 `status` 仍是 `success`,而 `data` 为 `null`,错误串里带裸控制字符。
+
+后果:Python 严格模式 `json.loads` 直接抛 `Invalid control character`,
+表现为「任务状态读不出」,极易被误判成网络故障。
+
+⇒ 解析平台返回一律 **`json.loads(text, strict=False)`**,
+且把 `data is None` 与解析失败**同等对待为「读不到」**(读不到必须阻塞,不得当通过)。
+
+### P. `query one` 必须显式 `--queue`,且不支持高阶函数
+
+- 不给 `--queue` 报 `Missing compute queue`;候选见 `queue-catalog.md`。
+- **lambda / 高阶函数不被解析器接受**:`filter(arr, x -> x.f)` 报
+  `Table 'x' not found`(把 lambda 参数当成了表名)。改用 `LATERAL VIEW explode` + `CASE WHEN`。
+- 大表 `explode` 可能让 executor 崩(`Exit status 134` / JVM core dump)。
+  该集群跑 Gluten/Velox,日志里的
+  `Function is not supported: get_array_struct_fields` 是**正常回退**不是故障 ——
+  生产 SQL 天天走这条回退路径。崩溃通常是**载体任务的资源画像**问题,先换载体或缩小扫描范围再怀疑 SQL。

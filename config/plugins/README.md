@@ -48,7 +48,6 @@ git clone .../ai-coding-config.git && cd ai-coding-config
 ./agent-config plugins install          # Claude marketplace
 ./agent-config plugins sync --force     # portable -> cursor/codex
 ./agent-config deploy                   # config + plugins deploy
-./agent-config links                    # 可选
 ```
 
 仅 Claude、暂不 sync 到其他工具：`./agent-config deploy --no-sync`
@@ -70,14 +69,10 @@ git add -A && git commit && git push
 - `continual-learning@cursor-public`（hook）
 - `superpowers@cursor-public`（hook；Cursor 侧 marketplace 为 cursor-public，与 Claude 的 superpowers-marketplace 不同 ID）
 
-## config-links
-
-`config-links` 是指向 `config/` 的软链（`./agent-config links`）。路径与 `config/` 相同，例如 `config-links/plugins/claude/enabled/`。
-
 ## 当前安装一览
 
 <!-- installed:start -->
-_Updated: 2026-07-31 00:23 UTC_
+_Updated: 2026-07-31 22:22 UTC_
 
 ## claude
 

@@ -94,3 +94,77 @@ Explain 必须带真实逻辑日期和全部模板参数，并确认窗口表发
 - 参数、依赖、资源、并发、重试和告警回读一致。
 
 等待上游、已创建任务壳、已提交发布都属于进行中，不写成完成。
+
+---
+
+## 7. 部署动作本身的陷阱(2026-07-31 实测 · bytedcli 0.111.0 · ROW/sg)
+
+> 本节四条都是「工具说成功但没成功」或「改了 A 顺带毁了 B」。
+> 时效:2026-07-31 · bytedcli 0.111.0 · region sg;换版本前先重验。
+
+### 7.1 `task-draft update` 会**静默清空** conf 的多个字段
+
+实测被清空的:`conf.authParam`(整个对象 → null)、`maxParallelism`、`runLatestWhilePending`。
+**不报错、不提示**。其中 `authParam` 最致命 —— 任务的运行身份没了,
+下次调度会静默落回项目 PSM,而报错要到**次日调度**才出现。
+
+⇒ **改 SQL 或改 queue/cluster 之后,必须回读 conf 并逐字段比对**,
+不能只看命令返回 `✓ Successfully updated`。
+
+### 7.2 conf 里**含 SQL 本体** ⇒「恢复配置」会撤销「部署 SQL」
+
+SQL 存放在 `conf.configuration.operator.parameter.code`。
+若按「先 `task-draft update --sql-file` 推新 SQL,再 `task update-conf` 拿改前 conf 恢复配置」
+这个直觉顺序做,**第二步会把第一步刚推的 SQL 盖回旧版**。
+
+⇒ 要恢复的 conf 必须是「捕获的 conf **同时**套上新 SQL 与参数覆盖」后的产物。
+
+### 7.3 `deployed=true` **不回答**「我的版本上线了没有」
+
+它只说「该任务有某个已发布版本」。实测:`task online` 因权限被拒后,
+`deployed` 仍是 `true`,而 `task diff` 显示 `version 8 → draft` 差异 1576 行。
+
+⇒ 唯一诚实的判据是 **`bytedcli dorado task diff <id>` 显示 `No differences`**(已发布 == 草稿)。
+更强的判据:**线上 SQL 的 sha256 == 磁盘文件的 sha256**,以及 SQL 内关键常量的实际取值。
+
+⚠️ 另一形态:`online` 返回 `Request timeout after 20000ms` **而操作其实成功了**。
+所以**成功与失败两个方向都不能信返回码**,一律回读内容。
+
+### 7.4 `task online` 的前置检查用**任务的运行身份**校验权限
+
+若任务要读的表只对个人账号授权、项目 PSM 无权限,**上线会被直接拒绝**
+(报 `No valid privileges ... username=dorado.project.xxx` 并列出所有缺权限的列)。
+
+解法是把任务身份显式设为个人:
+
+```json
+{"prodAuthType":"user","authMetas":[{"env":"prod","authType":"user"}],"useDoradoDefaultPsm":false}
+```
+
+**注意与 7.1 的联动**:`task-draft update` 会把它抹掉。
+所以「先设身份、再部署」的顺序是错的 —— 身份会被静默还原,
+而故障要到次日调度才暴露。正确做法是**部署流程内保证 conf 恢复时带上 authParam,并回读确认**。
+
+## 8. 告警规则是独立对象(2026-07-31 实测)
+
+任务上的 `conf.alarm.alarmRules` 常为 `null`,不代表没有告警 ——
+liveness/timeout 规则是**独立对象**,入口:
+
+```bash
+bytedcli dorado task alarms     --task-id <id> --project-id <pid> -r <region>   # 列出绑定的规则名与 id
+bytedcli dorado task alarm-rule get    --rule-id <rid> --project-id <pid> -r <region> -j
+bytedcli dorado task alarm-rule update --rule-id <rid> ... --yes                # 不带 --yes 是干跑
+```
+
+阈值在 `timeoutAlarmItems`,常见三项:`latest_not_start` / `latest_not_end`(分钟)
+与 `fixed_time_not_success`(`HH:MM`)。
+
+⚠️ **`alarm-rule update` 是 read-modify-write,干跑输出里 `Task IDs` 为空** ——
+若它清掉任务绑定,规则会**从任务上脱钩、彻底不再告警**,比不改糟得多。
+⇒ 只为「补一句描述」这类装饰性收益去动它,**风险远大于收益**;
+真要改先在干跑输出里确认绑定字段被保留。
+
+**阈值推导口径**:每段容得下**本环节自身一次完整重试**,即
+`起跑时刻 + 单次时长 + retryInterval + 单次时长 < 该环节的未完成阈值`,且各段严格递增。
+⚠️ 增量口径与全量重算口径可能差 3 倍以上(本轮实测 16.5 分 vs 52.7 分),
+**若周期内可能触发全量重算,必须为它单列一档**,否则天天误报。

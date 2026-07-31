@@ -1,6 +1,3 @@
-# 本机软链视图（绝对路径，不可跨设备）；无尾斜杠以匹配软链本身
-config-links
-
 .DS_Store
 *.pyc
 __pycache__/

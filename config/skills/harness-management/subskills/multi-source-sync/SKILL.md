@@ -1,11 +1,11 @@
 ---
 name: multi-source-sync
-description: "harness-management 内部 subskill(伪 skill,经其路由 Read):Claude/Cursor/Codex/Trae 四源 harness 同步 + 仓快照 + GitHub push/pull,与本机 config-links。触发:同步三源/四源、sync skills、deploy harness、agent-config sync/deploy/pull/links、从 GitHub 更新并推到四工具。任意 cwd 可调,不必 cd 进仓库。"
+description: "harness-management 内部 subskill(伪 skill,经其路由 Read):Claude/Cursor/Codex/Trae 四源 harness 同步 + 仓快照 + GitHub push/pull。触发:同步三源/四源、sync skills、deploy harness、agent-config sync/deploy/pull、从 GitHub 更新并推到四工具。任意 cwd 可调,不必 cd 进仓库。"
 ---
 
 # multi-source-sync — 四源 harness 同步(agent-config + GitHub)
 
-> harness-management 内部伪 skill。把 `ai-coding-config` 的 `./agent-config` 变成**任意工作目录可调用**的操作面;本机浏览用 `config-links` **保持软链**;**每次完整同步默认含 GitHub**(仓有改动则 commit+push;从远端更新则先 pull)。
+> harness-management 内部伪 skill。把 `ai-coding-config` 的 `./agent-config` 变成**任意工作目录可调用**的操作面;仓内唯一配置树 = `$REPO/config/`;**每次完整同步默认含 GitHub**(仓有改动则 commit+push;从远端更新则先 pull)。
 
 ## 路径解析(禁止写死本机绝对路径)
 
@@ -35,11 +35,11 @@ Live runtime(工具 home,非仓):
 
 **Canonical live 源默认 = Claude**(`~/.claude`)。仓内快照 = `$REPO/config/`。远端 = GitHub `yuanyunchen/ai-coding-config`。Trae CLI 与 Trae IDE 共用 `~/.trae`（skills/commands/agents/AGENTS.md 同构于 cursor/claude）。
 
-## 本机 link 纪律
+## 仓内配置树纪律
 
-- **`config-links` → `config/`**:仅本机浏览用,已 gitignore。创建/修复:`"$REPO/agent-config" links`。必须是**相对软链**,禁止把 `config-links` 做成实体目录或绝对路径副本。
-- **`config/` 本身不用软链**(跨设备不可移植);改内容改 `config/` 或经 `config-links/`(同一 inode 视图)。
-- sync/deploy 用 rsync 物化到各工具 home 是预期行为;不要为「省一份拷贝」把 `~/.claude/skills/X` 软链到 `~/.claude/skills/X`(除脚本已跳过的「目标已指向源」情形)。
+- **唯一树 = `config/`**：浏览、编辑、git 快照都走这里；不要再维护平行的 `config-links` 或其它副本目录。
+- **`config/` 本身不用软链**(跨设备不可移植);改内容直接改 `config/`。
+- sync/deploy 用 rsync 物化到各工具 home 是预期行为;不要为「省一份拷贝」把 `~/.claude/skills/X` 软链到仓内 `config/skills/X`(除脚本已跳过的「目标已指向源」情形)。
 
 ## 命令速查(在任意 cwd 执行)
 
@@ -52,7 +52,6 @@ Live runtime(工具 home,非仓):
 | 仓 → Claude(+默认再 sync) | `"$REPO/agent-config" deploy` |
 | 只部署不跨工具 sync | `"$REPO/agent-config" deploy --no-sync` |
 | live → 仓快照 | `"$REPO/agent-config" pull` |
-| 重建 config-links | `"$REPO/agent-config" links` |
 | 插件开关/portable | `"$REPO/agent-config" plugins …` |
 | 全局记忆 git 同步 | `"$REPO/agent-config" memory …` |
 
@@ -65,7 +64,7 @@ Live runtime(工具 home,非仓):
 1. **四 live**:`"$REPO/agent-config" sync --source <canonical>`(默认 `claude`;可按用户指定改源/目标/`--mirror`)
 2. **回仓**:若改动源自 live → `"$REPO/agent-config" pull`;若改动已在 `$REPO/config/` → 跳过 pull,直接确保 live 已 deploy/sync
 3. **GitHub**:在 `$REPO` 内 `git status` / `git diff`;有改动 → 按用户 git 规范 add(禁 secrets)→ commit(HEREDOC)→ `git push`;无改动但 ahead → 只 push;behind → 先 `git pull --rebase`(或报告冲突)再 push。**调用本 subskill 的「同步三源/四源 / sync」即视为用户已授权本次 commit+push**(2026-07-12 明示);与「平时未经要求不擅自 commit」的通用 git 纪律不冲突——授权范围仅限本管道。`--dry-run` / 用户明确「不要推 GitHub」/「只本地」才跳过本步。
-4. **验收**:四 home 目标文件存在且工具根路径已改写;`config-links` 仍为软链;`git status` 显示与远端一致(或已说明未推原因)。
+4. **验收**:四 home 目标文件存在且工具根路径已改写;`git status` 显示与远端一致(或已说明未推原因)。
 
 同时动全局记忆时:另对 `global-memory` 走同等 git 同步(或 `"$REPO/agent-config" memory push`)。
 
@@ -77,7 +76,6 @@ Live runtime(工具 home,非仓):
 | **仅预览** | `sync --dry-run`(不写 live、不 commit、不 push) |
 | **仓快照恢复/新机** | `git pull` → `deploy` → 若本地仍有未推提交则 push;失败时看个人化脚本 Python 版本(Codex TOML 需 3.11+ `tomllib`);Trae 需已装 IDE 或 `traecli` 且存在 `~/.trae` |
 | **从 GitHub 更新并推四源** | 走下方「多源协议」 |
-| **本机浏览断了** | `links`(保持软链);不强制 GitHub |
 
 ## 多源 harness 同步协议(GitHub ↔ 仓 ↔ 四 live)
 
@@ -88,7 +86,7 @@ Live runtime(工具 home,非仓):
 3. **报告**:冲突面 + 拟策略;用户已授权「冲突自己看着改」可继续,但不得回退仍有效的 harness 更新。
 4. **合并**:在仓内合并/本地化;再 `deploy` 或先写入 Claude live 再 `sync`。
 5. **GitHub**:有本地提交或合并结果 → **必须** commit(若尚未)并 push;若同时动全局记忆,另推 `global-memory`。
-6. **验四源**:目标文件在四 home 均存在;正文工具根路径已改写;`config-links` 仍为软链;远端与本地对齐。
+6. **验四源**:目标文件在四 home 均存在;正文工具根路径已改写;远端与本地对齐。
 
 ## 边界
 

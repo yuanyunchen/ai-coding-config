@@ -28,6 +28,5 @@ cd ai-coding-config
 ./agent-config pull     # ~/.claude -> config/
 ./agent-config sync     # 四工具互相同步（claude → cursor/codex/trae）
 ./agent-config migrate  # Cursor -> Claude 一次性迁移
-./agent-config links    # config-links -> config/（本机浏览，与 git 快照同结构）
 ./agent-config help
 ```

@@ -72,7 +72,7 @@ git add -A && git commit && git push
 ## 当前安装一览
 
 <!-- installed:start -->
-_Updated: 2026-07-31 22:22 UTC_
+_Updated: 2026-08-07 01:54 UTC_
 
 ## claude
 
@@ -90,7 +90,7 @@ _Updated: 2026-07-31 22:22 UTC_
 | `ralph-loop@claude-plugins-official` | hook | 1.0.0 | `claude/enabled/ralph-loop__claude-plugins-official/` |
 | `session-report@claude-plugins-official` | portable (off) | unknown | `claude/disabled/session-report__claude-plugins-official/` |
 | `skill-creator@claude-plugins-official` | portable (off) | unknown | `claude/disabled/skill-creator__claude-plugins-official/` |
-| `superpowers@claude-plugins-official` | hook | 6.1.1 | `claude/enabled/superpowers__claude-plugins-official/` |
+| `superpowers@claude-plugins-official` | hook | 6.2.0 | `claude/enabled/superpowers__claude-plugins-official/` |
 
 ## cursor
 

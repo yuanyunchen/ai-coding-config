@@ -1,6 +1,6 @@
 ---
 name: building-dorado-hive-tables
-description: "Dorado/DataLeap Hive 生产链路建设。触发:Dorado 建表、自建 Hive 表、日更任务、历史回填、首日全量、bootstrap、生产上线、PSM/权限、写入 smoke。覆盖建表、任务发布、回填、接力与验收；业务 SQL 设计和通用取数走 sql-query。"
+description: "Dorado/DataLeap Hive 生产链路建设。触发:Dorado 建表、自建 Hive 表、日更任务、历史回填、首日全量、bootstrap、生产上线、PSM/权限、写入 smoke、Spark/Python 任务 body 与资源包(pyFiles/archives)、Spark 算力配置与实例诊断。覆盖建表、任务发布、回填、接力与验收；业务 SQL 设计和通用取数走 sql-query。"
 ---
 
 # 在 Dorado 自建正式 Hive 表
@@ -19,9 +19,10 @@ description: "Dorado/DataLeap Hive 生产链路建设。触发:Dorado 建表、�
 | 场景 | 必读 |
 |---|---|
 | 建正式表、补权限、临时 HSQL smoke、按需清理 | 本文 §1–§6 |
-| 创建/更新正式日更任务、依赖、参数、首个周期接力 | `references/production-pipeline-rollout.md` |
-| 多日回填、首日全量、状态表 bootstrap | `references/backfill-and-bootstrap.md` |
-| 写前/写后质量门禁、失败保护、生产完成判定 | `references/production-validation.md` |
+| 创建/更新正式日更任务、依赖、参数、首个周期接力；**部署动作本身的陷阱**（`task-draft update` 静默清空 `authParam`/并行度、conf 含 SQL 本体导致「恢复配置」撤销「部署 SQL」、`deployed=true` 不代表你的版本上线、上线前置检查用任务运行身份）；**告警规则是独立对象**（`task alarms` / `alarm-rule`，及其 read-modify-write 风险） | `references/production-pipeline-rollout.md` |
+| 多日回填、首日全量、状态表 bootstrap；**「盯错对象」的五种面孔与正确写法**（实例 id 锚定、`--page-size`、`--biz-date = p_date+1`、匹配不到必须失败而非等待） | `references/backfill-and-bootstrap.md` |
+| **Spark / Python 任务**（body 是 Python 不是 SQL）：读写 body 的 CLI 面（`node save/get/submit/resolve-uid`，与 SQL 的 `task-draft` 完全不同）、**两个草稿存储互不相通**（`update-conf` 改不动 `node save` 那份）、pyFiles 与 **`archives`**（扩展模块的唯一活路，会解包且顶替同名文件）、资源包指纹重钉的判据、**Hive 写入侧三个会杀掉长任务的默认值**（driver 内存 / 动态分区上限 / Kryo 缓冲）、三态出口的判词在哪、队列两个仪器矛盾时信哪个 | `references/spark-task-bodies-and-resources.md` |
+| 写前/写后质量门禁、失败保护、生产完成判定；**两条通用判据律**（§8.0：判据必须锚定身份且匹配不到即失败 · 先问信号回答的是哪个问题）+ **检查器本身怎么写**（变异验证、判据真空成立与阳性对照、不适用必须判失败、闸门具名分档、先测再改门禁、结构恒等式不是判据） | `references/production-validation.md` |
 
 重要入口：
 
@@ -177,3 +178,33 @@ bytedcli dorado adhoc log --debug-id <debug_id> --task-id <task_id>
 - 失败路径已证明不会覆盖既有正式分区；未满足时明确为 BLOCKED，不降级成“已上线”。
 - 未上线临时任务；要求清理时，数据面已查无目标表。
 - 只记录可复用入口、流程和坑，不把一次性表名、任务 ID、申请单 ID 或样本指标写回本 skill。
+
+### 2.2 建表通道与元数据读取通道的选择(2026-08-01 EU 实测)
+
+**要求逐字节同构时必须走 `hive create --ddl`,不能用 `--fields`。**
+`--fields` 会把**空字符串注释规范化成 `NULL`**,`--ddl` 不会。
+实测:某表 8 个列在源侧注释是 `''`,用 `--fields` 建出来变成无注释 ——
+这是整轮建表里**唯一出现过的 diff**。用一张两列的一次性表做决定性探针确认成因后 drop 重建才归零。
+
+**判 `TBLPROPERTIES` 不能读 `hive detail` 的 `parameters`。**
+SQL 侧 `ALTER TABLE ... SET TBLPROPERTIES` 之后,`hive detail` 的 `parameters` **9 分钟后仍是旧快照**,
+而 `hive ddl` 与 Spark `DESCRIBE FORMATTED` 都能读到。
+**这不是 Atlas 的短暂滞后,是 Coral 实体缓存不订阅 metastore 变更。**
+用错通道会把"已经写进去"判成"一条都没写",进而去做一次根本不需要的重写。
+
+**判排序键行为只有 Spark `DESCRIBE` 有资格。**
+Coral 实体与 DDL 正文读的都是元数据服务;决定 `sort_array` 实际行为的是**引擎看到的 schema**。
+表结构同构性建议三条通道各自判定(Coral 逐字段 / DDL 正文整段相等 / Spark `DESCRIBE`),
+差异集合为空才算同构 —— 三条读的是三个不同的东西,不是重复劳动。
+
+**`numBuckets = 0` 不代表没分桶。** 若"N 桶"是靠**分区键的取值规则**实现的
+(例如 `user_bucket = pmod(xxhash64(...), 128)`),那它不是 Hive 物理分桶,
+建表时**不该加 `CLUSTERED BY`**。照着"128 桶"去加物理分桶会建出一张与源侧不同构的表。
+
+### 2.3 跨机房移植时,**不要把源机房的窗口/范围声明抄进目标表的 TBLPROPERTIES**
+
+源表上写着形如 `..._WINDOW_22D_20260703_20260724` 的契约声明时,那是**源机房的**回填窗口。
+照抄到目标机房 = 在表上钉一个**当下就是假的声明**,而且会与 SQL 里依赖该声明的门禁互咬。
+正确做法:**先留空,等目标机房的窗口实测确定后再写**。
+(同源规则见全局 AGENTS「One-Sided Declarations Are a Signal, Not a Gap」——
+两侧不一致时要先判哪边是对的,不是把声明补齐到缺的那侧。)

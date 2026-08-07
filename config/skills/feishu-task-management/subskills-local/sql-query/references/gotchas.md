@@ -97,6 +97,9 @@ Presto 档与 Hive/Calcite 档的函数面不同;bytedcli 的 `--engine`、Aeolu
 ## 四、bytedcli 通道自身的信号可信度(2026-07-31 实测 · bytedcli 0.111.0 · ROW/sg)
 
 > 本组不讲 SQL 怎么写,讲**通道返回的信号能不能信**。
+> **两条通用判据律(判据必须锚定身份 · 先问信号回答的是哪个问题)的单一 home 在
+> `building-dorado-hive-tables/references/production-validation.md` §8.0** ——
+> 本组 §K–§P 是它们在 bytedcli 取数通道上的具体形态,不重复原则本身。
 > 本轮 22 天逐日验证 + 30 亿 item 全量重算全程实测得出;每条都带复现方式。
 > 时效:2026-07-31 · bytedcli 0.111.0 · region sg。换版本或换机房前先重验。
 
@@ -169,3 +172,143 @@ debug id、列名与数据。第二条 SQL **一行都没执行**。
   该集群跑 Gluten/Velox,日志里的
   `Function is not supported: get_array_struct_fields` 是**正常回退**不是故障 ——
   生产 SQL 天天走这条回退路径。崩溃通常是**载体任务的资源画像**问题,先换载体或缩小扫描范围再怀疑 SQL。
+
+---
+
+## 五、"读到的字段 ≠ 要判的属性"(2026-08-01 实测 · EU/eu-ttp2 与全平台)
+
+> **本组四条共享同一个形态**:你读到的那个字段,不是你想判的那个属性。
+> 它们不报错、不返回空,而是返回**另一个东西的正确值** —— 所以看起来像结论,实际是误判。
+> 撞到"明明配了却说没配""明明存在却说不存在"时,**先怀疑读错了层,而不是去改配置或申请权限**。
+
+### Q. CLI 帮助文本的 `--region` 枚举**跨子命令不一致且会过期**,不能用它判能力边界
+
+`coral hive table partitions --help` 的 `--region` 枚举**缺 `eu-ttp2`**,
+且写着 `eu-ttp -> us-eastred` 的**错误默认映射** —— 但**显式传 `eu-ttp2` 完全可用**。
+同一个 CLI 里 `dorado folder structure --help` 却正常列出了 `eu-ttp2`。
+
+⇒ 帮助文本说"不支持"时,**先显式传参试一次再下结论**。
+帮助文本是文档,文档会过期;实际调用才是能力边界。
+
+### R. `dorado task get` 的 `queue` / `cluster` 是**顶层字段**,`conf.queue` / `conf.cluster` 恒为 `None`
+
+看错层会把**配好的队列判成"没配上"**,进而去做一次根本不需要的"修复"。
+（同一个任务里 `conf.executorConfig` / `timeDivisionQueues` / `backupQueue` 也全是 `null`,
+队列不走 conf 这条路,改队列走 `task-draft update --queue`。）
+
+### S. **新建 Hive 库的 DB 级 `location` 字段是残缺的,但表不会落错地方**
+
+新建库的 `location` 显示为裸 `/home/<资源组>/warehouse`(**无 `hdfs://` 前缀、无 `.db` 后缀**),
+而**同资源组的已有库显示的是完整路径 + `.db`** —— 看上去像建库建坏了。
+
+实测:建表后**表的** `location` 是完整正确的
+`hdfs://<集群>/home/<资源组>/warehouse/<db>.db/<table>`,前缀与 `.db` **由服务端建表时补齐**。
+
+⇒ **判"表落在哪"必须建一张一次性探针表读它的 `location`,不能读 DB 实体的 `location`。**
+⇒ **不要试图去"修"DB 的 location** —— 那是在修一个显示层残缺,只会把真配置改坏。
+⇒ 判定时用**同资源组的已有库做阳性对照**,才能区分"这个库特殊"与"新建库都这样"。
+
+### T. `--site` 与 `--region` 是**两套命名空间**,同一个词在不同子命令一个合法一个非法
+
+EU 为例:`--site eu-ttp` + `--region eu-ttp2`。`eu-ttp` 在 `hive` 的 region 枚举里合法、
+在 `dorado` 的**根本不存在**(返回 `DORADO_REGION_UNKNOWN`)。
+且 `--site` 是**全局选项,必须放在子命令之前**(或用 `BYTEDCLI_CLOUD_SITE=<site>`),
+放在子命令后报 `unknown option '--site'`。
+
+同一个机房可以有四套以上命名(bytedcli `--site` / Dorado 与 Coral `--region` /
+Megatron `-r` / Hive qualifiedName 的 `@N` 集群后缀),**任一层用错,报错都长得像
+"权限不足"或"资源不存在"**。
+
+⇒ **撞到这两类报错,第一件事是核对这一层的命名,不要先去申请权限。**
+
+### U. `dorado task close` 报「closed successfully」但状态不变 —— **根因是「零处理」与「成功」共用一条路径**
+
+现象:连续两次 `task close <id> --project-id <p> -r <region>` 都返回
+`✓ Dorado task <id> closed successfully`,而 `task get -j` 回读 `status` **始终是 `runnable`**。
+
+**根因(2026-08-01 挖到底)**:
+- 服务端原始返回是 **`{"code":0,"data":[]}`** —— 这是**批量接口**,`data` 是逐节点结果数组,
+  **空数组 = 零个节点被处理**。CLI 只检查数组里有没有失败条目,`[]` 里当然没有 ⇒ 判成功。
+  ⇒ **「没有失败」与「成功了」共用一条代码路径。** 凡批量接口都要先看**处理了几个**,而不是**失败了几个**。
+- 对同一任务调 `open` 会明着报 **`code 1137 草稿不允许上线`** —— 说明批量接口看得见它,是**主动拒绝**。
+- 节点层真实状态是 **`runnableStatus=init` / `updateStatus=untracked`**
+  (正常任务是 `runnable`/`unmodified`)。
+  ⇒ **`task get` 里那个 `status: runnable` 是任务记录的默认字段值,不是调度器状态** ——
+  这类"从未部署过的草稿节点"**从来就不是一个"待关闭"的状态**,close 无从下手。
+
+⇒ 判一个任务是否真的被停掉:看 `deployed` / 实例数 / 告警绑定 / 是否出现在生产任务列表,
+**不要看 `task get` 的 `status`**。
+⇒ 一次性草稿探针任务(`deployed=false`、零实例、零绑定)**无生产风险**;
+CLI 无 delete 端点,唯一移除方式是删 IDE 草稿节点(不可逆),按需决定要不要做。
+
+### V. 生产任务不能当 `adhoc exec` 的载体:报「无法修改任务调度类型,存在周期调度的下游任务」
+
+`dorado adhoc exec --task-id <生产任务>` 会尝试改该任务的调度类型,
+若它有周期调度的下游,直接失败。⇒ **要跑 adhoc 必须另建一个自己的一次性载体任务**
+(`dorado task create --project-id <p> --folder-id <f> --name zz_xxx_probe --type hsql`),
+建完即可用,**不需要 deploy**。
+
+配套两条:
+- `adhoc exec` 还需要 **`--cluster` 与 `--dc`**,只给 `--queue` 会报
+  「yarn集群名称或队列名称为空」。ROW/sg 是 `--cluster snake --dc sg1 --queue root.snake_ad_catalog_dw_batch`。
+- **`adhoc status` 需要 `--debug-id` **和** `--task-id`**,少了后者报
+  `Task ID is required` —— 若把这个报错的输出拿去 grep 状态词,会解析成"状态未知"并一直空轮询,
+  **仪器故障被显示成对象状态**。查终态更稳的路子是 `adhoc history --task-id <id>`。
+
+### W. `hive rows` 在 12,000 分区处**静默截断**,并把截断后的数量当作 `partitionCount` 返回
+
+⇒ 分区多的表上,拿这个数去推"表从哪天开始有数据"会得到一个**晚得多的起点**。
+实测代价:据此把一次历史回填的范围判成 **2 天**,真实范围是 **9 天** ——
+若不是另一处不相关的变异检查返回了预期外的值,这 7 天会被静默漏掉。
+
+⇒ 判"最早分区"用 `coral hive table partitions` 并**自己确认没有触顶**;
+任何"计数"字段在接近整数上限(12000/10000/1000…)时都要先怀疑是页大小而不是真实值。
+
+---
+
+## 六、一条贯穿全部的通用律:**读到的数不是你要的那个数**
+
+2026-07-31 与 08-01 两轮实测里,**同一形态出现了六次**,分布在完全不同的子系统:
+
+| 你以为读的是 | 实际读到的是 | 后果 |
+|---|---|---|
+| CLI 支持哪些 region(帮助文本) | 一份**过期且跨子命令不一致**的枚举 | 以为不支持,去申请权限 |
+| 任务生效的队列(`conf.queue`) | `None`(队列在**顶层字段**) | 把配好的判成没配上 |
+| 表落在哪(DB 的 `location`) | 一个**显示层残缺**的字符串 | 以为建库建坏了,去"修"它 |
+| 单次运行时长(`running_timeout`) | **首次提交至今**,跨越重试等待 | 判成资源争用,整条推理链错 |
+| 告警是否被处理(`ackCnt`) | 一个**基线作用域**字段,未绑基线时恒 0 | 产出一个假的行动项 |
+| 表最早有数据的日期(`partitionCount`) | **截断到 12000** 后的计数 | 回填范围少算 7 天 |
+
+**共同点:它们都不报错、不返回空,而是返回【另一个东西的正确值】。**
+所以看起来像结论,实际是误判 —— 这比报错危险得多。
+
+**操作准则(每次要下"某某是/不是"的结论前问一遍):**
+1. **我读的这个字段,和我要判的那个属性,是同一个东西吗?**
+2. 这个数**接近某个整数上限**吗?(是 ⇒ 先怀疑是页大小)
+3. 这个阈值/字段**锚在什么上**?(时长?时刻?提交时刻?)
+4. 有没有**阳性对照**能区分"这个对象特殊"与"所有对象都这样"?
+   (判 DB `location` 残缺时,正是靠同资源组的另一个库做对照才没去做无用的"修复"。)
+
+
+### X. **`task diff` 只比 SQL** —— 用它验证 conf 改动等于没验证
+
+`task diff` 比的是已发布版本与草稿的 **SQL**。零 SQL 改动时,改 conf 前后都是 `has_diff:false`。
+⇒ **验证队列/阈值/重试/身份这类 conf 改动,必须逐字段回读 conf 本身**,`task diff` 在这里是空判据。
+(`task diff` 的正确用途只有一个:判"我这一版 SQL 是不是真的上线了"。)
+
+`task version compare` 也不是干净判据:实测某项目在任何改动**之前**就已 `has_changes:true`
+(`307364468` 的 auth 段 76→170 字节、`307445529` 的 `enable_failover` false→null)——
+那是**已发布版本与 draft 的既有序列化差异**。用它之前先记下这个**噪声基线**,否则会把既有差异读成自己造成的。
+
+> ⚠️ 连带的风险:**published ≠ draft 意味着任何一次 `task online` 都会把那份未审阅的差异一并发布上去。**
+> 做任何需要 online 的改动前,先查清 draft 里到底有什么。
+
+### Y. **CLI 会自动升级,升级会改 JSON 形状**
+
+实测:CLI 自升到 0.111.0 后,`dorado task alarms` 的 JSON 路径从
+`data.alarmRules` 变成 **`data.alarms.alarmRules`**。
+沿用旧路径会对**每个任务**都读出 `[]` —— 看起来像"所有告警都没了",实际是解析路径过期。
+(当场识破的方法:**拿一个已知有 N 条规则的任务做同一解析** —— 它也返回 `[]` ⇒ 是解析坏了不是数据没了。)
+
+⇒ 脚本里固定 `--no-auto-upgrade` 并**记下当时的版本号**;
+⇒ 任何"全都读不到了"的现象,先做**阳性对照**再下结论。

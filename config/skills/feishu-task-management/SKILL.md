@@ -45,7 +45,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 2. **技能方法论(子技能 `SKILL.md` + `references/`)** — 每个子技能讲清"某类飞书工作怎么做"(写文档/建表/作图/各业务域/流程元)。**具体子技能不预加载**,按下面 (2) 的目录用文件路径 `Read` 按需打开。
 3. **执行层(官方 `lark-cli`)** — 真正读写飞书;技能给规则,CLI 执行(三层命令/鉴权/踩坑见同目录 `cli.md`)。
 
-**⭐ 写飞书文档 = 强制调用链(2026-06-24 钉死,违反即返工)** — 任何「写 / 改飞书文档」的任务,**包括方案 / 分析 / 总结 / 报告这类非 doc-trio 五类的文档**,动手前**必须**:① 调用并遵守 `lark-doc-writer` §0 通用写作通则(可读性 · 文字密度 · 语言自然去 AI 味 · 作图按文档类型分层；学习文档用双收口，技术数据链路交付读其 transcript + 三图金标准);② 属 doc-trio 五类(学习 / 操作 / checklist / 会议 / AI handoff)的**必须**先 `doc-trio` 判型取骨架;③ 执行落地用 `lark-cli docs`。**禁止**绕过 lark-doc-writer 直接 `docs +create` markdown 导入、或拿自定义 recipe 替代写作通则。
+**⭐ 写飞书文档 = 强制调用链(2026-06-24 钉死,违反即返工)** — 任何「写 / 改飞书文档」的任务,**包括方案 / 分析 / 总结 / 报告这类非 doc-trio 五类的文档**,动手前**必须**:① 调用并遵守 `lark-doc-writer` §0 通用写作通则(可读性 · 文字密度 · 语言自然去 AI 味 · 作图按文档类型分层；学习文档用双收口，技术数据链路交付读其 transcript + 三图金标准);② 属 doc-trio 五类(学习 / 操作 / checklist / 会议 / AI handoff)的**必须**先 `doc-trio` 判型取骨架;③ 执行落地用 `lark-cli docs`;④ 除非用户明确指定其他范围，Agent 新建文档在交付链接前按 `lark-doc-writer` 的 L2 步骤设为“ByteDance 内获得链接的人可查看”，保持外部访问关闭，并 fresh readback。**禁止**绕过 lark-doc-writer 直接 `docs +create` markdown 导入、或拿自定义 recipe 替代写作通则。
 
 **`memory.md` 必读** — 飞书执行记忆与所有踩坑(权限/建块/嵌图/导入导出/白名单边界)都在本技能同目录的 `memory.md` 里。**做文档/表格/图片任务前必看**,否则会重复踩已记录的坑。另:飞书写作硬规则在 `lark-doc-writer` 技能(§0 General 写作规则 + §1 飞书 XML 硬规则,为写作规则的唯一权威入口)。
 
@@ -55,6 +55,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 
 - 读写飞书**一律用官方 `lark-cli`**(`@larksuite/cli`,已装且在 PATH;绝对路径与版本见探针 `~/Library/Logs/harness/probe.md`,勿硬编码);**旧 `mcp__feishu__*` MCP 已退役,不再是执行路径**(全文唯一声明;MCP 时代台账见 `mira-sync-archive.md`)。三层调用法/自助发现(`schema`/`skills`)/鉴权/App 与 brand 细节/踩坑表全在同目录 `cli.md`;查全接口面用 `lark-cli <域> --help` / `lark-cli <域> schema` / `lark-cli skills read lark-<域>`(旧的 `~/feishu-cli/deliverables/cli-interface.md` 已随该任务区删除,不再存在)。
 - **身份**:`--as bot`(租户)/ `--as user`(用户 UAT);在用户 Drive/My Space 建东西走 `--as user`(tenant 撞 1255002)。**写类先 `--dry-run`**(高层 shortcut 无确认门会真执行)。
+- **权限审批催办（IM 二次确认特例）**:用户在当前任务中授权申请权限并催办时，提交后读取真实审批流，按审批人做全局去重；同一审批人即使关联多个资源，也只合并申请一次、只发一条私信。仅联系外部审批人，不联系用户的 mentor Yi Li（`liyi.turing`）。消息固定为“麻烦帮忙审批下工单，感谢。”并附当前有效工单链接；没有有效链接不发送。该场景可按用户授权直接执行，其他 IM 仍遵守 `memory.md` §15 的二次确认规则。
 - 起步只读体检:`lark-cli doctor` / `auth status`;两身份 `ready` 即可干活,不 ready 才按 `cli.md §4` 重登。
 
 **Mira 同步已冻结(2026-07-03)** — 迁移完结、双向同步停用;资产映射/层级真相/同步协议与未输出活队列全文冻结在同目录 `mira-sync-archive.md`,恢复同步时从彼解冻。改飞书系统不再登同步台账。
@@ -125,7 +126,9 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 | `analytical-report` | 严肃数据分析报告引擎:自包含离线 HTML(core/full 双版、SVG 图表、可折叠 SQL、读图三拍、诚实口径)+ starter-kit + build→Playwright→对抗审查闭环。通用 HTML 报告引擎;端到端飞书数据分析编排走 `data-analysis-report` |
 | `bytedance-internal-hosting` | 把 HTML 报告/网页/交互产物托管到字节内网拿可分享 link 的双平台权威:Goofy 快速预览(gf-preview URL,create/redeploy 保 link,**≤50MB 死限**)vs 飞书云盘 Preview(单文件报告+真 ACL,Upload New Version 保 link);含决策树、file_upload 注入、大文件分层瘦身、keychain/误判成功/大文件冻结等踩坑 |
 | `libra-experiment-weekly-report` | 按上一周/0721 模板原位更新 Libra 实验周会报告：读取实验记录与页面，采集决策 ADVV 和点击后的 p 值，按最后完整数据日计算 0.5d/关后回流，生成正确区域截图并保持飞书排版一致。 |
-| `ad-recall-experiment-debugging` | 广告召回实验端到端排查与证据整理:Libra 无 AID/CID 打点、召回量异常、Intent 有点但倒排无结果、跨 ROW/TTP/EU 差异,逐层查 Link / Intent Center / Engine / Targeting / DAG / TCC / 指标 / 源码,只做诊断和证据链(发布、改实验、改 TCC/代码须另行授权);周会报告走 `libra-experiment-weekly-report`。 |
+| `libra-ad-recall-metrics` | Libra 广告召回实验指标只读查看与归因：查决策 ADVV/P值、Travel Recall 支路、pid 商品召回消耗/计费比和 Travel Catalog Event 转化事件；日常/临时指标分析走它，周会写入与链路异常分别路由专用 skill。 |
+| `building-feishu-bots` | 飞书群机器人端到端构建与长期运行：创建应用、权限/事件、群内 @ + reaction + 回复、定时推送、独立日报子工作区、订阅、LaunchAgent 托管和真实群测试；具体业务查数仍走对应领域 skill。 |
+| `ad-recall-experiment-debugging` | 广告召回实验端到端异常排查与证据整理:Libra 无 AID/CID 打点、召回量异常、Intent 有点但倒排无结果、跨 ROW/TTP/EU 差异,逐层查 Link / Intent Center / Engine / Targeting / DAG / TCC / 链路指标 / 源码,只做诊断和证据链(发布、改实验、改 TCC/代码须另行授权);日常指标查看走 `libra-ad-recall-metrics`,周会报告走 `libra-experiment-weekly-report`。 |
 
 ### 通用工具(非飞书专属)
 > 已删/已迁物(long-task-workflow、choice-card、daily-report 拆分、frontend-design-pro 并入 frontend-pipeline)见 `mira-sync-archive.md` §1 沿革台账,不再占本表。

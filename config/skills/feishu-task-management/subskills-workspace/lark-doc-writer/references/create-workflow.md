@@ -54,6 +54,13 @@
    - 主要章节间补 `<hr/>`。
    - 本地图片走 SKILL.md §6b 的 curl 上传管线;网络图直接 `<img href="https://...">`。
 
+### 第五波 — 权限与交付(串行)
+
+9. 除非用户明确指定其他分享范围，对 Agent 新建的飞书文档运行 feishu-task-management 根目录下的：
+   `python3 subskills/lark-doc/scripts/set_document_l2.py <文档 URL>`。
+   默认目标是“ByteDance 内获得链接的人可查看”，并关闭外部访问与邀请外部协作者。该脚本幂等，只改这三个字段，并在修改后重新读取公共权限；只有输出 `verified=true` 才能交付链接。
+10. 再完成正文 block 回读与最终链接交付。若权限设置失败，保留文档并如实说明当前范围，不把未回读的权限描述为已生效。
+
 ## 长文 / 大内容
 
 - 长文创作:`document_create` 只建骨架 → 分段 `documentBlockChildren_create` 追加,不要一次塞完。

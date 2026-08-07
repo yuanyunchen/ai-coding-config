@@ -52,7 +52,13 @@ bytedcli --json codebase mr bypass create <mr> -R <ns/repo> \
   --inputs-json '[{"TargetType":"review","Target":{"ReviewTarget":{"RuleId":"default"}},"Reason":"no_need_for_review"}]'
 ```
 
-- 这只是首次导入等明确授权场景的可选恢复手段。正常协作仓库应等待真实 review。
+- **在用户自己的仓库里，这是默认动作，不是"可选恢复手段"，也不要回来征求同意**
+  （2026-08-06 用户定，原话「之后别问我，直接合并」）。原因是机制层面的死锁：
+  个人仓里唯一有写权限的人就是 MR 作者，而平台禁止作者自审，
+  所以"等待真实 review"在这里等不到任何人。协作仓有第二个人可以批，仍等真实 review。
+- 豁免的粒度不变：绑当前 MR 的 `source_commit_id`，一次性，不改仓库的分支保护配置。
+- 合入后回读远端验真（`git fetch --prune` → 看 `origin/main` 的提交与关键文件在不在），
+  **不拿接口返回的 `"Status":"merged"` 当完成**。
 - 观察到过 `mr merge <number>` 的帮助与实际解析不一致，位置参数未被接受，而显式 `--mr-id <numeric-id>` 可用。遇到类似情况先看当前帮助和错误提示，不把这个写成永久规则。
 - 合入后 fetch/prune，并让本地默认分支 fast-forward 到远端；确认临时远端分支是否按预期删除。
 

@@ -1,11 +1,11 @@
-model = "gpt-5.5"
+model = "codex-auto-review"
 model_context_window = 1050000
 model_auto_compact_token_limit = 900000
 model_reasoning_effort = "high"
 personality = "pragmatic"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
-service_tier = "fast"
+service_tier = "default"
 
 [tui]
 status_line_use_colors = false
@@ -14,7 +14,7 @@ status_line = ["five-hour-limit", "weekly-limit", "context-used"]
 [desktop]
 appearanceTheme = "system"
 usePointerCursors = true
-conversationDetailMode = "STEPS_COMMANDS"
+conversationDetailMode = "STEPS_PROSE"
 
 [features]
 js_repl = false

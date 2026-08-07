@@ -1,6 +1,6 @@
 ---
 name: ad-recall-experiment-debugging
-description: "字节广告召回实验的端到端排查与证据整理。遇到 Libra 实验无 AID/CID 打点、召回量异常、Intent 有点但倒排无结果、跨 ROW/TTP/EU 机房差异，或需要检查 Link、Intent Center、Engine、Targeting、DAG、TCC、指标和源码时使用；只做诊断和证据链，线上发布、改实验、改 TCC 或代码须另行授权。"
+description: "字节广告召回实验的端到端异常排查与证据整理。遇到 Libra 实验无 AID/CID 打点、召回量异常、Intent 有点但倒排无结果、跨 ROW/TTP/EU 机房差异，或需要检查 Link、Intent Center、Engine、Targeting、DAG、TCC、链路指标和源码时使用；日常查看 ADVV/P值、支路消耗/计费比和转化事件改用 libra-ad-recall-metrics。只做诊断和证据链，线上发布、改实验、改 TCC 或代码须另行授权。"
 ---
 
 # 广告召回实验排查
@@ -16,6 +16,7 @@ description: "字节广告召回实验的端到端排查与证据整理。遇到
 
 ## 边界
 
+- 日常查看 ADVV/P值、召回或商品支路、转化事件时，改用 `../libra-ad-recall-metrics/SKILL.md`；只有指标异常需要继续定位链路时才进入本 skill。
 - 默认只读。可以打开页面、查询指标、比较版本、查看源码、申请只读/Viewer 权限。
 - 不默认创建或启动 Libra 实验，不发布 TCC，不启用版本，不改线上参数或代码；这些动作需要用户另行授权。
 - 权限被挡时记录页面和申请单链接，继续排查其他层，不把“看不到”写成“没有”。

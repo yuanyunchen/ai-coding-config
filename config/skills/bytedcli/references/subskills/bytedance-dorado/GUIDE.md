@@ -133,6 +133,1012 @@ NPM_CONFIG_REGISTRY=http://bnpm.byted.org npx -y @bytedance-dev/bytedcli@latest 
 - 排查 Dorado 权限失败时，先确认用户给的是 task ID 还是 instance ID；通过 `task get`、`instance record/list` 定位失败 instance，再下载实例日志解析 `NoPrivilegeException`。后续使用 Coral 权限申请流程，详见 `references/dorado.md` 的 “Debug permission failures and apply via Coral” 以及 `bytedance-coral` skill。
 - 不要用 `bytedcli hive` 或 `bytedcli iam` 处理 Dorado 任务执行时的 Hive/TQS 权限缺失；`hive` 只适合查元数据，`iam` 只适合查员工身份。权限申请应走 `bytedcli coral permission apply`。
 
+### 中止一个持锁作业，等于给自己埋一颗雷
+
+发布类任务常用 HDFS 上的租约文件防双写，释放写在 `finally` 里。**`finally` 在进程被 kill 时不执行**——所以主动中止一个正在发布的作业，几乎必然留下孤儿锁，下一次发车会在一分钟内失败于 `chain is already claimed`。
+
+实证：为了换更快的签名方案主动 kill 掉一个跑了 2 小时 20 分的 S4，锁留下；随后的全量在 60 秒内失败。
+
+**中止前先问：它现在持有什么？** 如果答案是"一把发布锁"，就把清理成本算进中止的代价里，而不是发现失败了才补。
+
+清理孤儿锁的正确姿势（顺序不能反）：
+
+1. **先确认没有活着的持有者。** 查任务实例，`running`/`pending` 必须为 0。顺便留意**系统调度实例**——日更 cron 可能刚好排上队，它一旦启动就是第二个 writer，要先终止。
+2. **确认没有已发布状态。** 判据是"有没有 ACTIVATION 行"，**不是"有没有数据行"**——一次成功的 `stage` 冒烟会合法写入大量 DATA，用行数当判据会把安全情况误判成危险。
+3. **读出锁再决定，不要凭记忆删。** 清理脚本要先打印锁载荷和持有者 application ID，只有当持有者在**已逐个核实终止**的名单里才删除；不在名单就拒绝并打印——未知持有者是一次诊断，不是一次删除。
+4. **删完立刻验证文件已消失**，别信删除接口的返回值。
+5. **还原被临时替换的任务体**，并校验任务体 SHA 与生产文件一致。清理脚本通常要借生产任务当载体运行，用完必须还原。
+
+工作区里可能留有前人的清理脚本，但它大概率把当时的 application ID 和载荷 SHA 硬编码了，**不能直接复用**，只能当模板。
+
+### 冒烟必须覆盖发布路径，否则锁和指针永远验不到
+
+`action=stage` 只写数据不发布，所以它证明不了：租约获取与释放、原子指针切换、发布后回读。上面那颗雷正是这么漏过去的——冒烟全绿，全量在发布路径第一步就死。
+
+**冒烟要走和生产同一个 action**，规模靠分桶压小，不靠换 action 绕开。缩规模用哈希分桶（1024 桶起，便于做到 1/1024），不要用"跳过发布"来省时间。
+
+### "预计很快"不是不挂监控的理由
+
+给每个远端长作业挂监控是默认动作，不是看情况。一个"两三分钟就完"的清理作业跑了 260 秒，期间只能手动轮询——而手动轮询既费轮次又容易漏掉终态。**判断"这个很快"本身就是估算，而估算正是最不该依赖的东西。**
+
+### 长作业的运行纪律（用户明确要求，2026-08-06 固化）
+
+一条链路返工三次的代价远高于事前想清楚。以下按"何时可以开跑"排列。
+
+**1. 凡是高耗时任务，先冒烟。** 没有例外。冒烟证明链路能走通——算得出、签得上、写得进、读得回。冒烟不通过，不许上规模。
+
+**2. 主链路上跑 20 分钟以上的规模，必须保证一遍过。** 这是判断"准备够不够"的硬线：如果你不能说清楚它为什么会成功，就说明冒烟没覆盖到，回去补冒烟，不要赌。
+
+**3. 超大任务（10 小时以上）即使链路已验证，也不要直接刷全量。** 分桶逐步放量：先一个桶，再 1/16，按实测速度往上加。理由不是怕失败，是**失败的代价不对称**——10 小时后失败，损失的是 10 小时加一个决策窗口。
+
+**4. 质量检验的总开销上限是整体计算的 1/100，且必须在几分钟内完成。** 超了就重新设计，不是调参。实证：某条链的发布签名普查预计 7 小时，而业务计算只有 2 小时 20 分（占比 300%）；换成可交换求和后降到分钟级，检测能力一项没少。校验的意义是让错误可发现，不是让流程看起来严谨。
+
+**5. 质量门禁要防误杀。** 会随上游漂移的数字（行数、日期窗口、快照口径）**报告即可，不要拿来卡**；只有会让数据本身错或有歧义的判据才硬卡——唯一发布指针、计数自洽、主键唯一、数组与结构体逐位置一致、各类上限。实证教训：一个写死的 `248,383,965` 行基线挡住了本来合理的抽样跑；而同一套验收里另有两处对同一个数字一硬一软，自相矛盾。
+
+**6. 复杂中间结果落中间表。** 收益有三：省重复计算、把链路切成可独立调试的段、失败后不必从头再来。**但要认清代价**——一旦落表，"这张中间表来自哪次可信运行"就成了新问题，同作业内证明的来源可信性会丢失。所以：**为调试和迭代落表是对的；为绕过来源证明落表要先想清楚**。也别为落表而落表，它本身是 overhead。
+
+**7. 卡点、性能反常、瓶颈要立刻上报，不要等跑完。** 包括：某阶段耗时与数据量明显不成比例；调度开销超过计算；失败任务或 OOM 出现趋势性增长；实测与预估偏离一倍以上。**发现即报，不要"再看看"。**
+
+**8. 给时间估算之前先读实现。** 按数据量拍脑袋是本轮最大的教训——曾估"写入加发布 45 分钟"，实际是 7 小时的串行签名。**没量过就明说没量过**，不要给一个听起来精确的数字。已经量过的和推算的要分开标注。
+
+### 冒烟只为验证链路，规模要压到最小——而且要缩对维度
+
+冒烟的唯一目的是**证明这条路能走通**：算得出、签得上、写得进、读得回。它不产出可用数据，也不证明性能。所以**规模越小越好**，目标是分钟级、可反复迭代。一个要跑半小时的冒烟已经失去意义——它既拖慢迭代，又不比全量多告诉你什么。
+
+**关键在于缩对维度。** 缩错了，规模降不下来，还会得出"这条链本来就慢"的错误结论。
+
+实证：给 S4 做冒烟时把 30 天源窗口缩到 3 天，以为是 1/10。实测：
+
+| 指标 | 3 天 | 30 天 | 实际比例 |
+|---|---|---|---|
+| 来源扫描任务数 | 2,872 | 26,614 | 11%（如预期） |
+| **输入数据量** | 1,725 GB | 6,370 GB | **27%** |
+| **映射聚合任务数** | 19,744 | 67,228 | **29%** |
+
+原因：S4 的成本由**唯一 (商品, 广告) 配对数**决定，不由天数决定。同一广告在 3 天和 30 天里覆盖的商品高度重叠，去重后 3 天就能凑出全量三成的配对。缩到 1 天也救不了聚合那部分。
+
+**正确的旋钮是对键做哈希分桶**，因为它切的是基数本身：
+
+- S4 的输出键是 `product_bucket = pmod(xxhash64(product_id), 1024)`
+- F1 的输出键是 `user_bucket = pmod(xxhash64(user_id), 128)`
+
+抽 1/64 就是精确的 1/64，而且分桶列通常是分区列，属于纯分区裁剪，不引入额外 join。同时哈希分桶对分布无偏，短序列和长序列按原比例保留，冒烟观察到的形态可以外推。
+
+**选维度的判据**：问"这个作业的代价正比于什么"。正比于**行数**就缩时间窗口；正比于**唯一键的基数**就缩键空间。两者常常不是一回事——这次踩的就是这个。
+
+**配套要求**：冒烟开关必须 fail-closed。缩了规模就禁止发布（S4 的窗口开关拒绝与 `publish` 同时生效），或强制显式声明范围（F1 要求 `SCOPE` 明确写成 `full`/`sample`，与桶配置矛盾即报错）。否则一个丢失的环境变量会把冒烟悄悄变成全量生产运行——这个项目已经发生过 CLI 抹掉环境变量列表的事故。
+
+### 校验开销必须是生产计算的零头，而不是它的两倍
+
+**硬预算（2026-08-06 操作者定，不是建议）：所有校验/质量/普查/签名的总成本
+**上限 = 主任务的 1/10**，**目标 ≤ 1/100**。超过上限就重新设计，不是重新调参。**
+
+**两个动作缺一不可：**
+
+1. **设计时先估规模。** 写下这道校验会扫多少行、shuffle 几次，再和主计算的量级比。
+   `countDistinct(a,b,c,d)` 是一次全量 shuffle；`groupBy(...).agg(countDistinct(...))` 又是一次。
+   在 41.9 亿行上写这两句，等于在写任何输出之前先做两次几十亿行的 shuffle。
+2. **跑起来实时监测各阶段成本**，不要等作业结束或等人来问：
+
+```bash
+bytedcli --site i18n-tt --json megatron spark-ui stages list --app-id <APP> | python3 -c "
+import json,sys
+from collections import Counter
+rows=json.load(sys.stdin).get('data') or []
+t=Counter(); k=Counter()
+for s in rows:
+    n=s.get('name') or ''
+    key='WRITE' if 'saveAsTable' in n or 'insertInto' in n else ('VERIFY(collect)' if 'collect' in n else 'other')
+    t[key]+=(s.get('executorRunTime') or 0); k[key]+=(s.get('numTasks') or 0)
+for x in t: print(x, 'tasks=', k[x], 'executorRunTime=', round(t[x]/1000), 's')"
+```
+
+**VERIFY / WRITE 的比值就是判据。** 实测两例，都远超上限：
+
+| 链路 | 校验 | 写入 | 比值 |
+|---|---|---|---|
+| S4 7 天发布（152 分钟时） | 75,048 task / **623 executor·小时** | **0 个写入 stage** | ∞ |
+| F1 1/1024 冒烟 | 46,700 task / 42,967s | 296 task / 957s | **45×** |
+
+S4 那一栏值得单独看：**跑了 152 分钟、一行都没写**，全在校验。
+这条链路长期被记成"写入阶段慢"，是错的——从来就没到写入。
+
+**注意采样会让比值失真**：F1 那个 45× 里，大头是"扫全量映射表算签名"这类**固定成本**，
+它不随样本缩小。所以冒烟上的比值是悲观的，不能直接外推到全量；
+但反过来，**固定成本在冒烟上没有任何价值**（采样/staged 运行本来就禁止发布），
+正确的做法是把它挪到 `action=publish` 分支，而不是接受"冒烟就是慢"。
+
+**便宜的替代品，按优先级：**
+
+- 结构性属性（键唯一、一 ad 一 advertiser）用**哈希分桶抽样**测：违规是链路性的，
+  会出现在整个population里，1/64 样本照样报错，shuffle 量降 64 倍。**但必须在回执里写明抽样基数**。
+- 把多次 `.collect()` 合并成一次 `agg`：每一个 action 都是一次全量遍历。
+- 只在发布路径上做的校验，就只在 `action=publish` 时做。
+
+**判据：一条链路里所有完整性校验/普查/签名的总耗时，应当远小于业务计算本身。**
+
+实证（同一条 ROW 链路，同一次运行）：业务计算——30 天来源扫描 + 映射聚合 + 完整域隔离 + 质量门禁——合计约 2 小时 20 分。之后的发布签名普查预计 **6 小时**，是业务计算的 2.5 倍，且几乎不含计算，全是调度。
+
+根因是签名方案的选择，不是数据量：
+
+| 方案 | 形态 | 24 亿行的代价 |
+|---|---|---|
+| 全局排序 + `toLocalIterator` 逐分区折叠 | **一个分区提交一个 Spark job，串行** | ~1,196 个 job × 10.7s ≈ 3.5h，写前写后各一次 |
+| 可交换求和（`commutative-result-hash/v1`） | 一次 `agg`，与顺序无关 | 一次聚合，分钟级 |
+
+两者的检测能力**等价**：都对行数、内容、重复敏感。区别只在前者靠"排序后按序折叠"获得确定性，后者靠"加法可交换"天然获得。
+
+**设计规则：**
+
+- 完整性签名要用**可交换/可结合的折叠**（求和、XOR、多路哈希求和），一次聚合完成。任何需要"先全局排序再按序消费"的方案，在大表上都会退化成串行调度。
+- 警惕 `toLocalIterator`：它每个分区提交一个 job（实测 ~10.7 秒/个，几乎全是调度）。它解决的是 driver 内存问题，但把内存问题换成了调度问题，在分区数上千时代价更糟。
+- 同一代码库里出现两套签名方案时，**先问便宜的那套为什么不能用**，而不是默认贵的那套更严格。ROW 的 S4 用排序流式、F1 用可交换求和，同一套发布协议、同一份审查——贵的那套没有换来更强的保证。
+- 校验的成本要**随数据量线性**，不要随分区数线性。分区数是执行细节，不该进入正确性成本。
+
+**这条同样适用于测试和质量门禁**：门禁的价值是发现真错误，不是穷举断言。一道门禁如果既不改变产出、又不能指出具体哪里错了，它的成本就该被质疑。校验存在的意义是让错误可发现，不是让流程看起来严谨。
+
+### 默认不加校验，要加就必须先算它的规模（2026-08-06 操作者裁定）
+
+**这条推翻了此前"发布路径不减校验"的写法。** 现实代价：一条链路上校验把
+623 executor·小时花在写第一行数据之前，另一条把 9,094s 花在同一件事上，
+两条都从未产出过任何可用数据。操作者的裁定是**校验和质量检测默认全部不放**，
+算力留给核心生产。
+
+落地形态（关键在**默认值的方向**）：
+
+```python
+def verification_disabled():
+    # 默认 True。只有显式 `X_VERIFY=full` 才打开。
+    return (os.environ.get("X_VERIFY") or "").strip().lower() != "full"
+```
+
+**开关必须写成"默认关、显式开"，不能写成"默认开、显式关"。** 后者是我第一版写法，
+它会因为某次有人忘了设变量而悄悄把成本全付回来——而这正是这个开关要防的事。
+（同源规则见 AGENTS「规则要放在忘不掉的地方」。）
+
+配套三条，缺一条这个开关就会变成谎言：
+
+1. **摘要位写非十六进制的标记**（本项目用 `verification-disabled`），
+   让下游一眼看出这批数据没被证明过，而不是看到一个像哈希的东西。
+2. **`count()` 也要去掉。** 它看着便宜，但它是一次完整物化；缓存一旦被淘汰
+   就变成第二次全量计算。实测一个 800 task 的 count 卡在 796/800 十分钟，
+   而它对写入毫无必要。行数写完之后对已落盘分区数——ORC 走文件统计，便宜一个量级。
+   返回 `-1` 而不是 `0`：`0` 是合法测量值，下游会据此分支。
+3. **测试要自己显式开启**（`setUp` 里设 `=full`）。测试的职责就是验这些门禁，
+   不能靠生产默认值——生产默认值恰恰是相反方向的。
+
+**什么时候把它打开**：正式发布、需要可审计指针、或者要对外承诺数据完整性时。
+其余情况——冒烟、分桶、补数、联调——一律不开。
+
+### 单点采样不能当趋势 —— 报速率，不要报状态
+
+2026-08-06 一晚上四次误判，全是**看一眼就下结论**：
+
+| 单点看到的 | 我的结论 | 采两次之后的事实 |
+|---|---|---|
+| 长尾 stage 5 分钟推进 392 task | "要 80 分钟" | executor 还在爬坡，实际 12 分钟 |
+| executor = 16 | "被饿死了，要换队列" | 十分钟内涨到 56，一直在爬 |
+| 监控连报 queued | "还在排队" | 一小时前就成功了（list 漏行） |
+| `python.stderr` 为空 | "跑的是旧任务体" | 输出在 `stdout`，作业已成功 |
+
+**规则：任何关于"快/慢/卡住"的判断，都必须基于至少两次采样的差值。**
+监控脚本要报**增量**而不是绝对值——`task=650 (+120/2min)` 一眼看得出趋势，
+`task=650` 什么也说明不了。
+
+```bash
+prev=0
+while true; do
+  cur=$(<取当前完成 task 数>)
+  echo "task=$cur (+$((cur - prev))/2min)"   # 增量是判据，绝对值不是
+  prev=$cur
+  sleep 120
+done
+```
+
+**尤其是 Spark 作业的前几分钟**：动态分配在爬坡，此时的速率必然偏低，
+用它外推会得到一个吓人且错误的数字。**至少等两个采样周期再谈估计。**
+
+### 监控脚本本身会骗你：别用 `instance list` 盯已知实例
+
+**实证代价：一个清锁作业 22:10 就成功了，我的监控一直报 "queued"，
+S4 因此白等了一小时。** 而 skill 里早就写着「`instance list` 会漏行甚至返回空，
+盯单个实例必须用 `instance get`」——我写完规则，转头又用 list 写了监控脚本。
+
+**规则要落到监控脚本的写法上，不是只落在人的记忆里：**
+
+```bash
+# 错：靠 list + 客户端过滤去"找"实例。漏一行就永远显示排队。
+rows=$(dorado instance list --task-id T | filter id > threshold)
+
+# 对：发车时记下 instance id，之后只用 instance get 查它
+dorado instance get <INSTANCE_ID> -r <region>   # statusAlias 是权威
+```
+
+拿不到 instance id 时（backfill 刚建、实例还没生成），用
+`dorado backfill get --backfill-id` 的 `succeedInstanceCount` /
+`completeInstanceCount` 做判据，它不依赖 list 的分页与过滤。
+
+**配套的怀疑纪律**：监控连续 N 次报同一个"未开始/排队"状态，且时长明显超出该
+作业的历史分布时，**先怀疑监控，再怀疑平台**。用第二个来源（`instance get`、
+`backfill get`、Spark UI）交叉验证一次的成本是几秒，而误信的成本是整段等待时间。
+
+同源提醒：**监控是代码，会有 bug，而它的 bug 表现为"什么都没发生"**——
+这是最难察觉的一种失败，因为它和"确实什么都没发生"完全一样。
+
+### 运行中的止损判据：VERIFY 在涨而 WRITE 恒为 0，就是该停了
+
+**挂上监测还不够，要有明确的停机线，否则监测只是把浪费看得更清楚。**
+
+实测一次 F1 冒烟：VERIFY 从 729s → 1,939s → **9,094s，WRITE 始终为 0**。
+它没有卡住、没有报错、状态一直是"执行中"——但它在写第一行数据之前已经烧掉了
+比整个主计算还多的资源。**这种形态不需要等它结束，直接停。**
+
+判据（任选其一命中即停机诊断，不要等终态）：
+
+- `WRITE == 0` 且 `VERIFY` 已超过该作业预期总时长的 ~1/3
+- `VERIFY/WRITE` 超过 10（硬上限）
+- 某个 stage 十分钟内推进的 task 数是个位数，且它不是最后一个 stage
+
+停之前先问一句：**这个作业持有发布锁吗？** 见下条。
+
+### 中止作业前必须先问：它持锁吗
+
+skill 里早有「中止一个持锁作业等于给自己埋一颗雷」，我今天仍然踩了：
+为了换新版本直接 abort 了一个正在发布的 S4，JVM 在 `lease.release()` 之前被杀，
+下一次运行立刻死在 `ERROR: S4 publication chain is already claimed`，
+还得再走一遍清锁流程。**规则存在不等于会被执行——把它变成中止前的固定动作：**
+
+1. 这个作业的 action 是 `publish` 吗？是 → 它可能已经拿到链锁。
+2. 能等它自己结束吗？能就等。发布阶段的作业通常离终态不远。
+3. 必须停 → 停完**立刻**把这次的 application id 加进清锁脚本的 `TERMINAL_OWNERS`
+   并跑清锁，不要留到下一次运行失败时才想起来。
+
+`action=stage` 的作业不持链锁，可以直接停。
+
+### 读指针/控制行必须带分区谓词
+
+`record_type` / `publish_status` 是**普通列**，只按它们过滤会整表扫——
+实测 755s 只为取回几行指针。控制行按构造固定落在
+`run_id='__ACTIVE_POINTER__'`、`activation_generation=1`、`bucket=-1` 这组**分区**坐标上，
+把它们写进 where 是剪枝而非收窄，行集完全相同。
+
+同源的一般规则：**任何"只取几行"的读取如果耗时以分钟计，先检查它有没有走分区剪枝。**
+
+### `action=stage` 可能根本不写数据 —— 先读收据再找"写入缺陷"
+
+本项目的 F1 里 `stage` 按设计是**只算不写**：算完打印一行
+`compute_only_stage={"authorization":"NONE","status":"PASS",...}` 就返回，
+只有 `publish` 才落表。我为此在"F1 成功了但表里没数据"上耗了几轮，
+一直在找不存在的写入缺陷——**而收据里那句 `authorization: NONE` 一直摆在那里**。
+
+⇒ **作业报成功但目标表为空时，第一个动作是读它自己的收据，不是查写入路径。**
+收据会告诉你它以为自己做了什么。语义不符合需要时再改语义
+（本项目已改成：`stage` 落 DATA 分区但**不切 ACTIVE 指针**——
+下游按 `run_id` 直取，生产读到的仍是旧指针，互不影响）。
+
+### 动一条链路之前，先确认目标任务真的在这条链路上
+
+我沿着仓库里 `合同 → 区域绑定 → 任务体` 那条"发射器验证"链路做了完整的参数分叉，
+**而线上那个 EU 任务根本不在这条链路上**——它是一个 150KB 的独立脚本，
+开头写着"未经发射器验证，代码身份由人工保证"，要改的值是它里面的一个模块常量。
+仓库结构和线上现实是两回事。
+
+⇒ **改之前先把线上任务体拉下来读**（`node get` 取 `conf…parameter.code`），
+确认它 import 了什么、常量从哪来。判据：在任务体里 grep 你打算改的那个符号名，
+grep 不到就说明你改错了地方。这和"S4 写入慢"那次同型：**从结构推断，而非从现场确认。**
+
+### 关掉一个校验，必须同时关掉检查它的那个校验器
+
+**2026-08-06 一晚上五次失败，全是同一个形状**：跳过了"算证据"，却留着"验证据"。
+于是每次都在做完全部昂贵工作之后，死在一个检查根本没被计算过的东西的断言上。
+
+| 死法 | 缺的是什么 |
+|---|---|
+| `KeyError: 'data_bucket_count'` | 占位字典少一个调用方要索引的键 |
+| `expected_row_count must be non-negative` | `-1`（未测量标记）撞上非负约束 |
+| `source provenance mode must be SAME_JOB_HIVE` | 占位字典少 `provenance_mode` |
+| `content fingerprint is malformed` | 校验器要 64 位十六进制，占位标记不是 |
+| `row count must be a non-negative integer` | 同上，另一处门禁 |
+
+**三条规则，一条也不能省：**
+
+1. **占位字典必须和真实字典同形。** 值可以是"未测量"，**键不能少**——调用方是按键索引的。
+   把这条写成静态断言放进本地冒烟（比对两条路径的键集合），它就再也不会发生。
+2. **"未测量"要用调用方已有的语义表达，不要发明。** 这套发布器用 `None` 表示未测量并
+   跳过整块比对；用 `-1` 会撞非负约束，用 `0` 是**在断言一件假事**。
+   先去读消费方怎么表达"没有值"，再决定占位符。
+3. **校验器本身也要短路。** 最省事也最正确的位置是验证函数入口：
+   `if verification_disabled(): return dict(evidence)` ——它要检查的东西压根没算，
+   它就没有工作可做。在占位值上编造能骗过校验的假数据是错的方向。
+
+### 发车前的静态检查清单（比一次集群往返便宜三个数量级）
+
+一次失败的集群往返 = 10~20 分钟排队 + 数分钟运行；一次静态检查 = 几秒。
+**改完任何"跳过路径"之后、提交之前，按这个顺序过一遍：**
+
+```bash
+# 1) 语法
+python3 -c "import ast;ast.parse(open('<改过的文件>').read())"
+# 1.5) 未定义名字 —— ast.parse 看不见它，只有运行到那一行才炸
+python3 -m pyflakes <改过的文件> | grep "undefined name"
+# 2) 合同测试（纯 Python，不启 JVM）
+python3 -m pytest <contract tests> -q
+# 3) 本地真 Spark 冒烟（秒级，覆盖 Catalyst / codegen / 字段名 / 占位形状）
+JAVA_HOME=... <venv>/bin/python <local smoke>
+# 4) 顺着消费链读一遍：这个占位值会流到哪些函数？它们对它有什么要求？
+grep -n 'evidence\["\|census\["' <module> | ...        # 找消费点
+grep -n '_valid_digest\|must be\|raise' <module> | ... # 找约束
+```
+
+第 4 步是最容易跳过也最值钱的一步：**它抓到的是"还没发生的失败"**。
+实测一次这样的走查在发车前抓到三个必然失败，其中一个正在跑的作业已经注定死于它。
+
+**第 1.5 步是用一次代价换来的**：往一个 15 万行的任务体里加了个函数，用了 `pathlib` 和一个
+叫 `SUCCESSOR_REL` 的常量——**两个在该模块里都不存在**。`ast.parse` 全绿，索引照建了 337 秒，
+然后死在发布前一行的 `NameError`。`pyflakes` 一秒钟就会指出来。
+**往一个自己没写过的大文件里加代码时，这一步是必须的，不是可选的。**
+
+**还有一步比 pyflakes 更强，在"改的是别人的大文件"时值得做：把新函数单独抽出来，
+用真实的依赖在本地跑一遍。** 上面那个函数抽出来 exec 一次、喂给它真实的发布包目录，
+就能同时验证四件事：路径找得到、合同能解析、改完的摘要自洽（加载方正是按这个拒绝的）、
+`_step` 的输出长什么样。这比再赌一次集群往返便宜三个数量级。
+
+### 不发布的运行就该信任上游
+
+内容签名、双向对账、全量普查，它们保护的是**已发布指针的可审计性**。
+采样/staged 运行在代码层面就被拒绝发布，所以这些校验在那里保护不了任何东西，
+却常常比主计算还贵。**统一做法：`action != "publish"` 时走便宜分支**——
+保留身份（日期、版本、行数、桶覆盖），跳过内容摘要；
+并在产物里写明它是 `unsigned-staged-*`，不要让人误以为它被签过。
+
+### 诊断「某阶段慢」：先按用途给 executor 时间分组，再谈原因
+
+**凭现象推断阶段瓶颈，是这条链路上代价最大的习惯。** 实证：S4 被记成"写入阶段慢"并围绕它
+调了很久的写入并行度和分桶策略；一次测量推翻了全部——152 分钟的运行里
+**写入 stage 数量为 0**，623 executor·小时全在校验 collect。
+
+命令见上一节（`spark-ui stages list` 按 stage 名分组求 `executorRunTime`）。
+**它只要一条命令、几秒钟**，而据此避免的是几周的错误方向。
+在说出"XX 阶段慢"之前先跑它，不要用作业时长和直觉去分配注意力。
+
+**再进一步：stage 名里带着源码行号，可以把代价归到某一个调用点。**
+分组求和只告诉你"校验很贵"，把 `name` 原样打出来会告诉你是哪一行贵：
+
+```bash
+bytedcli --site i18n-tt --json megatron spark-ui stages list --app-id <APP> | python3 -c "
+import json,sys
+from collections import defaultdict
+rows=json.load(sys.stdin).get('data') or []
+agg=defaultdict(lambda:[0,0])
+for s in rows:
+    n=s.get('name') or ''
+    if 'hasNext' in n: continue          # 元数据 job，1 task，忽略
+    agg[n][0]+=(s.get('executorRunTime') or 0); agg[n][1]+=1
+for n,(v,c) in sorted(agg.items(), key=lambda kv:-kv[1][0]):
+    print(round(v/1000),'sec x',c,'|',n)"
+```
+
+实测一次：九个 stage 全部归到 `122_product_ad_mapping_v2.py:1574` 这一个调用点，
+**52 万 executor 秒（158 小时），零写入**，后面还排着七个同量级的 stage。
+去看那一行，是一个对 23 亿行做 `groupBy(ad_id)` 并带两个 `countDistinct` 的完整性体检。
+
+**这类"既过滤数据又产出审计数"的函数最容易被漏掉**：它不叫 validate，也不在校验开关后面，
+看起来是业务逻辑。判据不是它叫什么，而是**它买到了什么**——该数据集实测广告与广告主严格
+一对一，也就是说它在找一个不存在的东西。关掉它的正确形态是：跳过整段、审计位报"未测量"
+而不是报零、并在 stdout 上明说跳过了什么，同时给本地冒烟补一条"关掉后审计字典的键不能少、
+打开后仍然必须隔离"的双向检查。
+
+### 物化表必须采用它所物化的视图的过滤规则
+
+快照表直接读了底表的 DATA 行，绕过规范视图的可见性谓词
+（`pair_cost > 0 AND ad_cost > 0`，合同里签着
+`visibility: pair_cost_positive_and_ad_cost_positive_and_not_delete`）。
+结果 2562 万行里混进 **138,999 行（0.54%）按合同不该被任何消费者看到的行**，
+下游在 Python worker 里逐条抛错。
+
+**规则：一张物化表如果不采用它所物化的视图的过滤规则，它就不是那个视图的快照，只是长得像。**
+谓词要**照抄**，不要凭理解重写。修好后加一道自检（写完统计违规行数并 fail-closed），
+让错误出现在"哪张表错了"的地方，而不是消费端的每个分区里。
+
+对账判据要能算得清：过滤前 25,625,370 − 过滤后 25,486,371 = 138,999，
+与实测的零成本行数一条不差——**能对上数的验证才算验证过**。
+
+### 生产者与消费者的字段名，没有任何东西在比对
+
+F1 的内核按 `candidate_product_id` / `candidate_catalog_id` 取值，
+线上 S2 表发布的是 `product_id` / `catalog_id`。两侧从未被比对过，
+于是不一致一直睡着，直到某次运行第一次真正执行到那个内核，
+以 Python worker 里一句光秃秃的 `ValueError: candidate_product_id` 冒出来。
+
+**修法不是把名字改成另一边**（那只是把赌注押到另一侧），而是**在驱动侧从表的 schema 读出字段名**：
+两种命名都接受，遇到都不认识的结构立刻失败并打印它实际看到的字段。
+下次上游改名，报错出现在启动阶段、带着完整信息，而不是在几十个分区里各抛一次。
+
+同源提醒：**只在真实数据上才会执行到的路径，等于没被测过**。
+纯 Python 合同测试跑不到那里；本地真 Spark 冒烟（见上文四级阶梯第 1 级）才是这一层的归属。
+
+### 门禁自身的三种常见腐坏
+
+1. **门禁在测过期的常量。** 上限从 20/200 改成 10/100 后，两处门禁仍按 20/200 判——
+   它们继续宣称"上限已强制"，实际抓不住 10~20 之间的违规。
+   **门禁的阈值要从参数读，不要写字面量。**
+2. **测试只断言拒绝路径，成功路径没覆盖。** 我为快照写的测试断言了三种拒绝，
+   全部在真正的签名调用之前就返回了——于是"签名器按列名工作"这个契约完全没被测到，
+   缺陷照样上了集群。**写完拒绝路径，回头问一句：成功路径被执行到了吗？**
+3. **测试依赖执行顺序。** patch 模块的某个属性（`task.impl._spark_modules = ...`）
+   在单跑时报 `NoneType`，全量跑却通过——因为别的测试先把模块加载了。
+   **要替换就替换整个模块对象**（`types.SimpleNamespace`），别 patch 属性。
+
+### Spark 行转普通对象的边界要归一化类型
+
+`DecimalType` 聚合结果 collect 回来是 Python `Decimal`，进 `json.dumps` 直接
+`Object of type Decimal is not JSON serializable`——而这发生在**整条用户血缘算完之后**。
+在 Spark Row 变成普通 payload 的那一处统一转换（签名合同本来比较的就是字符串形式，值不变）。
+
+### 不要在 Dorado 链路上留静默截断，卡点当场就说
+
+全局规则见 `~/.claude/AGENTS.md` 的「不要静默截断，不要人工卡点」与「卡点当场就说」。
+这里只补 Dorado 上具体长什么样——**这些都是实际踩过或差点踩到的形态**：
+
+| 形态 | 具体表现 | 为什么危险 |
+|---|---|---|
+| SQL 里的 `LIMIT` / `row_number() <= N` | 跨机房向量同步每分区**恰好 1,000,000 行** | 1674 万的源被砍成 0.9% 交集，下游 ANN 低于训练下限，**整条 EU 链路堵了数天**；任务全程报成功 |
+| 手工裁剪依赖 | 为了让任务能发车，临时删掉一个父任务 | 删除会活得比理由久，之后某次运行在残缺输入上开跑；必须存原始列表、跑完还原、**回读确认** |
+| `--max-parallelism` / `maxExecutors` 压小 | 为"先跑通"调低，然后忘了调回 | 全量按这个速度要跑几十小时，看起来像"平台慢" |
+| 抽样知识变默认 | `F1_V2_USER_BUCKETS` 之类的分桶变量掉了却仍能跑 | 本项目已因此把 1/128 的样本当成全量；解法是**要求显式声明 scope**，变量丢失变成报错而不是变成更大的运行 |
+| 下线的任务 | 同步任务 `status=3` 静静躺着 | 没有任何告警，下游只表现为"没有数据" |
+
+**判据**：整数得可疑的数字（1000000、10000、200）几乎一定是人手放的。
+看到就去找它的出处并质疑，不要接受"它一直就是这样"。
+
+**必要的截断怎么写**——三件事缺一不可：
+
+```python
+# 1) 显式命名，2) 同处说明理由，3) 结果里带出去，让下游看得见
+SMOKE_ROW_CAP = 1_000_000   # 冒烟专用：全量约 1674 万，压到 1/16 以便 5 分钟内出结论
+frame = source.limit(SMOKE_ROW_CAP)
+print("SMOKE_CAP_APPLIED rows<={} full_size≈16.7M".format(SMOKE_ROW_CAP))  # 回执里必须有
+```
+
+反例是把 `.limit(1000000)` 直接写进生产 SQL：跑出来一切正常，收据全绿，
+**没有任何一处告诉消费者他拿到的是一片而不是全部**。
+
+**卡点当场就说**（Dorado 上最常见的四类，都不要等人来问）：
+
+- **资源**：实例 `等待通过并发检查` 超过 ~15 分钟、或队列 `available_now.memory = 0`
+- **权限**：接口 401/403、资源库拒绝上传、跨机房网关不通
+- **速度**：长尾 stage 几十分钟只推进个位数 task；全量按当前速度会撞上 `timeoutSeconds`
+- **配置**：需要改但改不动的东西（已下线的上游任务、别的团队 own 的任务）
+
+报的时候带上：任务/实例 id、你试过什么、需要谁做什么。**不要攒到最终报告**。
+
+### 长任务的四级放量阶梯：本地 → 分桶冒烟 → 小规模 → 全量（分区/分窗）
+
+**默认流程，不是可选项。** 每一级都比下一级便宜一到两个数量级，且只有本级全绿才准进下一级。
+2026-08-06 实测代价：跳过第一级，六个缺陷全靠集群往返一个一个抠出来，
+每轮 10~20 分钟（并发检查还要另等），**而且 Spark 遇到第一个错就停，一轮只收获一个缺陷**。
+
+| 级别 | 跑什么 | 量级 | 抓什么 |
+|---|---|---|---|
+| 1. 本地真 Spark | `local[2]` + 三行 fixture | **秒** | 表达式解析、codegen、结构体字段名、签名器列契约、UDF 反序列化 |
+| 2. 分桶冒烟 | 1/1024 哈希分桶，**走生产同一个 action** | 分钟 | 锁与指针、发布回读、真实数据形态 |
+| 3. 小规模 | 1/128 或单日 | 十分钟级 | 倾斜初现、资源配比、真实耗时的外推基数 |
+| 4. 全量 | 按分区 / 时间窗切开 | 小时级 | —— |
+
+**第 4 级必须切开跑，不要一发到底。** 一次 6 小时的全量在写入长尾被超时杀掉，
+损失是全部已完成工作；按日期或分桶切成 N 段，单段失败只损失 1/N，且能续跑。
+判据来自第 3 级的实测耗时，不是估算。窗口口径本身也可以是切分维度
+（本项目从 30 天全量改为"7 天为单位补齐"就是这个思路）。
+
+**第 1 级怎么搭（macOS，一次性）**：
+
+```bash
+# JDK 往往已经装着、只是不在 PATH——`java -version` 说"找不到运行时"不等于没装
+ls /opt/homebrew/opt | grep -i openjdk
+python3 -m venv sparkenv
+sparkenv/bin/pip install "pyspark==3.2.1"        # 版本必须对齐集群，否则 codegen 差异抓不到
+JAVA_HOME=/opt/homebrew/opt/openjdk@11 sparkenv/bin/python local_smoke.py
+```
+
+冒烟脚本的写法：用 `importlib` 直接加载交付物文件，把 `spark.createDataFrame` 造的三行
+fixture 喂给真实函数，**schema 要照抄线上表的 DDL**（字段名写错就白测了）。
+断言只验"能跑通 + 形状对"，业务正确性留给纯 Python 合同测试——两者互补，不要混。
+本项目的实现见 `deliverables/160_local_spark_smoke.py`。
+
+**为什么合同测试挡不住这些**：纯 Python oracle 从不启动 JVM，
+凡是依赖 Catalyst 的东西（表达式解析、代码生成、struct 字段名、按列名工作的签名器）对它全部隐形。
+本项目 168 条合同测试全绿的同时，上述六个缺陷一个都没被拦住。
+
+### 花集群时间之前，先在本地跑同一道门禁
+
+生产 Spark 作业一次失败的代价是小时级，而绝大多数早期失败都能在本地秒级复现。**提交前，把这次运行即将
+面对的每一道门禁，用最便宜的等价物先跑一遍**；只有本地全过才发车。实证：一条 ROW 链路连续四次失败，
+其中三次本来都能在几秒内本地抓到（2h15m + 3m + 3m 的集群时间全部白付）。
+
+按成本从低到高，能覆盖绝大多数早期失败：
+
+| 门禁 | 本地等价物 | 抓到过什么 |
+|---|---|---|
+| SQL 能否规划 | `aeolus query-editor query parse -r <region> --engine hive --file x.sql`（只校验、不提交作业） | 验收语句里 CTE 双重引用导致的无条件连接，跑之前就会报错 |
+| PySpark API 是否存在 | 把代码里所有 `F.<name>` 与目标版本 `dir(pyspark.sql.functions)` 求差 | `F.pmod` 在 3.2 不存在（3.4 才加），作业跑满 2h15m 后死在这一行 |
+| 表达式能否构造 / 语义是否等价 | 装 JDK + 对应版本 pyspark，起本地 SparkSession 真跑目标函数 | 同上；并可对拍新旧实现逐值相等 |
+| UDF 能否在 executor 反序列化 | `cloudpickle.dumps` 后，在**干净解释器**里 `pickle.loads`，`sys.path` 只放构建产物 | UDF 按名引用自身模块，而包内是数字开头的嵌套路径，executor 永远 import 不到 |
+| 发布包完整性 | 解压产物，按任务体 `_verify_manifest` 的逻辑本地比对（必需闭包 / 成员集合双向 / 逐个摘要） | 清单漏声明成员，Driver 3 分钟 fail closed |
+
+**最强的一招：把任务体原样搬到本地跑一遍。** Spark 任务在 `SparkContext` 初始化之前挂掉时，
+容器日志里**看不到任何 Python 输出**——`stdout` 只有 JVM 的 GC 日志，`stderr` 只有 SLF4J 那几行，
+平台只给你一句 `user application exited with status N before SparkContext inited`。这时不要靠猜，
+把线上环境完整复制到本地：
+
+```bash
+mkdir preflight && cd preflight
+cp <task_body>.py body.py                      # 任务体，文件名不重要
+cp <release>.zip .                             # 发布包，放在同名位置
+cp <deliverables>/*.py .                       # 任务体按 `here / FILE` 加载的兄弟文件
+eval $(bytedcli dorado task get -j -r <region> <taskId> | python3 -c '...把 appMasterEnv.* 转成 export...')
+PYTHONPATH="$PWD/<release>.zip" python body.py "{release:...,component:...}"   # 末尾这段模拟平台追加的 params
+```
+
+两个细节决定它是否忠实：**`PYTHONPATH` 必须指向发布包本体**（模拟 `--py-files` 在驱动 sys.path 上的效果，
+否则会得到"路径上找不到发布包"这种本地专属的假错误）；**末尾要带上平台追加的 params 串**。
+这样能一路跑到 `SparkSession.getOrCreate()`，最后停在"本地没有 Java"——那正是该停的地方，
+说明所有 pre-Spark 门禁都过了。实证：连续两次盲发（各 4 分钟且报错不可见）之后，本地一次就拿到了真实错误。
+
+**当两道规则互相打架时，必须裁定哪一方过时，不能两边都留。** 本次实例：97 的按值序列化规则判定
+「发布包根目录有一份字节完全相同的别名 ⇒ executor 能 import ⇒ 按引用是安全的」，而 120 的守卫
+**无条件**拒绝任何按名引用，于是恰好否决了那些别名被加进来所要支持的布局。别名是清单里的正式成员、
+是更晚加入的修复，所以守卫是过时的一方——让它复用同一条判据（`release_module_is_reimportable`），
+而不是放松成不检查。**同一份代码里两处对同一事实各自表态，就是缺陷本身**，见全局规则「单边声明是信号」。
+
+两个反直觉点，不写下来一定会再踩：
+
+- **`local[*]` 和 `local-cluster` 都不能用来判断 executor 行为。** 它们的 Python worker 从驱动进程 fork，
+  继承 `sys.modules`，于是本该失败的 UDF 反序列化会通过。唯一忠实的模型是**另起一个干净解释器**做
+  `pickle.loads`。我自己写的冒烟第一版就栽在这。
+- **纯 Python oracle 测试给的是假信心。** 用手写模型复刻 Spark 语义，可以做到 74/74 全绿，同时线上第一行
+  PySpark 调用就崩——模型证明"函数算得对"，不证明"函数存在、表达式能构造、闭包能传到 executor"。
+  这类项目必须额外有一条真正执行 PySpark 的路径；已有但长期 skip 的夹具等于没有，
+  给它一个 `<PREFIX>_REQUIRE_REAL_SPARK=1` 之类的开关把 skip 变成 fail。
+
+### Dorado 会在脚本后追加一段参数，任务体不能按 argv 长度分支
+
+提交 Spark 任务时，平台会把任务配置里的 `params` 字段渲染成一个花括号串，**接在脚本路径后面**：
+
+```
+spark-submit ... /.../<instanceId>.py {release:single-stage-v2,component:f1,region:sg,action:publish}
+```
+
+于是 `sys.argv` 永远长度 ≥ 2。任何形如「命令行非空 ⇒ 改用命令行、忽略环境变量」的逻辑都会在平台上
+100% 触发：argparse 拿到一个孤立的位置参数，必填项全缺，**在 SparkContext 初始化之前就 exit 2**。
+诊断信息只有一句 `user application exited with status 2 before SparkContext inited`，容器 stderr 里
+没有任何 Python traceback——真正的证据在 dorado 实例日志里那行完整的 `spark-submit` 命令，
+必须把它整行取出来看结尾。
+
+要保留「手工命令行」的逃生口，判据用**是否出现 `-` 开头的 token**，而不是 token 数量：
+
+```python
+if any(str(t).startswith("-") for t in process[1:]):
+    return None          # a human is driving it by hand
+return build_runtime_argv_from_env(os.environ)
+```
+
+实证：同一条链路里 S4 的任务体完全不读 `sys.argv`，所以一直正常；F1 读，于是**从未在平台上启动成功过**，
+而这个缺陷被"等上游验收"的流程挡了很久没暴露。**同一仓库里两个任务体对同一平台行为的假设不一致，
+就是一颗定时炸弹**——发现其中一个能跑而另一个不能时，先比对两者对运行时输入的假设，别急着怀疑本次改动。
+
+### 上传 zip 类资源：官方 CLI 走不通，用打过补丁的临时副本
+
+`dorado resource upload/update` 只认 `--type jar`，传 zip 会被服务端顶回来
+（`自定义函数资源文件格式不支持`，code 11002）；CLI 自己也承认这件事：
+`--type must be one of: jar. zip/file/scm/image/thrift mappings are not yet captured`。
+**换 `--site` 没用，换 `--type zip/python/pyfile/file` 也没用**——这四个我都试过，
+`--site i18n-tt` 那条也一样被拒；报错来自 CLI 的类型表，不是服务端。
+
+真正可用的路径是把 0.118.0 装到一个**一次性前缀**里，改它的类型表，只用来做这一次上传，
+不动用户的全局安装：
+
+```bash
+npm install --prefix ./cli118 @bytedance-dev/bytedcli@latest \
+  --registry https://bnpm.byted.org --no-audit --no-fund
+# 在 cli118/node_modules/@bytedance-dev/bytedcli/dist/{index.js,bytedcli-core.js} 里
+# 把 GLOBAL_RESOURCE_TYPE_VALUES = { jar: 0 } 改成 { jar: 0, zip: 2, file: 2 }
+# 注意还有一个独立的 RESOURCE_TYPES = ["jar"] 数组由 parseResourceType 读取，
+# 两处都要改；值在多个 bundle 里各有一份，逐个替换。
+./cli118/node_modules/.bin/bytedcli --site i18n-tt --json dorado resource upload \
+  -r sg --type zip --name <唯一名字> --description "..." \
+  --file <本地zip> --timeout-ms 300000
+```
+
+三条配套事实：
+
+- **资源名必须唯一**，重名报 `资源名已存在`；版本信息放名字里（`..._v21_sg_20260806`）。
+- **本地文件的 basename 会一路带到执行端**，而 `--name` 只是标签。任务体如果按固定名字在
+  `sys.path` 上找归档（本项目找 `single_stage_v2_release.zip`），本地文件叫别的名字就会得到
+  `driver Python path must contain exactly one <name>, found 0`。
+  想区分版本就复制到不同目录、保持同一个文件名。
+- `resource update --file` 原地替换存在 CDN 缓存风险；**传新资源、改 pyFiles 指向新 id 更干净**，
+  且天然避开缓存。
+
+### 部署一个任务体：三处代码、三处环境变量，只有一处生效
+
+2026-08-06 实测，一次改动要同时落到下面这些位置，漏一处的表现是**跑的是旧的、配的是新的**，
+任务自检不过（`ERROR: executing F1 task body SHA differs from the pin`），而且报错完全不提示是部署问题。
+
+| 内容 | 有效位置 | 陷阱 |
+|---|---|---|
+| 任务体代码 | `node save --content-file <path>` | `--metadata` 里的 `configuration.code` **是只读展示副本**，写进去不生效，`node get` 回读它也是旧的——别用它判断部署成功 |
+| 归档 zip | `conf...parameter.pyFiles = [{id, type:2}]` | 生效 |
+| 环境变量 | `sparkConf["spark.executorEnv.<K>"]` 和 `sparkConf["spark.yarn.appMasterEnv.<K>"]` | `parameter.envs` 那个 `K=V` 列表**只是编辑态**，spark-submit 不读它 |
+
+**最阴的一种回退**：`node get` 回读的 metadata 里带着那份**过期的** `configuration.code`，
+把它原样喂回 `node save` 就会把任务体退回旧版——而此时所有 sha pin 读起来仍然是对的，
+`conf...parameter.code` 的回读也"同意"这个旧版本，看不出任何异常。
+EU 侧一次**只改依赖、完全不碰代码**的编辑就这样静默回退了任务体。
+⇒ **任何一次 `node save` 都必须带 `--content-file <交付物文件>`**，哪怕这次编辑与代码无关。
+
+判据只有一个：`dorado download-instance-log` 里的 `spark-submit` 命令行。它是最终真相——
+`--py-files` 后面挂的是哪个资源、`--conf spark.yarn.appMasterEnv.*` 是哪一版 sha，一眼可见。
+今天我先后按"代码没部署上"和"pyFiles 没生效"两个错误假设各改了一轮，都是因为没先看这行。
+
+另外两条同源的：
+
+- **上传的 zip 文件名必须等于任务体期望的归档名**（本项目是 `single_stage_v2_release.zip`）。
+  资源的 `--name` 只是标签，**文件 basename 会一路带到执行端**；本地文件叫 `release_v20.zip`
+  就会得到 `driver Python path must contain exactly one single_stage_v2_release.zip, found 0`。
+  想区分版本，靠 `--name`，不要靠改文件名。
+- **只有 status=2（已上线）的任务能建 backfill**。`task open` 只是打开编辑器，不是上线；
+  上线是 `task online --project-id`。已退役的任务（本项目里代码级 `RETIRED_*_TASK_IDS` 明写了的那些）
+  上不了线，别在它们身上耗——先去代码里查这个常量，比试错快。
+
+### 驱动的 Python 报错在 `python.stderr` 里 —— 别去 stdout/stderr 找
+
+**先给结论**：`bytedcli dorado get-container-log --file python.stderr`。
+任务体 `sys.stderr.write("ERROR: …")` 写的内容原样落在这个文件里。
+
+**但 `print()` 落在 `--file stdout`**，和 GC 日志混在一起。今天我据此犯了一个更糟的错：
+一个清锁作业跑了 8 分钟，我在 `python.stderr` 里看到空白，就推断"它跑的是旧任务体"，把它中止了——
+实际上它已经成功执行完毕，`CLAIM DELETED AND VERIFIED ABSENT` 就躺在 `stdout` 里。
+**一个通道为空不是"什么都没发生"，只是"这个通道里没有"**；两个通道都要看，尤其当作业运行时长
+和你的假设不符时——时长本身就是证据。
+
+我一度在这里写下"驱动输出取不到、七条路径全失败"，**那是错的**——
+我试遍了下表却唯独没试过这个文件名，于是把一次 2h27m 失败的原因当成了不可知，
+还据此编造了一个后来被证伪的假设（源漂移）。实际那句话一直躺在 `python.stderr` 里：
+`ERROR: the date is claimed by another publication`。
+
+| 路径 | 内容 |
+|---|---|
+| **`--file python.stderr`** | **驱动 Python 的真实报错。先看这个。** |
+| `--file stdout` | 只有 JVM GC 日志 |
+| `--file stderr` | 只有 SLF4J 那 5 行 |
+| `dorado download-instance-log` | 调度器日志 + 完整 `spark-submit` 命令行（查生效配置用它） |
+| `megatron app get` → `am_container_logs` | 同 stdout |
+| `insearch get <container>/stdout` | 同上，能拿到更多行但仍是 GC |
+| `megatron spark-ui` | SparkContext 起来之前没有；History Server 早期常 404 |
+| `dorado instance diagnose` | `diagnoseStatus: to_diagnose`，通常无内容 |
+
+**方法论的教训比这条路径本身更重要**：穷举失败之后，我下的是"不可能"的结论，
+而正确的结论只是"我试过的这些不行"。前者会让人停止寻找并转向猜测。
+EU 侧的同一问题由另一个人找到了这条路径——**"我找不到"不等于"不存在"**。
+
+**仍然值得装错误落表**（下面这段）：`python.stderr` 需要应用还在、容器日志未被清理，
+而落表是持久的、可 SQL 查询、且能带完整 traceback 而不只是异常消息。两者互补。
+
+```python
+def _record_failure_for_operator(exc):
+    try:
+        from pyspark.sql import SparkSession
+        spark = SparkSession.getActiveSession()
+        if spark is None:
+            return                      # pre-Spark failures: use the local preflight instead
+        spark.createDataFrame(
+            [(datetime.datetime.utcnow().isoformat(),
+              str(spark.sparkContext.applicationId),
+              "".join(traceback.format_exception(type(exc), exc, exc.__traceback__)))],
+            "ts string, app string, message string",
+        ).write.mode("append").saveAsTable(DEBUG_TABLE)
+    except Exception:                   # diagnostics must never mask the real failure
+        pass
+```
+
+三个要点：**best-effort**（拿不到 session 就放弃，绝不用自己的异常盖掉原异常）、
+`saveAsTable` 首次自动建表（省掉 DDL 步骤）、写完仍返回原来的退出码。
+Spark 起来之前的失败它救不了——那类靠本地 preflight（见上文）。
+
+### `hive rows` 会对有数据的表报 0 分区 —— 查表内容一律用 query-editor
+
+`bytedcli hive rows --database … --table …` 实测对一张**确定持有 3.84 亿行**的表
+返回 `partitions: 0`。它不报错，就是给 0。**据此判断"表是空的"会得出完全相反的结论**——
+本轮我差点据此认定一个子智能体虚报了交付成果。
+
+⇒ 判断表里有没有数据，用 `aeolus query-editor query one` 跑真实 SQL（`COUNT(*)` 按
+`record_type` / `publish_status` 分组），不要用元数据接口。
+
+**更普遍的一条**：任何"返回空"的接口结果，在当成事实之前先做**对照实验**——
+拿一个已知有数据的对象跑同一条命令。今天有五次初判被对照推翻
+（yarnAppState、Spark UI 缺席、项目并发、队列饥饿、这条）。
+对照的成本是一条命令，误判的成本是几小时。
+
+### `instance list` 会漏行甚至返回空，盯单个实例必须用 `instance get`
+
+`dorado instance list --task-id <id>` 的返回不稳定：同一时刻实测过 `n=0`，
+而 `dorado instance get <instanceId>` 对同一个实例正常返回 `pending`。
+分页顺序也不可靠——默认排序不是按 id，`--page-size 3` 会把刚创建的实例挤掉，
+看上去像"实例消失了"。
+
+⇒ **监控一旦拿到实例 id，就切到 `instance get <id>`**。用 list 做监控会产生
+"NO_INSTANCE" 这类假终态信号；而假信号比没有信号更危险——它会让人以为作业没了，
+从而去做多余的重发（每次重发都会把调度等待的时钟归零，见下条）。
+
+### 并发检查可能要等几十分钟，反复重发只会重置它
+
+`等待通过并发检查` 不总是几秒就过。实测同一任务：一次 8 秒启动，另一次 **33 分钟**。
+期间 `maxParallelism` 够用、无其它运行实例、项目 `maxParallelism = -1`，
+即没有任何可见的东西在挡——就是调度器的评估周期。
+
+⇒ **不要因为"等太久"就 abort 重发**：新实例重新开始排队，等待时间归零。
+本轮我在这个闸门上反复重启，很可能是自己把自己挡住了。
+判断作业是否真的有问题，看 `statusDesc` 与 `instance yarnAppState`，不看等待时长。
+
+### 队列"有授权、有空闲"不等于"能派发"——虚拟队列会静默卡在并发检查
+
+`dorado project yarn-queues` 会把 `cluster=virtual-*` 的虚拟队列一并列出，
+`megatron queue usage` 也会显示它有大量 `available_now`。但把任务的
+`computeResourceParam` 指过去之后，实例会**永远停在 `等待通过并发检查`**，
+既不报错也不派发。实测：同一个 S4 任务在 `byodel26` 上 **8 秒**启动，
+改到 `root.virtual_ad_general_mix` 后 **42 分钟未启动**；F1 上同样复现。
+
+⇒ **换队列后必须验证"确实派发了"，不能只看队列有没有空闲。** 判据是实例离开
+`pending` 并出现 `startTime`。若几分钟内没有，换成 `cluster` 为真实集群名的队列
+（`snake` / `byodel26` / `byodel28` / `badge` 等），不要用 `virtual-*`。
+
+**`instance yarnAppState` 不能用来判断是否拿到容器**（这条一度被我写反，实测推翻）：
+一个确实计算了 2h27m 的 S4 运行，日志里同样只有 `ACCEPTED`（21 次）；
+一个 19 分钟零工作的 F1 运行是 104 次 `ACCEPTED`。**两者唯一的差别是次数，而次数只反映时长。**
+Dorado 根本不更新这个字段，它恒为 `ACCEPTED`。
+
+**Spark UI 可读时**（`megatron spark-ui executors list --app-id`）它是可信的：
+`active` 数就是实际拿到的容器数，`stages list` 给出真实进度。
+
+**但 `megatron spark-ui` 不吃 `-r sg`，要用 `--site i18n-tt`**（`-r` 会被解释成 Megatron
+virtual region，默认 site 是 `cn`，于是报 `Megatron site "cn" does not use -r/--region`）。
+参数给错时输出是 **`executors total 0 | active 0`**——**看起来和"作业一个容器都没拿到"一模一样**，
+而这恰恰是本文上一段警告过的那个误判。用对参数后同一个应用立刻显示 380 个 active executor。
+⇒ 拿到 `total 0` 时先确认命令本身没报错，再谈作业。
+
+```bash
+bytedcli --site i18n-tt --json megatron spark-ui stages list    --app-id application_...
+bytedcli --site i18n-tt --json megatron spark-ui executors list --app-id application_...
+```
+
+`instance get` 有时取不到 application id（字段缺失），此时从
+`download-instance-log` 的日志里 `grep -o "application_[0-9]*_[0-9]*"` 一定拿得到。
+
+**但"取不到"不能反过来当证据。** 它走的是 History Server（`spark3-history-*`），
+应用早期常返回 `HTTP 404 SPARK_UI_NOT_FOUND`，且不保证多久之后才可用——
+实测一次 S4 运行在启动约 58 分钟后才第一次读到。我曾据"19 分钟取不到 UI"
+判定一个 F1 运行被饿死并中止了它，**这个证据其实不成立**。
+
+⇒ **这套环境里没有可靠的早期进度信号。** 能信的只有三样：
+`statusDesc`（判断为什么没派发）、实例的终态、以及 UI 一旦可读之后的数据。
+在这之前，唯一正确的动作是**等**——不要用缺席的证据去支持"它坏了"的结论。
+
+### 选队列：先看内存再看核，`available_now` 才是判据，机房要和数据同侧
+
+两条命令，各有各的用处，**都要看**：
+
+```bash
+# 队列自身的配额与占用（需要同时给 cluster 和 queue，缺一个就返回空）
+bytedcli --json dorado task get-queue-resource -r sg --clusters snake --queues root.snake_data_ad
+#   -> cpu_quota/used_cpu, mem_quota/used_mem, jobs_num, pending_jobs_num, queue_status
+
+# 我这个用户此刻真正能拿到多少（entitlement/ceiling 常为 null，但 available_now 是实数）
+bytedcli --site i18n-tt --json megatron queue usage -r sg --queue-name root.snake_data_ad
+#   -> available_now: {cpu, memory}
+
+# 枚举我有权限的队列（--site i18n-tt；region 值按 site 不同：i18n-tt 用 sg|va|eu|id|...）
+bytedcli --site i18n-tt --json megatron queue list -r sg --page 1 --page-size 25
+```
+
+三条实测判读（2026-08-06）：
+
+1. **卡住 Spark 长作业的通常是内存不是核。** `root.snake_data_ad` 当时 CPU 还空 4.5k，
+   内存却已超卖（`mem_quota 29900 / used 28648`），14 个作业排队。只看
+   `queue_status: free`（它按 CPU 算）会得出完全相反的结论。
+2. **`available_now.memory` 可能是 0 而 CPU 看着很宽。** `byodel03_ads_lead_algo_batch`
+   当时 cpu 7,290 / memory **0**，零排队——只看核会选中它然后饿死。
+3. **容量最大的队列往往不在数据同侧机房。** byodel21（MY，cpu 8.1万/mem 200万）、
+   virtual_ad_general_mix（virtual，cpu 7.8万/mem 187万）远超 SG1 的 snake，
+   但数据在 SG1；已知 MY 集群派发慢（byodel28/03 排队 25 分钟），snake(SG1) 只要 14 秒。
+   ⇒ **跨机房先用小作业验派发，别拿长作业赌**；SG1 本地零排队的备选是
+   `root.snake_ad_catalog_dw_batch`。
+
+（上一节说 `virtual-*` 会静默卡住，仍然成立；这里补的是"即使不用虚拟队列，也要按内存和机房选"。）
+
+### EU（`eu-ttp2`）发车用 `task rerun`，`backfill create` 在那边是坏的
+
+实测：`dorado backfill create` 在 `eu-ttp2` 上**无论 `-r` / `--site` 给什么都会打到 CN 网关并返回 401**，
+两个 CLI 版本都一样。EU 侧发车用 `dorado task rerun`。
+⇒ 写交接文档时别把 ROW 的命令原样抄给 EU——交出去一条你知道跑不通的命令，
+比不写更糟，因为对方会先怀疑自己的环境。
+
+### 一次远端作业的标准诊断回路（照这个顺序，别跳）
+
+```bash
+# 1) 发车后拿实例：默认 list 常常看不到刚建的 backfill 实例，按状态过滤才稳
+bytedcli --json dorado instance list -r sg --project-id <P> --task-id <T> --status running --page-size 5
+bytedcli --json dorado instance list -r sg --project-id <P> --task-id <T> --status pending --page-size 5
+
+# 2) 已经结束了？backfill 汇总一眼看出"跑完但没成功"
+bytedcli --json dorado backfill get -r sg --backfill-id <B> --project-id <P>
+#   -> totalInstanceCount / completeInstanceCount / succeedInstanceCount
+
+# 3) 实例详情 + 从整段 JSON 里正则抠 application id（字段位置不稳定，正则最省事）
+bytedcli --json dorado instance get <INSTANCE_ID> -r sg | python3 -c \
+  "import json,sys,re;print(sorted(set(re.findall(r'application_\d+_\d+', json.dumps(json.load(sys.stdin))))))"
+
+# 4) 驱动报错看 python.stderr，print 输出看 stdout（两个都要看）
+bytedcli dorado get-container-log -r sg --application-id <APP> --file python.stderr --tail 40
+bytedcli dorado get-container-log -r sg --application-id <APP> --file stdout --tail 40
+
+# 5) 生效配置的唯一真相：spark-submit 命令行 + instance conf
+bytedcli dorado download-instance-log --instance-id <ID> -r sg --project-id <P> -o inst.log
+grep -o "spark-submit.\{0,4000\}" inst.log | head -1      # --py-files / appMasterEnv.* 都在这里
+python3 -c "import json;s=open('inst.log').read();i=s.index('instance conf = ');\
+print(json.JSONDecoder().raw_decode(s[i+16:])[0]['configuration']['operator']['parameter']['pyFiles'])"
+```
+
+配套的节点操作（改任务体/环境/资源绑定时用）：
+
+```bash
+bytedcli --json dorado node resolve-uid -j -r sg -p <P> --task-id <T>     # taskId -> nodeUid
+bytedcli --json dorado node get --node-id <UID> -r sg                      # 取草稿（先存一份做还原）
+bytedcli --json dorado node save --node-id <UID> -r sg \
+  --metadata "$(cat node.json)" --content-file <任务体.py>                  # 代码走 --content-file
+bytedcli --json dorado node submit --node-id <UID> --project-id <P> -r sg --message "..."
+bytedcli --json dorado task online <T> -r sg --project-id <P>              # 上线（backfill 的前提）
+bytedcli --json dorado backfill create -r sg --task-ids <T> --project-id <P> \
+  --start-date <D> --end-date <D> --max-parallelism 1 --skip-check --message "..."
+```
+
+**借生产任务当临时载体**（清锁脚本之类）时的固定动作：先 `node get` 存还原文件 →
+确认该任务没有 running/pending 实例 → 换任务体跑 → **还原后校验任务体 SHA 与生产文件一致**
+（本项目的任务体自己会比对 `TASK_BODY_SHA256`，所以还原不彻底会立刻暴露，这是好事）。
+已退役的载体任务上不了线，白费时间——**先去代码里查 `RETIRED_*_TASK_IDS` 这类常量**。
+
+### 作业在整 15 分钟被杀、三个日志通道都没有报错 = AM 在等 SparkContext
+
+症状很有辨识度：**耗时几乎正好等于 `spark.yarn.am.waitTime`**（默认 100s，很多任务已调到 900s），
+`stdout` 的 STEP 流在中途戛然而止，`python.stderr` 与 `stderr` 都是空的，实例只报"执行失败"。
+去 `megatron app get` 读 `diagnostics`，那里写得清清楚楚：
+
+```
+SparkContext not inited, check driver to determine why
+Uncaught exception in initializing SparkContext:
+java.util.concurrent.TimeoutException: Futures timed out after [900000 milliseconds]
+    at org.apache.spark.deploy.yarn.ApplicationMaster.runDriver
+```
+
+**触发条件是任务体在建 SparkSession 之前有长耗时的纯 Python 工作**——本项目是 FAISS 建索引。
+最阴的一点：**它由"提速"触发**。同一个任务体，上一轮老老实实导了一遍检索池（Spark 作业，
+1071 秒），SparkContext 早早就起来了，跑 33 分钟一切正常；下一轮命中缓存直接复用导出结果，
+反而把那段唯一会初始化 Spark 的工作跳过了，于是 900 秒到点被判死。
+
+两种修法，按"规则要放在不会被忘记的地方"选：
+
+- 改配置 `spark.yarn.am.waitTime`（`sparkConf` 里，写成 `7200s`）——立刻见效，但下一个复制这份
+  配置的人不会知道为什么。
+- 改代码，在长耗时段之前就把 SparkSession 建出来——更durable，但要先确认这个会话的建法与
+  后续一致（本项目就不行：先建的会话没有 Hive 支持，`getOrCreate()` 会把它原样还给后面的代码）。
+
+### 缓存产物的复用会把旧的上游状态一起带回来
+
+同一个日期的中间产物目录存在，不代表它是用当前上游算出来的。实测：上游向量补全之后，
+`p_date=20260804` 的检索池导出是 **204,303** 个候选，而 `p_date=20260801` 的导出还是补全前的
+**8,223** —— 后者被原样复用，索引照建，直到发布阶段撞上训练下限才失败，白烧 8 分钟。
+
+日志里其实**披露了**这个数（`STEP 11_export_pool_done` 的 `candidate_pool_count`），
+但没有任何门禁去看它。**复用缓存产物的地方，要么把它的规模与下游门槛比一次，要么就别复用。**
+排查时先看 `export_reused_from_hdfs` 这类字段——它决定了这一轮到底算没算。
+
+### EU（`eu-ttp2`）取容器日志：`--application-id` 会 404，要走 `--logs-url`
+
+EU 的 app 不在 `bc-iedt-gw` 网关上，`dorado get-container-log --application-id` 直接
+`{"code":-1,"message":"app not found"}`。可用的两步：
+
+```bash
+# 1) 实例 -> app id -> AM 容器日志地址（region 是 megatron 的 eu_ttp_no，不是 dorado 的 eu-ttp2）
+bytedcli --json dorado instance log-summary <INSTANCE> -r eu-ttp2 --project-id 237   # trackingUrls 里有 app id
+bytedcli --site eu-ttp --json megatron app get --app-ids <APP> -r eu_ttp_no          # am_container_logs / diagnostics
+
+# 2) 用那个 URL 直接取文件（stdout / python.stderr / stderr）
+bytedcli --site eu-ttp --json dorado get-container-log -r eu-ttp2 --logs-url "<am_container_logs>" --file stdout
+```
+
+返回体是 `data.content`（HTML 包着 `<xmp>`），不是纯文本，按 `data.content` 取。
+`instance log-summary` **必须带 `--project-id`**，否则只回 help。
+
+### EU 的资源库接口要用打过补丁的 CLI，官方 CLI 会说"用户未登录"
+
+`dorado resource get/update` 在 `eu-ttp2` 上走 function-library 网关，官方 CLI 报
+`Dataleap JWT error: 用户未登录`，`--site eu-ttp` 与 `BYTEDCLI_FUNCLIB_TITAN_FALLBACK=1`
+都救不回来。打过补丁的副本加同一个环境变量可以：
+
+```bash
+export BYTEDCLI_FUNCLIB_TITAN_FALLBACK=1
+<patched>/bytedcli --site eu-ttp --json dorado resource get --id <RID> -r eu-ttp2
+<patched>/bytedcli --site eu-ttp --json dorado resource update -r eu-ttp2 --id <RID> \
+  --type zip --name <新名字> --file single_stage_v2_release.zip --timeout-ms 300000
+```
+
+`--file` 会把资源的 `fileName` 改成本地文件名，而容器里的 archive 路径由它派生
+⇒ **本地文件名必须等于任务体期望的名字**，`--name` 只是标签。上传后回读 `fileName` 确认。
+
+### 多机房同一条链路会悄悄产生版本漂移，发车前先比 bundle sha
+
+一条链路在两个机房各有一套任务，改动通常只发生在主力机房。实测：ROW 已经到 v39，
+EU 还挂着 **v24**——中间十五个版本里正好包含"`action=stage` 其实一行都不写"的修复。
+如果不查这一步，EU 侧会一路跑通然后交出一张空表，而每个环节都报成功。
+
+**判据：拿两边节点的 `F1_V2_BUNDLE_SHA256`（或同类 pin）直接对比，不要看更新时间。**
+把主力机房的发布包 zip 原样传到另一机房的资源 id 上，然后把
+`BUNDLE/CODE/MANIFEST/TASK_BODY/RELEASE_ID` 这几个 pin 整组搬过去，
+只保留 `EXPECTED_PROJECT_ID` / `EXPECTED_TASK_ID` / `REGION` / `P_DATE` 这些机房相关项。
+**pin 要整组搬**：只改其中一两个，任务体的自校验会在容器里当场拒绝。
+
+### 长作业在 same-job provenance 架构下会被源漂移打败
+
+发布前重读源、与作业开始时捕获的证据比对，是这类架构的正确设计。但它有个隐含代价：
+**作业越长，上游在这期间改写源分区的概率越大**，而 30 日窗口天然包含仍在变动的近期分区。
+一次 2.5 小时的运行在最后一步被这道门禁拒绝，等于整轮作废。
+
+⇒ **提高资源不只是为了快，也是为了缩小这个暴露窗口。** 把 2.5 小时压到 20 分钟，
+漂移概率降到约 1/7。资源充足时不要"够用就行"——长作业的时长本身就是一种风险敞口。
+
+### 实例 pending 有三种完全不同的原因，`statusDesc` 才是判据
+
+看到实例长期 `pending` 时**不要猜"队列没资源"**——先读 `dorado instance get <id>` 的 `statusDesc`：
+
+| statusDesc | 真实原因 | 处理 |
+|---|---|---|
+| `等待上游依赖完成` | 任务拓扑上的父任务实例未完成 | 这是**运行时**依赖等待，见下条 |
+| `等待通过并发检查` | 任务 `innerScheduleParam.maxParallelism` 已被占满 | 放宽该值，或终止占位实例 |
+| （已 RUNNING 但 YARN 侧不动） | 才是队列资源问题 | 查 `megatron queue usage` 的 `available_now` |
+
+实证：一个 F1 实例 pending 了 40 分钟，我据此判断"被队列饿着"并据以规划换队列，
+实际 `statusDesc` 写的是等待上游依赖——**队列毫无问题，我的整个诊断方向都是错的**。
+一条命令能读到的事实，不要用现象去推。
+
+### `backfill create --skip-check` 不解除运行时的上游等待
+
+该参数只影响**补数创建时**的检查（结果体现在 `instanceChecks` 的 `upstream-instance-status: not_check`），
+实例真正被调度时仍会等待父任务同业务日的实例完成。父任务正在跑长作业时，子任务会一直 pending。
+
+要让子任务真正独立于父任务运行，必须**从任务依赖里摘掉那个父任务**
+（`innerScheduleParam.dependencies` 里删除对应 `parentTaskId`），跑完再恢复。
+只有当这一轮**语义上确实不消费该父任务的产物**时这么做才是正当的——
+例如本例中 F1 以 PID-only 模式运行，映射帧是空表，确实不读 S4。摘依赖前先存一份原始列表以便还原。
+
+### 提交新任务版本会终止正在排队的实例
+
+`node submit` 之后，该任务所有 `pending` 实例会变成 `aborted / 系统终止`。
+所以顺序必须是**先改完配置并提交，再创建 backfill**；
+反过来做（先发车、再改配置）会把刚发的车直接报废，而且现象上很像"任务莫名消失"。
+
+### 监控必须先确认它会说话，哑监控就是假安全
+
+给长作业挂监控之后，**必须先看到它至少输出过一行**，才能认为自己在盯着它。一个查询少传了必填参数
+（例如 `backfill get` 漏了 `--project-id`）的轮询脚本会一直输出空字符串：作业失败了，监控一声不吭，
+而"没有告警"和"仍在运行"在观感上完全一样。实证：F1 失败 7 分钟后我仍以为它在跑，是主动去查才发现的。
+
+写监控时把三种状态都显式区分，缺一不可：
+
+- **成功** 与 **失败**（终态判定要覆盖全部失败态，不能只 grep 成功标记）
+- **查询本身失败**（`QUERY_FAILED`），它必须和"作业正常运行"输出不同的内容
+
+判定终态优先用计数而不是状态字符串：`complete >= total` 说明跑完了，
+再用 `succeed >= total` 区分成功还是失败——`progress=100` 只代表跑完，**不代表成功**。
+
 ## 故障诊断与性能分析
 
 优先路径使用 bytedcli 单工具，不再调用 dpcli。全流程保持只读；不要在诊断阶段执行 `rerun`、`online`、`commit`、`set-success`、`abort` 或任何 `update*` 命令。

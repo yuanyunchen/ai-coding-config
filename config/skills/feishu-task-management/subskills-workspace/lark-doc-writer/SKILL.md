@@ -234,6 +234,8 @@ AI 生成的飞书文档有**两个反向失败**:常见的是**格式规范但�
 
 写之前读对应工作流,它是 Mira 文档质量高的原因:
 
+- **新建文档默认内网 L2 可读**：除非用户明确要求其他范围，Agent 创建的新飞书文档在正文与图片落地后、交付链接前，运行 feishu-task-management 根目录下的 `subskills/lark-doc/scripts/set_document_l2.py <文档 URL>`，把链接权限设为“ByteDance 内获得链接的人可查看”，同时保持外部访问和邀请外部协作者关闭；必须以脚本的 fresh readback `verified=true` 为完成依据。脚本只改这三个公开权限字段，不改评论、编辑、下载或已有协作者。
+
 - **从零创作** → [`references/create-workflow.md`](references/create-workflow.md):Code-Act Loop(Plan→Execute→Observe→Iterate)、骨架先行、分段补正文、画板意图识别、丰富度自检。
 - **改写 / 润色 / 重排版已有文档** → [`references/update-workflow.md`](references/update-workflow.md):精准手术优于全量覆盖、资源块保真、局部 fetch 省上下文、分波改写。
 - **排版质量标准**(元素选型、颜色语义、丰富度自检指标、画板意图识别表)→ 样式语义权威 [`references/lark-doc-style.md`](references/lark-doc-style.md)(视觉)+ [`references/lark-doc-xml.md`](references/lark-doc-xml.md)(XML/颜色/转义);[`references/style-guide.md`](references/style-guide.md) 为指引 + MCP 落地差异。

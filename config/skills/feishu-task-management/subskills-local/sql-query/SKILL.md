@@ -21,7 +21,7 @@ description: "字节内网 SQL 取数统一入口。触发:取数、内网 SQL�
 - bytedcli 通用调用、站点与鉴权：`~/.claude/skills/bytedcli/references/invocation.md`
 - **采样无偏校验 · 大窗超时重写 · 结果一致性自检 · 雪花 id 取模偏差**：`references/gotchas.md` 一、二组 —— **三条通道通用,走默认 bytedcli 也必读**;全局 `AGENTS.md` 的「Sample to Beat Limits」指的就是这里的 §E。
 - iDA 专属的方言/粘贴/CSV 下载/多 tab：`references/gotchas.md` 第三组(只在真的降级到 iDA 时读)
-- **通道身份差异 · 四类瞬时故障 · 多段 JSON 解析 · `data:null` 陷阱**：`references/gotchas.md` **第四组** —— 走 bytedcli 任一通道都必读。其中 §K「`dorado adhoc` 恒用项目 PSM、`aeolus query-editor` 用个人账号」决定**表没权限时该换通道还是去提权**，误判会浪费一整轮
+- **通道身份差异 · 四类瞬时故障 · 多段 JSON 解析 · `data:null` 陷阱**：`references/gotchas.md` **第四组** —— 走 bytedcli 任一通道都必读。其中 §K「`dorado adhoc` 恒用项目 PSM、`aeolus query-editor` 用个人账号」决定**表没权限时该换通道还是去提权**，误判会浪费一整轮。**两条通用判据律的单一 home** 见 `building-dorado-hive-tables/references/production-validation.md` §8.0
 - **选哪个队列(候选清单 + Batch/Guarantee/Streaming 取舍 + D3 辨析)**：`references/queue-catalog.md` —— 已 Joined 队列的机房、资源属性、优先级与配额;使用率是快照,实时负载仍以 `queues` 命令为准
 - **口径先查登记表**：这个指标怎么算、上次算出来是多少、有什么坑 → `<repo>/bin/bm tool search-notes --project bytedance "<指标名> 口径"`(权威卡 `bytedance/ns/experiment-method/metric-caliber-registry.md`)。**算出会被复用的新口径要回填**:一条 = 定义 + 权威出处 + 上次实测值与时间 + 坑;没有实测值的定义无法用来对账。
 - 多窗口 SQL 生成器：`references/gen_sql_template.py`

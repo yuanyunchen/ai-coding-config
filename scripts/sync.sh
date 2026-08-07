@@ -153,6 +153,9 @@ rewrite_paths() {
     export REPL="~/.$dest/"
     find "$path" -type f \( -name '*.md' -o -name '*.py' -o -name '*.sh' \) -print0 2>/dev/null \
         | xargs -0 perl -pi -e '
+            # 先把绝对写法（/Users/<user>/.claude/、$HOME/.codex/）归一成 ~/.<tool>/，
+            # 否则它们绕过下面的改写、把源工具的 home 原样带进目标工具（chart-gen 曾四源同错）
+            s{(?:/Users/[^/\s"'"'"']+|\$HOME|\$\{HOME\})/\.(cursor|claude|codex|trae)/}{~/.$1/}g;
             s{(~/.(?:cursor|claude|codex|trae)/skills)/disabled/}{${1}-disabled/}g;
             s{(~/.(?:cursor|claude|codex|trae)/skills)/enabled/}{$1/}g;
             s{\Q~/.cursor/\E|\Q~/.claude/\E|\Q~/.codex/\E|\Q~/.trae/\E}{$ENV{REPL}}g;

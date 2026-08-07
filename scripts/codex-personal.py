@@ -10,9 +10,24 @@
 ################################################################################
 
 import json
+import os
 import re
+import shutil
 import sys
-import tomllib
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # tomllib 要 3.11+；系统 python3 常是 3.9
+    for _cand in ("python3.13", "python3.12", "python3.11"):
+        _exe = shutil.which(_cand)
+        if _exe:
+            os.execv(_exe, [_exe, os.path.abspath(__file__), *sys.argv[1:]])
+    sys.exit(
+        "codex-personal.py 需要 Python 3.11+（tomllib），当前 "
+        f"{sys.version.split()[0]} 且找不到 python3.11/3.12/3.13。\n"
+        "装一个（brew install python@3.12）后重跑；Codex 个性化未被 pull/deploy。"
+    )
+
 from pathlib import Path
 from typing import Any
 

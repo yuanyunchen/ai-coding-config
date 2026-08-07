@@ -54,6 +54,32 @@ A checker reporting "only declared on one side" is telling you something is cont
 
 ---
 
+### No Silent Caps, No Manual Gates
+
+> A limit nobody was told about is indistinguishable from a bug, and it outlives the reason for it.
+
+Do not introduce artificial ceilings — row limits, top-N truncation, sampling, hand-trimmed dependency lists, disabled steps — as a convenience. If one is genuinely necessary (a resource ceiling that would otherwise fail the job, a deliberate smoke), it must be **explicit, justified in the same change, and stated to the user before it ships**; and it belongs where the default path enforces it, not where someone must remember it (see [Rules Go Where They Cannot Be Forgotten](#rules-go-where-they-cannot-be-forgotten)).
+
+Evidence: a `1,000,000` row cap on a cross-datacenter vector sync — a suspiciously round number, i.e. hand-placed — cut a 16.7M-product source down to a 0.9%-overlapping slice, starving the downstream ANN build below its training floor. The whole EU pipeline was blocked for days, and the cap was found only because someone asked why the number was so round. Nothing in the system disclosed it.
+
+Corollary when you find one: report it as a finding, name the exact line and value, and remove it or get it owned — do not route around it and do not treat "the job succeeds" as evidence the data is complete.
+
+### Surface Blockers When They Appear, Not When Asked
+
+> A stalled process nobody knows about is the worst possible state; a noisy interim update is cheap.
+
+Resource limits, permission denials, a job queued far longer than expected, a config you cannot change, an owner outside the workspace, a dependency with no data — say so **the moment it is clear**, with what was tried and what is needed. Do not batch blockers into a final report and do not wait to be asked. The user discovering a halted pipeline by asking "what's the progress" is a failure of reporting, not of the pipeline.
+
+This does not license narrating routine work: report the blocker and the decision it forces, not every retry.
+
+### My Attention Is Not a Reason to Serialise
+
+> Ready means launched. If two pieces of work do not contend for the same resource, they run at the same time.
+
+Once a piece of work is prepared and verified, launch it. Do not hold it back to "avoid watching two things at once" — that converts my own context-switching into a ceiling on machine throughput, and idle capacity costs far more than one more thing to track. Evidence: a fixed and deployed job was deliberately left unlaunched while another region's chain ran, though the two shared no datacentre, no queue and no lock; the user corrected it.
+
+Serialising is legitimate only when the work genuinely contends — the same queue, the same lease, the same table partition, or an output one consumes from the other. Say which of those applies; "so I can keep track" is not one of them. If tracking is the difficulty, widen the monitor, do not narrow the parallelism.
+
 ## 2. Communication
 
 ### Writing & Expression

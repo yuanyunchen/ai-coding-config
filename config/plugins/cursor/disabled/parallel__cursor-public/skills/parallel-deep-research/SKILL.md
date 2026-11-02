@@ -1,7 +1,7 @@
 ---
 name: parallel-deep-research
-description: "ONLY use when user explicitly says 'deep research', 'exhaustive', 'comprehensive report', or 'thorough investigation'. Slower and more expensive than parallel-web-search. For normal research/lookup requests, use parallel-web-search instead."
-compatibility: Requires parallel-cli and internet access.
+description: "ONLY use when user explicitly says 'deep research', 'exhaustive', 'comprehensive report', or 'thorough investigation'. Slower and more expensive than parallel-web-search. For normal research/lookup requests, use parallel-web-search instead. Supports follow-ups with a known prior Task interaction ID."
+compatibility: Requires parallel-cli >= 0.3.0 and internet access.
 allowed-tools: Bash(parallel-cli:*)
 metadata:
   author: parallel
@@ -11,73 +11,100 @@ metadata:
 
 Research topic: $ARGUMENTS
 
+> Requires `parallel-cli` ≥ 0.3.0 for text output and context chaining. If a documented command or option is missing, check `parallel-cli --version` and that command's `--help`, then follow the installation-specific upgrade guidance in Setup. API, authentication and input errors are not evidence of an older CLI.
+
 ## When to use (vs parallel-web-search)
 
-ONLY use this skill when the user explicitly requests deep/exhaustive research. Deep research is 10-100x slower and more expensive than parallel-web-search. For normal "research X" requests, quick lookups, or fact-checking, use **parallel-web-search** instead.
+ONLY use this skill when the user explicitly requests deep/exhaustive research. It can take several minutes and costs more than a quick search, depending on the processor and task. For normal "research X" requests, quick lookups, or fact-checking, use **parallel-web-search** instead.
 
 ## Step 1: Start the research
 
+Choose a descriptive output base in a persistent directory (e.g., `reports/ai-chip-market-2026`). Include the returned run ID to make it unique, then use this base in step 2 as `-o "$FILENAME"`. Check for existing `.json` and `.md` files before saving.
+
 ```bash
-parallel-cli research run "$ARGUMENTS" --processor pro-fast --no-wait --json
+parallel-cli research run "$ARGUMENTS" --processor pro-fast --text --no-wait --json
 ```
 
-This returns instantly. Do NOT omit `--no-wait` — without it the command blocks for minutes and will time out.
+The `--text` flag tells the API to return a markdown report (with inline citations) when the task completes, instead of the default structured JSON. Use it for narrative/report-style requests, which is what most users want from "deep research." Drop `--text` if the user explicitly wants structured JSON output.
 
-Processor options (choose based on user request):
+Optional with `--text`: pass `--text-description "Keep under 1500 words, focus on M&A activity"` to steer length, format, or focus.
 
-| Processor | Expected latency | Use when |
-|-----------|-----------------|----------|
-| `pro-fast` | 30s – 5 min | Default — good balance of depth and speed |
-| `ultra-fast` | 1 – 10 min | Deeper analysis, more sources (~2x cost) |
-| `ultra` | 5 – 25 min | Maximum depth, only when explicitly requested (~3x cost) |
+If this is a **follow-up** and you have a prior Task's returned `interaction_id`, add context chaining. An enrichment `taskgroup_id` and a Search/Extract `session_id` are not Task interaction IDs. Async enrichment does not return a new interaction ID; retain the prior Task ID instead. Context chaining is unavailable for Zero Data Retention (ZDR) accounts, so omit it there and provide the needed context explicitly.
 
-Parse the JSON output to extract the `run_id` and monitoring URL. Immediately tell the user:
+```bash
+parallel-cli research run "$ARGUMENTS" --processor lite-fast --text --no-wait --json --previous-interaction-id "$INTERACTION_ID"
+```
+
+This reuses the prior Task's context. A lighter processor (`lite-fast` or `base-fast`) can suit a focused follow-up; choose based on the new question's depth rather than assuming all follow-ups are simple.
+
+Always use `--no-wait` to separate creation from bounded polling. Save the returned IDs immediately. If creation is interrupted or its response is lost, do not submit a replacement until you have checked whether the first task was created.
+
+Use `pro-fast` by default for exploratory research. Run `parallel-cli research processors` for the installed CLI's processor list and latency estimates; these are not deadlines. Choose `ultra` tiers only when explicitly requested and within the user's approved budget. Check [current pricing](https://parallel.ai/pricing) rather than quoting fixed cost multipliers.
+
+Fast variants prioritize speed and may use less fresh indexed data. Standard variants may suit freshness-sensitive work, but neither choice guarantees that every source was fetched live. State the relevant date or freshness requirement in the research prompt and check the returned evidence.
+
+Parse the JSON output to save `run_id`, `interaction_id`, and `result_url`. Immediately tell the user:
+
 - Deep research has been kicked off
-- The expected latency for the processor tier chosen (from the table above)
+- The estimated latency for the selected processor, if available
 - The monitoring URL where they can track progress
 
-Tell them they can background the polling step to continue working while it runs.
+The task runs server-side; polling can resume later using the saved `run_id`.
 
 ## Step 2: Poll for results
 
-Choose a descriptive filename based on the topic (e.g., `ai-chip-market-2026`, `react-vs-vue-comparison`). Use lowercase with hyphens, no spaces.
-
 ```bash
-parallel-cli research poll "$RUN_ID" -o "$FILENAME" --timeout 540
+parallel-cli research poll "$RUN_ID" -o "$FILENAME" --timeout 60
 ```
 
 Important:
-- Use `--timeout 540` (9 minutes) to stay within tool execution limits
-- Do NOT pass `--json` — the full output is large and will flood context. The `-o` flag writes results to files instead.
-- The `-o` flag generates two output files:
-  - `$FILENAME.json` — metadata and basis
-  - `$FILENAME.md` — formatted markdown report
-- The poll command prints an **executive summary** to stdout when the research completes. Share this executive summary with the user — it gives them a quick overview without having to open the files.
 
-### If the poll times out
+- Keep each poll bounded; `--timeout 60` allows progress updates between waits.
+- Avoid `--json` when polling a large report. The `-o` flag saves the full result to files.
+- With `-o "$FILENAME"`:
+  - `$FILENAME.json` is always written (metadata + basis)
+  - `$FILENAME.md` is written only for returned text output, normally requested with `--text`; auto-schema results can remain JSON-only.
+  - For text, JSON references `output.content_file` relative to the saved JSON file instead of duplicating the report body.
+- Share the executive summary if one was printed. Some successful outputs have no summary; do not invent one or treat its absence as failure.
+- Existing output files are refused unless `--force` is explicit. Prefer a new base; use `--force` only when overwriting those files is intended.
+- Read the actual printed paths. On a write error, the CLI may fall back to the system temp directory, and writes may be partial. Inspect both locations before retrying. Copy a final report from temporary storage to the intended persistent location before presenting it as saved durably.
 
-Higher processor tiers can take longer than 9 minutes. If the poll exits without completing:
-1. Tell the user the research is still running server-side
-2. Re-run the same `parallel-cli research poll` command to continue waiting
+### If polling times out or is interrupted
+
+Timeout exit 5 or interruption ends the local wait, not necessarily the server task. Check the saved task:
+
+```bash
+parallel-cli research status "$RUN_ID" --json
+```
+
+Resume the same poll only for a pending/running task; retrieve completed output and report failed/cancelled or `action_required` states accurately. The CLI's polling loop may not recognize `action_required`, so do not poll that state indefinitely. Never recreate the task merely because a local wait ended.
 
 ## Response format
 
-**After step 1:** Share the monitoring URL (for tracking progress only — it is not the final report).
+**After step 1:** Share the monitoring URL for tracking progress.
 
 **After step 2:**
-1. Share the **executive summary** that the poll command printed to stdout
-2. Tell the user the two generated file paths:
-   - `$FILENAME.md` — formatted markdown report
-   - `$FILENAME.json` — metadata and basis
 
-Do NOT re-share the monitoring URL after completion — the results are in the files, not at that link.
+1. Share the executive summary if printed; otherwise say the result is saved and provide a brief summary only from inspected output when needed.
+2. Tell the user the generated file paths:
+   - Actual `.md` path, if a text report exists
+   - Actual `.json` path with metadata and basis (and structured content for JSON output)
+3. Share the `interaction_id` and tell the user they can ask follow-up questions that build on this research (e.g., "drill deeper into X" or "compare that to Y")
 
-Ask the user if they would like to read through the files for more detail. Do NOT read the file contents into context unless the user asks.
+After completion, link the saved files rather than repeating the monitoring URL.
 
-## If `parallel-cli` is not found
+Avoid loading the whole report into context. Read only the relevant sections when answering a requested summary or follow-up, and cite the returned sources.
 
-If the command fails with "command not found", **stop immediately**. Do NOT research the topic yourself, do NOT use any built-in search tools, and do NOT try to answer from your own knowledge. Instead, tell the user:
+**Remember the `interaction_id`:** use it for a related research or enrichment follow-up when context chaining is supported by the account.
 
-1. `parallel-cli` is not installed
-2. Run `/parallel-setup` to install it
-3. Then retry their research
+## If the `parallel-cli` binary is not installed
+
+If the shell reports `command not found: parallel-cli`, stop and tell the user to run `/parallel-setup`, then retry their request. Do not substitute built-in search, another provider or an answer from memory.
+
+### Command and authentication failures
+
+`No such command`, `No such option` or `unrecognized arguments` from an installed CLI indicate a stale or mismatched interface. Check its version and upgrade through its installation method using `/parallel-setup`; `parallel-cli update` is for standalone installs only. Verify the required command in the same Cursor terminal before retrying.
+
+For authentication errors, run `parallel-cli auth --json` and inspect `authenticated`; exit zero alone does not prove authentication. Use `/parallel-setup` for terminal login or environment-key guidance, without requesting credentials in chat. A `403` can be an authorization or billing error: report the actual error and do not assume insufficient balance or add funds automatically.
+
+For other API/input errors, report the error without calling it a version problem. Reuse saved run IDs to resume asynchronous work. After an ambiguous creation failure, resolve whether a job exists before retrying creation.

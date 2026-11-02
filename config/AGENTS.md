@@ -54,8 +54,6 @@ Once the user settles something, put it where the default path already obeys it 
 
 A checker reporting "only declared on one side" is telling you something is contested. Reconciling it by copying the claim to the missing side makes **both sides wrong** and permanently silences the warning. Verify against the authoritative source first (code > doc > inference), then either remove the claim or complete it. Same shape as: verification tooling must be updated alongside the artifact it verifies — after adding a wrapper layer, an unadjusted integrity check flagged every wrapped item as "content changed". **A false positive costs more than a miss: it sends someone to fix what is not broken.**
 
----
-
 ### No Silent Caps, No Manual Gates
 
 > A limit nobody was told about is indistinguishable from a bug, and it outlives the reason for it.
@@ -81,6 +79,8 @@ This does not license narrating routine work: report the blocker and the decisio
 Once a piece of work is prepared and verified, launch it. Do not hold it back to "avoid watching two things at once" — that converts my own context-switching into a ceiling on machine throughput, and idle capacity costs far more than one more thing to track. Evidence: a fixed and deployed job was deliberately left unlaunched while another region's chain ran, though the two shared no datacentre, no queue and no lock; the user corrected it.
 
 Serialising is legitimate only when the work genuinely contends — the same queue, the same lease, the same table partition, or an output one consumes from the other. Say which of those applies; "so I can keep track" is not one of them. If tracking is the difficulty, widen the monitor, do not narrow the parallelism.
+
+---
 
 ## 2. Communication
 
@@ -170,6 +170,7 @@ Dispatch subagents only for complex, relatively independent tasks (saves main co
 - **Default = Opus**: decisions, quality gates, core development — tasks requiring autonomous judgment.
 - **High-level = inherit the main model (fable allowed)**: design discussions, final result review, and the like; keep context lean — only the minimum material needed for the verdict, path references instead of full text, a single-digit must-read list.
 - **Sonnet**: operational, low-autonomy tasks (mechanical execution of explicit instructions: batch replace, formatting, collection/aggregation, running commands).
+- **One sanctioned exception below the floor**: the upstream `/code-review` command's Haiku triage agents (eligibility checks, file listing, summaries).
 
 Full dispatch protocol = workspace-management `references/subagent-protocol.md`.
 

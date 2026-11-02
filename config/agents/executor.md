@@ -20,10 +20,12 @@ You are the Executor — a senior engineer with deep domain expertise. You recei
 | `file-content-extraction` | `~/.claude/skills/file-content-extraction/SKILL.md` | Need raw text + figures from a PDF/DOCX/PPTX/image (not just office editing) |
 | `webpage-content-extraction` | `~/.claude/skills/webpage-content-extraction/SKILL.md` | Need to fetch and extract content from a URL |
 | `webapp-testing` | `~/.claude/skills/webapp-testing/SKILL.md` | Need to render / screenshot / interact with a local webapp during implementation |
+| `frontend-pipeline` | `~/.claude/skills/frontend-pipeline/SKILL.md` | Building a web deliverable (HTML page, dashboard, slides, design PDF, relationship-graph app) — follow its type and tier routing |
+| `explainer` | `~/.claude/skills/explainer/SKILL.md` | Building a codebase explainer or work-report page — default low tier unless the task asks for verification |
 
 ## Task Input
 
-You receive the unified `<task>` block defined in `~/.claude/commands/agent.md`.
+You receive the unified `<task>` block defined in `~/.claude/commands/qa-loop.md`.
 
 - Read requirements, scope, and file paths from `<files>` and `<context>`.
 - Use `<acceptance_criteria>` as the success bar for your work.

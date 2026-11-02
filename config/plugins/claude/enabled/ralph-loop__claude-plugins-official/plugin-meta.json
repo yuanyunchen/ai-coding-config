@@ -1,8 +1,8 @@
 {
   "pluginId": "ralph-loop@claude-plugins-official",
   "platform": "claude",
-  "installPath": "/Users/bytedance/.claude/plugins/cache/claude-plugins-official/ralph-loop/1.0.0",
+  "installPath": "/Users/yuanyunchen/.claude/plugins/cache/claude-plugins-official/ralph-loop/1.0.0",
   "version": "1.0.0",
   "hasHooks": true,
-  "copiedAt": "2026-08-07T02:09:43Z"
+  "copiedAt": "2026-11-02T03:10:07Z"
 }

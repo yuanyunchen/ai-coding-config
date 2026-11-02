@@ -89,7 +89,7 @@ fi
 
 if [ -d "$SRC_BASE/skills" ]; then
     echo "[skills]"
-    rsync_pull "$CONFIG/skills/" "$SRC_BASE/skills/" --exclude='.system/'
+    rsync_pull "$CONFIG/skills/" "$SRC_BASE/skills/" --exclude='.system/' --exclude='/synced/'
 fi
 
 if [ -d "$SRC_BASE/skills-disabled" ]; then

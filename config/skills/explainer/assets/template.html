@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{标题,2–6 个词}}</title>
+<style>
+/* explainer 基础样式:语义 token 与 design-principles visual-encoding 一致。零外部依赖。 */
+:root{
+  --bg:#FBFAF8; --panel:#FFFFFF; --panel-2:#F4F2EE; --line:#E6E2DB; --line-strong:#C7CFD3;
+  --ink:#1C2630; --ink-2:#4A5560; --ink-3:#75838B;
+  --accent:#2C7A9B; --accent-bg:#E4F1F7;
+  --up:#4A5E8C;  --up-bg:#EAEEF7;    /* 上游 / 输入 */
+  --main:#2C7A9B;--main-bg:#E4F1F7;  /* 主线 / 处理 */
+  --focus:#C8811F;--focus-bg:#FDF1DE;/* 焦点 / 待定 */
+  --risk:#B5462F;--risk-bg:#FBEAE6;  /* 风险 / 负向 */
+  --ok:#3F7A4E;  --ok-bg:#E7F1E8;    /* 产出 / 达成 */
+  --neutral:#8B8F86;--neutral-bg:#F1F0EC;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --mono:"SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;
+  --maxw:1080px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14181C; --panel:#1C2228; --panel-2:#232A31; --line:#2E363E; --line-strong:#3D4851;
+    --ink:#E6EAED; --ink-2:#B4BEC6; --ink-3:#8A96A0;
+    --accent:#6FB6D3; --accent-bg:#1B3440;
+    --up:#9AAAD6; --up-bg:#222B40; --main:#6FB6D3; --main-bg:#1B3440;
+    --focus:#E2A651; --focus-bg:#3A2C15; --risk:#E08A74; --risk-bg:#3D2019;
+    --ok:#86C095; --ok-bg:#1E3324; --neutral:#A3A79E; --neutral-bg:#2A2D29;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14181C; --panel:#1C2228; --panel-2:#232A31; --line:#2E363E; --line-strong:#3D4851;
+  --ink:#E6EAED; --ink-2:#B4BEC6; --ink-3:#8A96A0;
+  --accent:#6FB6D3; --accent-bg:#1B3440;
+  --up:#9AAAD6; --up-bg:#222B40; --main:#6FB6D3; --main-bg:#1B3440;
+  --focus:#E2A651; --focus-bg:#3A2C15; --risk:#E08A74; --risk-bg:#3D2019;
+  --ok:#86C095; --ok-bg:#1E3324; --neutral:#A3A79E; --neutral-bg:#2A2D29;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.62 var(--sans);-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px 80px}
+a{color:var(--accent)} code,kbd{font-family:var(--mono);font-size:.88em}
+h1{font-size:30px;line-height:1.25;margin:0 0 10px;letter-spacing:-.01em}
+h2{font-size:21px;line-height:1.35;margin:0 0 6px}
+h3{font-size:16.5px;margin:22px 0 6px}
+p{margin:8px 0} ul,ol{margin:8px 0;padding-left:22px} li{margin:3px 0}
+
+/* 页眉:是什么 · 原始标识 · 一句话定位 */
+header.top{padding:40px 0 22px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:12.5px;letter-spacing:.12em;color:var(--ink-3);text-transform:uppercase;margin-bottom:8px}
+.lede{font-size:17px;color:var(--ink-2);max-width:62ch}
+.ids{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.ids span{font:12.5px/1 var(--mono);color:var(--ink-2);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+
+/* 首屏三问(report)/ 概述卡(codebase) */
+.brief{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0}
+.brief>div{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--line-strong);border-radius:10px;padding:14px 16px}
+.brief h4{margin:0 0 6px;font-size:13px;color:var(--ink-3);font-weight:600}
+.brief .done{border-top-color:var(--ok)} .brief .stuck{border-top-color:var(--risk)} .brief .decide{border-top-color:var(--focus)}
+
+/* 指标卡 */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:16px 0}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi .v{font-size:24px;font-weight:650;font-variant-numeric:tabular-nums}
+.kpi .k{font-size:13px;color:var(--ink-3)} .kpi .d{font-size:12.5px;color:var(--ink-2)}
+.up-good{color:var(--ok)} .down-bad{color:var(--risk)}
+
+/* 目录 */
+nav.toc{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);margin:0 -24px;padding:8px 24px;overflow-x:auto;white-space:nowrap}
+nav.toc a{display:inline-block;font-size:13.5px;color:var(--ink-2);text-decoration:none;padding:4px 10px;border-radius:999px}
+nav.toc a:hover,nav.toc a.on{background:var(--accent-bg);color:var(--ink)}
+
+/* 节 */
+section{padding:34px 0 8px;border-bottom:1px solid var(--line);scroll-margin-top:48px}
+.why{color:var(--ink-3);font-size:14px;margin:0 0 12px}
+.conclusion{background:var(--panel);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 14px;margin:12px 0;font-weight:500}
+
+/* 语义提示块(克制使用:一屏最多一个) */
+.note{border-radius:8px;padding:10px 14px;margin:12px 0;border:1px solid var(--line)}
+.note.info{background:var(--main-bg);border-color:var(--main)}
+.note.wait{background:var(--focus-bg);border-color:var(--focus)}
+.note.risk{background:var(--risk-bg);border-color:var(--risk)}
+.note.ok{background:var(--ok-bg);border-color:var(--ok)}
+
+/* 图:手绘 SVG 保持浅色画布,深色模式下放在浅色卡片里 */
+figure{margin:16px 0}
+.diagram{background:#FBFAF8;border:1px solid var(--line);border-radius:10px;padding:10px;overflow-x:auto}
+.diagram svg{display:block;width:100%;height:auto;min-width:820px}
+/* SVG 组件:画布恒为浅色,所以图内只用下面这些固定浅色类,不用页面 token。
+   画布 viewBox 宽 960;svg 最窄显示 820px,文字 13 逻辑 px 显示约 11px,不要再小。 */
+.diagram text{font-family:var(--sans);font-size:13px;fill:#2A3640}
+.diagram .t{font-size:14.5px;font-weight:600;fill:#1C2630}
+.diagram .lbl{fill:#5C6870}
+.diagram .cap{font-size:13px;font-weight:600;fill:#9AA5AB;letter-spacing:.08em}
+.n rect{rx:8px;ry:8px;stroke-width:1.4px;fill:#FFFFFF;stroke:#C7CFD3}
+.n.up rect{fill:#EAEEF7;stroke:#4A5E8C} .n.main rect{fill:#E4F1F7;stroke:#2C7A9B}
+.n.focus rect{fill:#FDF1DE;stroke:#C8811F} .n.risk rect{fill:#FBEAE6;stroke:#B5462F}
+.n.ok rect{fill:#E7F1E8;stroke:#3F7A4E} .n.neutral rect{fill:#F1F0EC;stroke:#8B8F86;stroke-dasharray:4 3}
+.n.data rect{rx:18px;ry:18px}  /* 圆角胶囊 = 数据对象;方角 = 模块/过程 */
+.edge{fill:none;stroke:#8C99A0;stroke-width:1.4px;marker-end:url(#arr)}
+.edge.weak{stroke-dasharray:5 4}
+.lane{fill:#F4F2EE}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--ink-2);margin-top:8px}
+.legend i{display:inline-block;width:13px;height:9px;border-radius:2px;border:1.4px solid;margin-right:5px;vertical-align:middle}
+.legend .up{background:#EAEEF7;border-color:#4A5E8C} .legend .main{background:#E4F1F7;border-color:#2C7A9B}
+.legend .focus{background:#FDF1DE;border-color:#C8811F} .legend .risk{background:#FBEAE6;border-color:#B5462F}
+.legend .ok{background:#E7F1E8;border-color:#3F7A4E} .legend .neutral{background:#F1F0EC;border-color:#8B8F86;border-style:dashed}
+dl.qa dt{font-weight:600;margin-top:10px} dl.qa dd{margin:2px 0 0;color:var(--ink-2)}
+figcaption{font-size:14px;color:var(--ink-2);margin-top:8px}
+figcaption b{color:var(--ink)}
+pre.ascii{font:13px/1.45 var(--mono);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:pre}
+
+/* 表 */
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--panel)}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--panel-2);font-weight:600}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+
+/* 展开区 */
+details{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin:10px 0}
+details>summary{cursor:pointer;padding:9px 14px;font-size:14px;color:var(--ink-2)}
+details[open]>summary{border-bottom:1px solid var(--line)}
+details>div{padding:10px 14px}
+details pre{font:12.5px/1.5 var(--mono);overflow-x:auto;margin:6px 0}
+.loc{font:12.5px var(--mono);color:var(--ink-3)}
+
+/* 待办 */
+ul.todo{list-style:none;padding-left:0}
+ul.todo li{padding:6px 0;border-bottom:1px dashed var(--line)}
+ul.todo .who{font-size:12.5px;background:var(--up-bg);color:var(--up);border-radius:999px;padding:1px 8px;margin-right:6px}
+ul.todo .when{color:var(--ink-3);font-size:13px}
+
+footer{padding:28px 0;color:var(--ink-3);font-size:13px}
+@media (max-width:720px){
+  .wrap{padding:0 16px 60px} nav.toc{margin:0 -16px;padding:8px 16px}
+  h1{font-size:25px} .brief{grid-template-columns:1fr}
+}
+@media print{nav.toc{display:none} details{break-inside:avoid} section{break-inside:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">{{代码库导览 / 工作汇报}} · {{日期}}</div>
+  <h1>{{一句话:这是什么(codebase)/ 结论(report)}}</h1>
+  <p class="lede">{{2–3 句:怎么来的、有什么、读完能做什么。自然语言,无代码。}}</p>
+  <div class="ids"><span>{{原始标识:仓库名 / 分支 / commit}}</span></div>
+</header>
+
+<!-- report 用:首屏三问(done/stuck/decide 带语义色)。
+     codebase 用:去掉三个类名,改成中性三卡「三个入口」,例如 <div><h4>想知道它是什么</h4><p>看全景</p></div> -->
+<div class="brief">
+  <div class="done"><h4>做完了什么</h4><p>{{一句话 + 一个数}}</p></div>
+  <div class="stuck"><h4>卡在哪</h4><p>{{一句话;没有就写「无阻塞」}}</p></div>
+  <div class="decide"><h4>需要你决定</h4><p>{{一个决定 + 选项;没有就写「无」}}</p></div>
+</div>
+
+<nav class="toc" aria-label="目录">
+  <a href="#s1">{{节名}}</a><a href="#s2">{{节名}}</a>
+</nav>
+
+<section id="s1">
+  <h2>{{名词短语或一句结论}}</h2>
+  <p class="why">{{这一节解决你什么问题}}</p>
+  <figure>
+    <div class="diagram">
+      <!-- 起手骨架:复制后改坐标与文字。节点 = <g class="n 语义"> + rect + text;连线 = path.edge(正交折线)。 -->
+      <svg viewBox="0 0 960 200" role="img" aria-label="{{图的一句话描述}}">
+        <defs><marker id="arr" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1.6L8 5L2 8.4" fill="none" stroke="#8C99A0" stroke-width="1.6"/></marker></defs>
+        <g class="n up data"><rect x="40" y="70" width="200" height="60"/><text class="t" x="140" y="96" text-anchor="middle">{{输入}}</text><text x="140" y="116" text-anchor="middle">{{一句说明}}</text></g>
+        <path class="edge" d="M240 100 H360"/><text class="lbl" x="300" y="90" text-anchor="middle">{{传了什么}}</text>
+        <g class="n main"><rect x="360" y="70" width="220" height="60"/><text class="t" x="470" y="96" text-anchor="middle">{{处理模块}}</text><text x="470" y="116" text-anchor="middle">{{做什么}}</text></g>
+        <path class="edge" d="M580 100 H700"/>
+        <g class="n ok data"><rect x="700" y="70" width="200" height="60"/><text class="t" x="800" y="96" text-anchor="middle">{{产出}}</text><text x="800" y="116" text-anchor="middle">{{一句说明}}</text></g>
+      </svg>
+    </div>
+    <div class="legend"><span><i class="up"></i>{{上游语义}}</span><span><i class="main"></i>{{主线语义}}</span><span><i class="ok"></i>{{产出语义}}</span></div>
+    <figcaption><b>读图:</b>{{关键数字或结构 → 为什么 → 对你意味着什么}}</figcaption>
+  </figure>
+  <p>{{解释图:3–5 句,不复述图上文字}}</p>
+  <dl class="qa"><dt>{{最容易误解的一点?}}</dt><dd>{{一句话答到位}}</dd></dl>
+  <details>
+    <summary>{{证据 / 代码位置 / 命令}}</summary>
+    <div><p class="loc">{{path/to/file.py:120}}</p><pre>{{代码或命令}}</pre></div>
+  </details>
+</section>
+
+<footer>
+  {{来源:数据 / 代码版本 / 文档链接。示意数值与待确认项在此声明。}}
+</footer>
+</div>
+<script>
+/* 渐进增强:目录高亮当前节。无 JS 时页面完整可读。 */
+(function(){try{
+  var links=[].slice.call(document.querySelectorAll('nav.toc a'));
+  var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'))}).filter(Boolean);
+  if(!('IntersectionObserver' in window)||!secs.length)return;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){
+    links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id)})}})},{rootMargin:'-40% 0px -55% 0px'});
+  secs.forEach(function(s){io.observe(s)});
+}catch(e){}})();
+</script>
+</body>
+</html>

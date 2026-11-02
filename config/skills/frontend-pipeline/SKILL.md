@@ -1,6 +1,6 @@
 ---
 name: frontend-pipeline
-description: "从头创作有设计感前端产物的统一入口:网页/落地页(web)、设计型 PDF——报告/海报/信息图(通用 PDF 读取/合并/填表用 pdf skill)、交互应用/dashboard(interactive)、幻灯片(slides)、生成/算法艺术(p5.js)与视觉艺术海报。先识别类型,再按 effort 档位路由到底层设计能力并管理验证。Entry point for creating designed frontend artifacts from scratch (web, design PDFs, interactive apps, slides, generative art)."
+description: "从头创作有设计感前端产物的统一入口:网页/落地页(web)、设计型 PDF——报告/海报/信息图(通用 PDF 读取/合并/填表用 pdf skill)、交互应用/dashboard(interactive)、幻灯片(slides)、生成/算法艺术(p5.js)与视觉艺术海报、实体关系图探索器(数据地图/血缘图/依赖拓扑/知识图谱/星图 starmap)。先识别类型,再按 effort 档位路由到底层设计能力并管理验证。Entry point for creating designed frontend artifacts from scratch (web, design PDFs, interactive apps, slides, generative art, starmap relationship explorers)."
 ---
 
 # frontend-pipeline
@@ -32,6 +32,8 @@ description: "从头创作有设计感前端产物的统一入口:网页/落地�
 - 生成/算法艺术(p5.js、flow field、粒子、noise、"用代码做艺术")→ 归 `interactive`,走 `algorithmic-art` 分支(见 `references/interactive.md`)。
 - 纯视觉艺术海报(美术馆/杂志级、90% 视觉 10% 文字、非数据报告)→ 归 `pdf`,走 `canvas-design` 分支(见 `references/pdf.md`)。
 
+**关系图探索器分支**:产物主体是一张可探索的实体—关系图(数据地图、血缘图、依赖/架构拓扑、知识图谱、嵌入星图、"做成 app 不要网页"、"starmap")→ 归 `interactive`,走 `starmap` 完整流程(读 `skills/starmap/SKILL.md`,含其布局量化与验证)。统计图表、dashboard、静态报告不走此分支。
+
 ### Step 2 · 识别档位(默认「简单 + 验证」)
 
 | 档位 | 何时 | 验证(标准见 `references/verification.md`) |
@@ -50,6 +52,8 @@ description: "从头创作有设计感前端产物的统一入口:网页/落地�
 
 **什么时候必读**:产物要给团队外的人看、或用户提到「可读性 / 太技术 / 看不懂 / 用户导向」。
 纯内部工具页可略过。
+
+**信息类元素按用户设计规范**:图表、关系图、状态标记、数字与正文按 `~/.claude/skills/design-principles/SKILL.md` 执行(版面审美仍按本 skill 子 skill);说明型单页(代码库导览、工作汇报)改走 `explainer`。
 
 ### Step 3 · 声明路由
 
@@ -87,5 +91,6 @@ description: "从头创作有设计感前端产物的统一入口:网页/落地�
 - `frontend-design` — 通用前端设计
 - `algorithmic-art` — p5.js 生成/算法艺术(interactive 艺术分支按需;含 `templates/viewer.html`)
 - `canvas-design` — 静态视觉艺术海报 → PNG/PDF(pdf 艺术分支按需;含 `canvas-fonts/` 字体库)
+- `starmap` — 全屏可探索实体关系星图(interactive 关系图分支;用户自有 skill,2026-11-01 由顶层移入)
 
-> 副本与各自原始 skill 完全一致,未改 frontmatter(靠嵌套隐藏,不靠 `disable-model-invocation`)。这些 skill 作为顶层 skill 已在三个工具中 disable(移入 `skills-disabled/`),只通过本 skill 的内部副本调用。
+> 副本与各自原始 skill 完全一致,未改 frontmatter(靠嵌套隐藏,不靠 `disable-model-invocation`)。其中上游副本的顶层版本多数已移入 `skills-disabled/`;例外:`webapp-testing` 顶层版仍在用(与内部副本相同),`ui-ux-design-pro` 无顶层版,`starmap` 是用户自有 skill(2026-11-01 移入)。

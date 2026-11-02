@@ -8,7 +8,7 @@
 - 上下文:state / 登录 / 多视图 / shadcn / 组件交互
 - 反信号:纯展示无状态 → `web`;固定排版出 PDF → `pdf`
 
-## 分支:应用 vs 生成艺术(先判断)
+## 分支:应用 vs 生成艺术 vs 关系图探索器(先判断)
 
 - **应用/交互路线(默认)**:dashboard、admin、wizard、可交互 demo —— 走下面的「构建工具选择 + 三档工作流」。
 - **生成艺术分支(`algorithmic-art`)**:p5.js 算法/生成艺术 —— flow field、粒子系统、noise、"用代码做艺术"。命中时**不走**下面三档(fd-pro→uux 不适用于生成艺术),改用 `algorithmic-art` 的完整工作流:
@@ -16,6 +16,7 @@
   - 工作流:读 `skills/algorithmic-art/SKILL.md`,按其「算法哲学(.md)→ p5.js 实现」两步完整执行;**必须先读** `skills/algorithmic-art/templates/viewer.html` 作为 HTML 起点(保留其结构与品牌、只替换算法与参数控件);产物为单文件交互 HTML
   - 验证:按 `verification.md`「艺术产物验证」清单(轻量,不套设计系统清单),走验证循环(测试→反思→规划→执行,≤3 轮)
   - 成本:~12–20K tok · 5–12 min
+- **关系图探索器分支(`starmap`)**:实体与关系做成可点可拖的全屏星图。命中时**不走**下面三档,读 `skills/starmap/SKILL.md` 按其完整流程执行(先量布局再写渲染,验证按它自带的检查)。判据:去掉所有连线后这张图不再成立。
 
 ## 构建工具选择
 

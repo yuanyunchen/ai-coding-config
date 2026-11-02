@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="628" viewBox="0 0 1160 628" font-family="'Hiragino Sans GB','PingFang SC',sans-serif">
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M2.2 1.6L8 5L2.2 8.4" fill="none" stroke="context-stroke" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<rect width="1160" height="628" fill="#FBFAF8"/>
+
+<text x="48" y="52" font-size="27" font-weight="600" fill="#16323F">两个人的待办 · 依赖与节奏</text>
+<text x="49" y="80" font-size="14.5" fill="#7C8A91">Xiang Gao 这边是一条串行链，任一环卡住 V2 就上不了；Yunchen 这边两条链可并行</text>
+
+<g font-size="12.5" fill="#5C6870">
+  <rect x="760" y="34" width="15" height="11" rx="2.5" fill="#4A5E8C"/>
+  <text x="782" y="44">Xiang Gao</text>
+  <rect x="880" y="34" width="15" height="11" rx="2.5" fill="#2C7A9B"/>
+  <text x="902" y="44">Yunchen</text>
+  <path d="M760 63 H784" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="792" y="68">串行：前一步不成，后一步不动</text>
+</g>
+
+<line x1="48" y1="98" x2="1112" y2="98" stroke="#E6E2DB" stroke-width="1.4"/>
+
+<!-- timeline header -->
+<g font-size="12.5" font-weight="600" fill="#9AA5AB" letter-spacing="1.2" text-anchor="middle">
+  <text x="328" y="126">今 晚</text>
+  <text x="632" y="126">本 周 内</text>
+  <text x="947" y="126">本 周 末 / 下 周</text>
+</g>
+<line x1="480" y1="136" x2="480" y2="478" stroke="#E0DDD6" stroke-width="1.3" stroke-dasharray="5 4"/>
+<line x1="784" y1="136" x2="784" y2="478" stroke="#E0DDD6" stroke-width="1.3" stroke-dasharray="5 4"/>
+
+<!-- ===== lane 1 : Xiang Gao ===== -->
+<rect x="48" y="146" width="1042" height="150" rx="12" fill="#F7F8FB" stroke="#DFE3EC" stroke-width="1.2"/>
+<rect x="48" y="146" width="140" height="150" rx="12" fill="#EAEEF7"/>
+<rect x="48" y="146" width="5" height="150" rx="2.5" fill="#4A5E8C"/>
+<text x="72" y="212" font-size="15.5" font-weight="600" fill="#2C3A5C">Xiang Gao</text>
+<text x="72" y="234" font-size="12" fill="#6C7A96">V2 特征表</text>
+
+<g>
+  <rect x="200" y="156" width="264" height="62" rx="8" fill="#FFFFFF" stroke="#B9C4DA" stroke-width="1.3"/>
+  <rect x="200" y="156" width="4" height="62" rx="2" fill="#4A5E8C"/>
+  <text x="218" y="178" font-size="13.5" font-weight="600" fill="#2C3A5C">拉特征专项会 19:00–19:30</text>
+  <text x="218" y="197" font-size="11.5" fill="#6C7A96">豪杰 + mentor：特征含义 / 构造 /</text>
+  <text x="218" y="212" font-size="11.5" fill="#6C7A96">交叉方式 / 抽取变更</text>
+</g>
+<g>
+  <rect x="200" y="224" width="264" height="62" rx="8" fill="#FFFFFF" stroke="#B9C4DA" stroke-width="1.3"/>
+  <rect x="200" y="224" width="4" height="62" rx="2" fill="#4A5E8C"/>
+  <text x="218" y="246" font-size="13.5" font-weight="600" fill="#2C3A5C">追 TNT 生产逻辑</text>
+  <text x="218" y="265" font-size="11.5" fill="#6C7A96">问 Polo 是否另有过滤 + 用 Universal</text>
+  <text x="218" y="280" font-size="11.5" fill="#6C7A96">底层看板往上追来源</text>
+</g>
+
+<path d="M464 187 H504" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M464 255 H504" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<g>
+  <rect x="504" y="156" width="264" height="62" rx="8" fill="#FFFFFF" stroke="#B9C4DA" stroke-width="1.3"/>
+  <rect x="504" y="156" width="4" height="62" rx="2" fill="#4A5E8C"/>
+  <text x="522" y="178" font-size="13.5" font-weight="600" fill="#2C3A5C">放开 Hotel 过滤</text>
+  <text x="522" y="197" font-size="11.5" fill="#6C7A96">改用全量白盒商品表拼接；</text>
+  <text x="522" y="212" font-size="11.5" fill="#6C7A96">口径清楚之后才动拼接</text>
+</g>
+<g>
+  <rect x="504" y="224" width="264" height="62" rx="8" fill="#FFFFFF" stroke="#B9C4DA" stroke-width="1.3"/>
+  <rect x="504" y="224" width="4" height="62" rx="2" fill="#4A5E8C"/>
+  <text x="522" y="246" font-size="13.5" font-weight="600" fill="#2C3A5C">定去重口径 + 补统计</text>
+  <text x="522" y="265" font-size="11.5" fill="#6C7A96">最早 vs 最后一次；L2 travel 占比；</text>
+  <text x="522" y="280" font-size="11.5" fill="#6C7A96">问 Paul 空值回传逻辑</text>
+</g>
+
+<path d="M768 187 H808" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<g>
+  <rect x="808" y="156" width="282" height="62" rx="8" fill="#EAEEF7" stroke="#4A5E8C" stroke-width="1.6"/>
+  <rect x="808" y="156" width="4" height="62" rx="2" fill="#4A5E8C"/>
+  <text x="826" y="178" font-size="13.5" font-weight="600" fill="#243050">V2 全链路验证并上线</text>
+  <text x="826" y="197" font-size="11.5" fill="#5A688A">两处口径定了才上；开发量本身不大，</text>
+  <text x="826" y="212" font-size="11.5" fill="#5A688A">难点全在查清链路</text>
+</g>
+<g>
+  <rect x="808" y="224" width="282" height="62" rx="8" fill="#FFFFFF" stroke="#B9C4DA" stroke-width="1.3"/>
+  <rect x="808" y="224" width="4" height="62" rx="2" fill="#4A5E8C"/>
+  <text x="826" y="246" font-size="13.5" font-weight="600" fill="#2C3A5C">USDS oncall + EU / ROW 回溯</text>
+  <text x="826" y="265" font-size="11.5" fill="#6C7A96">回溯遇小时分区为 0 就自动停 = 依赖没配全，</text>
+  <text x="826" y="280" font-size="11.5" fill="#6C7A96">改成按依赖调度</text>
+</g>
+
+<!-- cross-lane constraint -->
+<path d="M332 286 V310 H632 V336" fill="none" stroke="#C8811F" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#ar)"/>
+<rect x="342" y="298" width="430" height="18" rx="4" fill="#FBFAF8"/>
+<text x="350" y="311" font-size="11.5" fill="#B0741C">TNT 仅 7/3 起有数据 —— 长周期用户序列拿不到更早的历史，本周不补</text>
+
+<!-- ===== lane 2 : Yunchen ===== -->
+<rect x="48" y="326" width="1042" height="150" rx="12" fill="#F6FAFC" stroke="#D6E5EC" stroke-width="1.2"/>
+<rect x="48" y="326" width="140" height="150" rx="12" fill="#E4F1F7"/>
+<rect x="48" y="326" width="5" height="150" rx="2.5" fill="#2C7A9B"/>
+<text x="72" y="392" font-size="15.5" font-weight="600" fill="#14495E">Yunchen</text>
+<text x="72" y="414" font-size="12" fill="#4F7789">召回实验</text>
+<text x="72" y="432" font-size="12" fill="#4F7789">embedding</text>
+
+<g>
+  <rect x="200" y="336" width="264" height="62" rx="8" fill="#FFFFFF" stroke="#AFCEDB" stroke-width="1.3"/>
+  <rect x="200" y="336" width="4" height="62" rx="2" fill="#2C7A9B"/>
+  <text x="218" y="358" font-size="13.5" font-weight="600" fill="#14495E">下调 city 意图参数</text>
+  <text x="218" y="377" font-size="11.5" fill="#4F7789">头部 5–6 个强意图 · 时间窗 ~2.5 周 ·</text>
+  <text x="218" y="392" font-size="11.5" fill="#4F7789">time decay 维持 0.985</text>
+</g>
+<g>
+  <rect x="200" y="404" width="264" height="62" rx="8" fill="#FFFFFF" stroke="#AFCEDB" stroke-width="1.3"/>
+  <rect x="200" y="404" width="4" height="62" rx="2" fill="#2C7A9B"/>
+  <text x="218" y="426" font-size="13.5" font-weight="600" fill="#14495E">推动链路侧支持取序</text>
+  <text x="218" y="445" font-size="11.5" fill="#4F7789">Pixel / search 打包成一路</text>
+  <text x="218" y="460" font-size="11.5" fill="#4F7789">（Wang Ning 等）</text>
+</g>
+
+<path d="M464 367 H504" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M464 435 H504" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<g>
+  <rect x="504" y="336" width="264" height="62" rx="8" fill="#FFFFFF" stroke="#AFCEDB" stroke-width="1.3"/>
+  <rect x="504" y="336" width="4" height="62" rx="2" fill="#2C7A9B"/>
+  <text x="522" y="358" font-size="13.5" font-weight="600" fill="#14495E">EU 商品召回联合实验</text>
+  <text x="522" y="377" font-size="11.5" fill="#4F7789">CAD 保量保送粗排先拿到量，</text>
+  <text x="522" y="392" font-size="11.5" fill="#4F7789">再叠商品召回</text>
+</g>
+<g>
+  <rect x="504" y="404" width="264" height="62" rx="8" fill="#FFFFFF" stroke="#AFCEDB" stroke-width="1.3"/>
+  <rect x="504" y="404" width="4" height="62" rx="2" fill="#2C7A9B"/>
+  <text x="522" y="426" font-size="13.5" font-weight="600" fill="#14495E">embedding 链路大规模跑通</text>
+  <text x="522" y="445" font-size="11.5" fill="#4F7789">邻近商品表落表；检索候选维持</text>
+  <text x="522" y="460" font-size="11.5" fill="#4F7789">30 天有消耗商品（约 200 万）</text>
+</g>
+
+<path d="M768 367 H808" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M768 435 H808" fill="none" stroke="#8C99A0" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<g>
+  <rect x="808" y="336" width="282" height="62" rx="8" fill="#E4F1F7" stroke="#2C7A9B" stroke-width="1.6"/>
+  <rect x="808" y="336" width="4" height="62" rx="2" fill="#2C7A9B"/>
+  <text x="826" y="358" font-size="13.5" font-weight="600" fill="#0F3E52">EU 做正 → 再同步 TDP / 全量</text>
+  <text x="826" y="377" font-size="11.5" fill="#40697D">TDP 只挂大盘保量；RW 精准意图跑稳后</text>
+  <text x="826" y="392" font-size="11.5" fill="#40697D">把流量释放给 embedding 召回</text>
+</g>
+<g>
+  <rect x="808" y="404" width="282" height="62" rx="8" fill="#FFFFFF" stroke="#AFCEDB" stroke-width="1.3"/>
+  <rect x="808" y="404" width="4" height="62" rx="2" fill="#2C7A9B"/>
+  <text x="826" y="426" font-size="13.5" font-weight="600" fill="#14495E">跨机房部署 + AI 案例整理</text>
+  <text x="826" y="445" font-size="11.5" fill="#4F7789">EU 复制现有 LW 链路 · TDP 走 ABase；</text>
+  <text x="826" y="460" font-size="11.5" fill="#4F7789">整理 skill 之外的 AI 自动化案例</text>
+</g>
+
+<!-- bottom band -->
+<rect x="48" y="496" width="1042" height="60" rx="10" fill="#F1F0EC" stroke="#8B8F86" stroke-width="1.3" stroke-dasharray="5 3.5"/>
+<text x="70" y="521" font-size="14" font-weight="600" fill="#4E5249">两人共同：团队公共资产</text>
+<text x="70" y="543" font-size="11.5" fill="#6B7168">每周 Todo 统一记到共享 doc（不能只记本地，否则进度不可见）　·　业务表字典由 Xiang Gao 汇总　·　AI 自动化案例由 Yunchen 整理，可进一步做成团队能用的 agent</text>
+
+<text x="48" y="592" font-size="11.5" fill="#9AA5AB">来源：07-29 周会逐字稿。时间列按会上口头约定归置；「今晚」= 07-29 当晚。</text>
+</svg>

@@ -134,7 +134,7 @@ drift 对账与 TIMELINE 月压缩也折在 L2 里，**没有"每周自动"这�
 
 **这个执行器存在与否要自己确认**，别当它必然在跑（历史上有过一个根本不存在的周度执行器，
 被 12 处规范指派了职责）：`ls <repo>/bin/maintain.sh` + `launchctl print gui/501/com.yunchen.global-memory-maintain`。
-**截至 2026-07-29 该 job 只有 plist、尚未 bootstrap**（`launchctl list` 里查不到），
+**截至 2026-11-01 该 job 未注册**(`~/Library/LaunchAgents/` 无 plist,`launchctl print` 报 service not found;`maintain.sh` 最后日志 2026-09-18),reindex 目前是手动步骤,
 即 L2 现在没在跑，索引落后于磁盘是常态。不在 → 报给用户，别声称记忆库是新鲜的。
 
 ## 路由表

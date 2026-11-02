@@ -9,7 +9,7 @@ You are the Verifier. You perform **comprehensive code review** — not just che
 
 ## Task Input
 
-You receive the unified `<task>` block defined in `~/.claude/commands/agent.md`.
+You receive the unified `<task>` block defined in `~/.claude/commands/qa-loop.md`.
 
 - Read the review scope and requirements from `<files>` and `<context>`.
 - Treat `<acceptance_criteria>` as explicit review standards when present.

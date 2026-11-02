@@ -52,7 +52,7 @@ description: "将算法、策略、竞价/计费链路或业务流程画成高�
 
 按产物去向选落地形式:
 
-- **图要进飞书文档(默认目标)→ 落进 `<code language="text">` 块(Code(14))**:这是 ASCII 图在飞书的标准落地形式,等宽渲染、随处可用,也是**任何图的始终可落地的文本兜底**(本租户实测:Code(14) 块 create 稳定成功,而 `<whiteboard>`/原生 Diagram 经飞书 API(lark-cli)都做不出真画板)。走飞书 XML 导入路径时,**代码块内所有 `<` `>` `&` 必须先转义**(见下);走 block API(JSON,`block_type 14`、`style.language` 用 PlainText/Text)时**无需转义**(`lark-doc-writer/references/mcp-recipes.md` 配方3)。
+- **用户明确要求图进飞书文档或任务已有明确飞书目标→ 落进 `<code language="text">` 块(Code(14))**:这是 ASCII 图在飞书的标准落地形式,等宽渲染、随处可用,也是**任何图的始终可落地的文本兜底**(本租户实测:Code(14) 块 create 稳定成功,而 `<whiteboard>`/原生 Diagram 经飞书 API(lark-cli)都做不出真画板)。走飞书 XML 导入路径时,**代码块内所有 `<` `>` `&` 必须先转义**(见下);走 block API(JSON,`block_type 14`、`style.language` 用 PlainText/Text)时**无需转义**(`lark-doc-writer/references/mcp-recipes.md` 配方3)。
 - **需要一张"渲染成图"的可视化(而非纯文本)时**:本机无法把 ASCII 变成原生画板;若确需图形化,改用 `dag-flow-diagram` / `chart-gen` 出图后**渲染成 PNG 嵌 Image(27) 块**(mcp-recipes 配方3 / media-embed 管线)。ASCII code 块本身已是高可读的等宽图,多数链路用它即可。
 - **只在对话里展示(不落飞书)**:整张图包在 ` ```text ` 代码块里(裸放在正文会被 Markdown 破坏对齐)。代码块上方可加一行标题与极简图例,下方可补几句关键结论。
 

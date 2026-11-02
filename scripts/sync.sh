@@ -108,6 +108,8 @@ run() { if [ "$DRY_RUN" -eq 1 ]; then echo "  [dry-run] $*"; else eval "$*"; fi;
 should_sync_skill() {
     local name="$1" tgt="$2"
     [ "$name" = ".system" ] && return 1
+    # skills/synced/ = Claude 应用从 claude.ai 下发的托管副本，只属于 Claude，不外传
+    [ "$name" = "synced" ] && return 1
     case "$IGNORE_SKILLS" in *" $name "*) return 1 ;; esac
     if [ "$tgt" = codex ] && [ "$MIRROR" -eq 0 ]; then
         case "$CODEX_IGNORE_SKILLS" in *" $name "*) return 1 ;; esac
@@ -327,6 +329,8 @@ for TGT in $TARGETS; do
     [ "$N" -eq 0 ] && echo "  (无可同步的 skill)"
     [ "$BK_N" -gt 0 ] && echo "  (覆盖前备份了 $BK_N 个同名旧 skill -> ${BK##*/}/)"
 done
+
+python3 "$(dirname "$0")/codex-skill-isolation.py" $([ "$DRY_RUN" -eq 1 ] && echo --dry-run || true)
 
 echo ""
 if [ "$MIRROR" -eq 1 ]; then

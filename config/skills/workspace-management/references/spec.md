@@ -132,7 +132,7 @@
 - **全局记忆**（memory-management）：枢纽只留项目定位卡，细节以工作区 AGENTS.md 和 `.agents/` 为准；工作区 update 例程不碰全局枢纽。
 - **harness**（harness-management）：AGENTS.md「规则」节和 `.agents/skills` 属于项目级 harness；全局 skill、规则、hook 的改动走 harness-management。
 - **飞书**：只有用户要求飞书交付或任务已有明确飞书目标时，才建并维护飞书侧 `Task/<中文名>/`（结构沿用：根 = 交付 + context/ + refs/ + agent/）；token 记进 AGENTS.md「外部资源」。
-- **`/agent` 命令**：有自己的 `.workspace/` + `deliverables/` 结构，与 v4 不兼容；不要在 v4 工作区里运行它。
+- **`/qa-loop` 命令**（原 `/agent`）：工作区外用自己的 `.workspace/` + `deliverables/` 结构；在 v4 工作区里按其 `<workspace>` 节的 v4 分支走 `ws dispatch`，不建 `.workspace/`。
 - **v3 工作区**：见 `v3-legacy.md`。
 
 ## 12. 已知限制

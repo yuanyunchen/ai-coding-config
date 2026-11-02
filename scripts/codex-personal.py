@@ -98,6 +98,8 @@ def format_value(value: Any) -> str:
         return json.dumps(value, ensure_ascii=False)
     if isinstance(value, (int, float)):
         return str(value)
+    if isinstance(value, dict):
+        return "{ " + ", ".join(f"{quote_key(k)} = {format_value(v)}" for k, v in value.items()) + " }"
     if isinstance(value, list):
         return "[" + ", ".join(format_value(item) for item in value) + "]"
     raise TypeError(f"unsupported TOML value: {type(value).__name__}")

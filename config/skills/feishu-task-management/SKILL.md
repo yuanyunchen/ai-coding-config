@@ -1,9 +1,15 @@
 ---
 name: feishu-task-management
-description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书相关的任务(写文档/多维表格/电子表格/IM/日历/任务/Wiki/Drive/Minutes/通讯录、以及给飞书作图)都必须先调用本 skill**,再路由到具体子技能(官方 lark-* 与飞书任务域 skill 均为本 skill 内部伪 skill、不注册全局,路由表在正文 §2)。执行层 = 官方 lark-cli;做飞书/广告算法任务前先查 bytedance 知识库(见正文 §1)。触发词:飞书、Lark、云文档、docx、多维表格、bitable、电子表格、sheets、飞书群、飞书日历、知识库、wiki、妙记、minutes、飞书云盘、drive、飞书任务/待办、审批、考勤打卡、OKR、飞书邮箱/邮件、通讯录/open_id、视频会议/会中、会议纪要、画板、幻灯片/slides、妙搭/Spark/Miaoda、飞书事件监听、Markdown 文件读写。"
+description: "飞书/Lark 操作的单一入口。仅在用户要求操作飞书、提供待操作的飞书资源，或当前任务已有明确飞书目标时使用；内部按需读取 lark-* 与业务子技能。普通文档、Markdown、表格、幻灯片、作图、开发、部署、工作区管理不触发；字节业务知识检索不等于飞书操作。"
 ---
 
 # 飞书 / Lark 工作区(入口索引 + 执行规约)
+
+## 适用范围
+
+先确认当前任务要操作的资源或交付目标属于飞书/Lark，再使用本入口。只是在审查规则、引用历史飞书项目，或出现 docx、sheets、wiki、drive、slides、Markdown 等通用词，不构成平台依据；不加载飞书执行记忆、不检查飞书鉴权、不创建云端交付。ByteDance 内网开发、SQL 与实验任务按对应业务能力处理，不因能力文件存放在本目录而加载飞书执行链。
+
+**发现层隔离**：子目录不是隔离机制。Codex 只保留本入口自动可见；本目录下其余 SKILL.md 和 `~/.agents/skills/lark-*/SKILL.md` 通过 `skills.config` 禁用自动注册，仍可由本入口按路径读取。配置仓 `scripts/codex-skill-isolation.py` 在 sync/deploy 中按实际文件重建禁用项；新增子技能须通过实际 skills/list 验收。
 
 ## (0) 执行避坑路由表(钉死,执行类操作前必查)
 
@@ -30,7 +36,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 | 重排章节 / 跨节移图 / 改文档结构 | `references/exec-docstruct.md` | **`block_move` 大块移动 = OT 合并冲突、静默失败**;改用 create(目标位重建)+ delete(删原)+ 一步一 re-fetch;验真用 raw-dump 别信单 agent 总结 |
 | HTML 作附件嵌进 docx | `references/exec-docstruct.md` | `docs +media-insert --type file --file-view card` |
 | 调冷门子能力(sheets 单元格/calendar 会议室/contact 搜人…) | `references/exec-workflow-internal.md`(§5 白名单) | 多数冷门能力不在 MCP 白名单;官方 lark-cli 无白名单全可达,查 `cli.md` |
-| 用户说「找文档/文件」 | `references/exec-workflow-internal.md`(§6.1 检索语义) | 默认=Drive 飞书 doc;先查「🤖 个人知识库索引(AI)」doc,别盲扫云盘 |
+| 已确认在飞书中「找文档/文件」 | `references/exec-workflow-internal.md`(§6.1 检索语义) | 仅当前飞书范围内默认=Drive 飞书 doc;先查「🤖 个人知识库索引(AI)」doc,别盲扫云盘 |
 | 建任务文件夹 / 判断「这是什么任务」 | 全局 `workspace-management` skill(结构唯一权威)+ `references/exec-workflow-internal.md` §6.2 | 双侧结构与新老规范细则归 workspace-management,不在此复述;中间过程/记忆不上飞书;**理解任务唯一入口=任务输入材料+当前 prompt**,不去消息里猜 |
 | 内部任务卡住 / 要权限 / 找表 / 跑 SQL | `references/exec-workflow-internal.md`(§10 求助阶梯) | 阶梯:lark-cli→Chrome→页面内 Agent→Knowledge AI(ask.feishu.cn)→oncall;门户 SYS360/Coral/Dorado/Megatron/TCC |
 | 想知道飞书后端历史上有哪些 MCP 能力 | `references/exec-appendix-legacy.md` | 纯历史参照;MCP 已退役,执行走 lark-cli |
@@ -47,9 +53,9 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 
 **⭐ 写飞书文档 = 强制调用链(2026-06-24 钉死,违反即返工)** — 任何「写 / 改飞书文档」的任务,**包括方案 / 分析 / 总结 / 报告这类非 doc-trio 五类的文档**,动手前**必须**:① 调用并遵守 `lark-doc-writer` §0 通用写作通则(可读性 · 文字密度 · 语言自然去 AI 味 · 作图按文档类型分层；学习文档用双收口，技术数据链路交付读其 transcript + 三图金标准);② 属 doc-trio 五类(学习 / 操作 / checklist / 会议 / AI handoff)的**必须**先 `doc-trio` 判型取骨架;③ 执行落地用 `lark-cli docs`;④ 除非用户明确指定其他范围，Agent 新建文档在交付链接前按 `lark-doc-writer` 的 L2 步骤设为“ByteDance 内获得链接的人可查看”，保持外部访问关闭，并 fresh readback。**禁止**绕过 lark-doc-writer 直接 `docs +create` markdown 导入、或拿自定义 recipe 替代写作通则。
 
-**`memory.md` 必读** — 飞书执行记忆与所有踩坑(权限/建块/嵌图/导入导出/白名单边界)都在本技能同目录的 `memory.md` 里。**做文档/表格/图片任务前必看**,否则会重复踩已记录的坑。另:飞书写作硬规则在 `lark-doc-writer` 技能(§0 General 写作规则 + §1 飞书 XML 硬规则,为写作规则的唯一权威入口)。
+**`memory.md` 必读** — 飞书执行记忆与所有踩坑(权限/建块/嵌图/导入导出/白名单边界)都在本技能同目录的 `memory.md` 里。**已确认要执行飞书文档/表格/图片操作时才必看**,否则会重复踩已记录的坑。另:飞书写作硬规则在 `lark-doc-writer` 技能(§0 General 写作规则 + §1 飞书 XML 硬规则,为写作规则的唯一权威入口)。
 
-**`bytedance` 知识库先查(记忆优先)** — 字节广告算法工作知识在统一仓 `global-memory` 的 BM project **`bytedance`**（目录 `bytedance/`,原 feishu-memory）。**做飞书 / 广告算法相关任务前,先查它**——解析仓库根(hub 的 parent)后跑 `<repo>/bin/bm tool search-notes --project bytedance "<你的问题>"`(或 MCP `search_notes`,`project=bytedance`):平台用途 / 指标口径 / 实验结论 / 机制原理 / 历史决策,命中就直接用、并核对该事实 `source.quote` 的时效,**避免重复研究**;拿不准的字节背景,**先搜它、再外求**。命中率最高是带名字/实体的查询。与本技能 `memory.md` 区分:`memory.md` = 飞书**执行踩坑**; `bytedance` = **工作知识**——互补、都先查。
+**`bytedance` 知识库先查(记忆优先)** — 字节广告算法工作知识在统一仓 `global-memory` 的 BM project **`bytedance`**（目录 `bytedance/`,原 feishu-memory）。**任务确实依赖字节广告工作知识时才先查它；普通飞书操作和日常任务不查**——解析仓库根(hub 的 parent)后跑 `<repo>/bin/bm tool search-notes --project bytedance "<你的问题>"`(或 MCP `search_notes`,`project=bytedance`):平台用途 / 指标口径 / 实验结论 / 机制原理 / 历史决策,命中就直接用、并核对该事实 `source.quote` 的时效,**避免重复研究**;拿不准的字节背景,**先搜它、再外求**。命中率最高是带名字/实体的查询。与本技能 `memory.md` 区分:`memory.md` = 飞书**执行踩坑**; `bytedance` = **工作知识**——分域按需读取，不因加载其中一个而自动加载另一个。
 
 **执行层规约:**
 
@@ -73,7 +79,7 @@ description: "飞书/Lark 任何工作的唯一入口与索引;**任何与飞书
 | `doc-trio` | 写飞书 5 类文档(学习/操作指南/checklist/会议 note/AI handoff)的判型 + 骨架 + 完整性查漏;写这五类前必须先调用判型取骨架(见 §1 调用链),写作通则再走 `lark-doc-writer`。 | `subskills-workspace/doc-trio/SKILL.md` |
 | `feishu-doc-gotchas` | 读写飞书文档/表格/画板遇到格式/blockID/颜色/上传/导入异常时查阅。 | `subskills-workspace/feishu-doc-gotchas/SKILL.md` |
 | `whiteboard-design` | 架构图/流程图/漏斗/金字塔/鱼骨/组织架构等结构化图示的设计方法论(原名 lark-whiteboard;落地=渲染 PNG 嵌 Image(27),ASCII 兜底;官方同名执行技能=伪 skill `lark-whiteboard`)。 | `subskills-workspace/whiteboard-design/SKILL.md` |
-| `data-analysis-report` | 字节内网数据分析**端到端编排**(SQL 取数→多窗/控池分析→双版 HTML→飞书 docx 镜像+HTML 附件→Drive 托管);编排 sql-query / analytical-report / bytedance-internal-hosting / lark-doc-writer,不重复其细节。 | `subskills-workspace/data-analysis-report/SKILL.md` |
+| `data-analysis-report` | 字节内网数据分析**端到端编排**(SQL 取数→多窗/控池分析→飞书 docx 交付,可选 core/full 双版 HTML 走 analytical-report + 内网托管);编排 sql-query / analytical-report / bytedance-internal-hosting / lark-doc-writer,不重复其细节。 | `subskills-workspace/data-analysis-report/SKILL.md` |
 
 ### 作图 / 图表
 | 技能 | 一句话用途 | 位置 |

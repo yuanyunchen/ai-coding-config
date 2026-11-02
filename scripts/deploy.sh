@@ -115,4 +115,6 @@ else
 fi
 
 echo ""
+python3 "$SCRIPTS_DIR/codex-skill-isolation.py" $DRY_FLAG
+
 echo "完成。"

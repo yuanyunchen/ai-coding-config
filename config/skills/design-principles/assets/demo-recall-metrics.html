@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Recall 指标快捷入口</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#eef0f4;
+    --card:rgba(255,255,255,.72);
+    --card-solid:#ffffff;
+    --line:rgba(20,24,34,.08);
+    --line-2:rgba(20,24,34,.14);
+    --ink:#11131a;
+    --ink-2:#4a5061;
+    --ink-3:#878d9d;
+    --accent:#3b46ff;
+    --accent-2:#7b5cff;
+    --accent-ink:#2a33d6;
+    --ok:#0fae8e;
+    --radius:22px;
+    --radius-sm:13px;
+    --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+    --shadow:0 1px 0 rgba(255,255,255,.6) inset,0 24px 60px -22px rgba(28,33,84,.34),0 8px 22px -12px rgba(28,33,84,.22);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:'Inter','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 700px at 78% -12%, #dfe3ff 0%, rgba(223,227,255,0) 58%),
+      radial-gradient(1000px 620px at 6% 8%, #e4fbf4 0%, rgba(228,251,244,0) 52%),
+      radial-gradient(900px 800px at 50% 120%, #efe6ff 0%, rgba(239,230,255,0) 55%),
+      var(--bg);
+    -webkit-font-smoothing:antialiased;
+    min-height:100dvh;display:flex;align-items:center;justify-content:center;
+    padding:40px 20px;
+  }
+  .stage{width:100%;max-width:480px;}
+
+  /* HERO TITLE */
+  .hero{text-align:center;margin:0 0 26px;}
+  .hero .badge{
+    display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);
+    background:rgba(59,70,255,.09);border:1px solid rgba(59,70,255,.16);
+    padding:5px 13px;border-radius:999px;margin-bottom:16px;
+  }
+  .hero .badge svg{width:13px;height:13px;}
+  .hero h1{
+    font-family:'Inter',sans-serif;font-weight:800;font-size:42px;line-height:1.08;
+    letter-spacing:-.025em;margin:0;
+    background:linear-gradient(120deg,#1a1f3d 0%,#2731e6 52%,#7b5cff 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .hero p{margin:12px 0 0;font-size:14px;color:var(--ink-2);}
+
+  .card{
+    background:var(--card);
+    backdrop-filter:blur(22px) saturate(150%);
+    -webkit-backdrop-filter:blur(22px) saturate(150%);
+    border:1px solid rgba(255,255,255,.7);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:28px 26px 24px;
+  }
+
+  .field{margin-bottom:22px;}
+  .flabel{font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--ink-3);text-transform:uppercase;margin:0 0 11px 2px;}
+
+  .seg{display:flex;gap:7px;background:rgba(20,24,34,.045);padding:5px;border-radius:15px;border:1px solid var(--line);}
+  .seg button{
+    flex:1;appearance:none;cursor:pointer;font-family:inherit;border:none;background:transparent;
+    color:var(--ink-2);font-size:13.5px;font-weight:600;padding:10px 6px;border-radius:11px;
+    transition:all .2s cubic-bezier(.4,0,.2,1);position:relative;
+  }
+  .seg button .sm{display:block;font-size:10.5px;font-weight:500;color:var(--ink-3);font-family:var(--mono);margin-top:1px;}
+  .seg button:hover{color:var(--ink);}
+  .seg button[aria-pressed="true"]{
+    background:var(--card-solid);color:var(--accent-ink);
+    box-shadow:0 2px 8px -2px rgba(28,33,84,.2),0 1px 0 rgba(255,255,255,.8) inset;
+  }
+  .seg button[aria-pressed="true"] .sm{color:var(--accent);}
+
+  .swim{margin-top:11px;display:none;}
+  .swim.show{display:block;animation:rise .22s ease;}
+  .tip{margin:7px 2px 0;font-size:11.5px;color:var(--ink-3);}
+  @keyframes rise{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
+
+  .inp{
+    width:100%;font-family:var(--mono);font-size:15px;color:var(--ink);
+    background:rgba(20,24,34,.04);border:1px solid var(--line-2);
+    border-radius:var(--radius-sm);padding:13px 15px;transition:all .18s ease;
+  }
+  .inp::placeholder{color:var(--ink-3);}
+  .inp:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(59,70,255,.13);}
+  .swim .inp{font-size:13px;}
+
+  /* selectable metric chips */
+  .flabel-row{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 11px;}
+  .flabel-row .flabel{margin:0;}
+  .flabel-row .all{font-size:11.5px;font-weight:600;color:var(--accent-ink);cursor:pointer;background:none;border:none;font-family:inherit;padding:0;}
+  .flabel-row .all:hover{text-decoration:underline;}
+  .chips{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 24px;}
+  .chip{
+    display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:500;color:var(--ink-2);cursor:pointer;
+    background:rgba(20,24,34,.035);border:1px solid var(--line);border-radius:12px;padding:11px 12px;
+    transition:all .16s ease;user-select:none;
+  }
+  .chip .box{
+    width:18px;height:18px;border-radius:6px;flex:none;border:1.5px solid var(--line-2);
+    background:#fff;display:grid;place-items:center;transition:all .16s ease;
+  }
+  .chip .box svg{width:11px;height:11px;color:#fff;opacity:0;transform:scale(.6);transition:all .16s ease;}
+  .chip[aria-pressed="true"]{color:var(--ink);background:rgba(59,70,255,.045);border-color:rgba(59,70,255,.2);}
+  .chip[aria-pressed="true"] .box{background:rgba(59,70,255,.85);border-color:rgba(59,70,255,.85);}
+  .chip[aria-pressed="true"] .box svg{opacity:1;transform:scale(1);}
+  .chip:hover{border-color:var(--line-2);}
+
+  .go{
+    width:100%;appearance:none;cursor:pointer;font-family:inherit;border:none;
+    color:#fff;font-size:15.5px;font-weight:600;padding:16px;border-radius:var(--radius-sm);
+    background:linear-gradient(135deg,#2c34cf,#5237d8);
+    box-shadow:0 13px 28px -10px rgba(43,49,230,.52),0 1px 0 rgba(255,255,255,.22) inset;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    transition:transform .16s ease,box-shadow .16s ease,filter .16s ease;
+  }
+  .go:hover{transform:translateY(-1px);box-shadow:0 18px 38px -10px rgba(43,49,230,.7);filter:brightness(1.05);}
+  .go:active{transform:translateY(0) scale(.99);}
+  .go:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.3);}
+  .go svg{width:18px;height:18px;}
+
+  .hint{margin:13px 2px 0;font-size:11.5px;color:var(--ink-3);text-align:center;line-height:1.5;}
+  .hint b{color:var(--ink-2);font-weight:600;}
+
+  /* fallback links (shown only if popups blocked) */
+  .fallback{margin-top:16px;display:none;}
+  .fallback.show{display:block;animation:rise .22s ease;}
+  .fallback .warn{font-size:12px;color:#b06a00;background:#fff5e6;border:1px solid #ffe0ad;border-radius:10px;padding:9px 12px;margin-bottom:9px;}
+  .fallback a{
+    display:flex;align-items:center;gap:9px;text-decoration:none;font-size:13px;color:var(--ink);font-weight:500;
+    background:rgba(20,24,34,.035);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:7px;
+    transition:all .14s ease;
+  }
+  .fallback a:hover{border-color:var(--accent);background:#fff;}
+  .fallback a span{margin-left:auto;font-size:11px;color:var(--accent-ink);}
+
+  @media (max-width:520px){.card{padding:22px 18px;}.chips{grid-template-columns:1fr;}.hero h1{font-size:34px;}}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="hero">
+    <span class="badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M21 8v5"/><path d="M16 8h5"/></svg>
+      Recall Metrics
+    </span>
+    <h1>指标快捷入口</h1>
+    <p>快速查看召回支路的核心监控指标</p>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <p class="flabel">机房</p>
+      <div class="seg" id="segRegion">
+        <button data-region="ROW" aria-pressed="true">ROW<span class="sm">SG</span></button>
+        <button data-region="EU" aria-pressed="false">EU-TTP<span class="sm">EU2</span></button>
+        <button data-region="US" aria-pressed="false">US-TTP<span class="sm">US2</span></button>
+      </div>
+    </div>
+
+    <div class="field">
+      <p class="flabel">环境</p>
+      <div class="seg" id="segEnv">
+        <button data-env="online" aria-pressed="true">Online<span class="sm">prod</span></button>
+        <button data-env="omega" aria-pressed="false">Omega<span class="sm">PPE</span></button>
+      </div>
+      <div class="swim" id="swimWrap">
+        <input class="inp" type="text" id="swimLane" value="" spellcheck="false" placeholder="ppe_omega_sg_targeting" />
+        <p class="tip">填入你的 Omega 泳道名（即 env）</p>
+      </div>
+    </div>
+
+    <div class="field">
+      <p class="flabel">召回支路</p>
+      <input class="inp" type="text" id="recallType" value="" spellcheck="false" placeholder="*" />
+    </div>
+
+    <div class="field" style="margin-bottom:22px;">
+      <div class="flabel-row">
+        <p class="flabel">监控指标</p>
+        <button class="all" id="toggleAll">全选 / 全不选</button>
+      </div>
+      <div class="chips" id="chips">
+        <div class="chip" data-metric="tp" aria-pressed="true"><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 7"/></svg></span>Throughput</div>
+        <div class="chip" data-metric="err" aria-pressed="true"><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 7"/></svg></span>失败 Throughput</div>
+        <div class="chip" data-metric="cid" aria-pressed="true"><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 7"/></svg></span>CID 数</div>
+        <div class="chip" data-metric="aid" aria-pressed="true"><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 7"/></svg></span>AID 数</div>
+      </div>
+    </div>
+
+    <button class="go" id="goBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M14 3h7v7"/><path d="M10 14 21 3"/></svg>
+      <span id="goLabel">打开 4 个监控页面</span>
+    </button>
+
+    <div class="fallback" id="fallback">
+      <div class="warn">检测到弹窗被拦截，已取消本次打开。请点下方逐个打开，或允许本站弹窗后重试即可一次全开。</div>
+      <div id="fallbackLinks"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var REGIONS = {
+    ROW:{host:"https://metrics-fe-i18n.tiktok-row.org", online:"Singapore-Central", ppe:"Singapore-PPE", cluster:"slice4"},
+    EU :{host:"https://metrics-fe-eu.tiktok-row.org",   online:"EU-TTP2",          ppe:"EU-TTP2-PPE",   cluster:"slice2"},
+    US :{host:"https://metrics-fe-ttp-us.tiktok-row.org", online:"US-TTP2", ppe:"US-TTP2", cluster:"slice2"}
+  };
+  var METRIC_LABEL = {tp:"Throughput", err:"失败 Throughput", cid:"CID 数", aid:"AID 数"};
+  var state = {region:"ROW", env:"online", metrics:{tp:true, err:true, cid:true, aid:true}};
+  var P = "/web/plot/metrics#now-1h,now,,,,,,,";
+
+  function buildUrl(key){
+    var c = REGIONS[state.region], on = state.env === "online";
+    var dep = on ? c.online : c.ppe;
+    var env = on ? "prod" : (document.getElementById("swimLane").value.trim() || "ppe_omega_sg_targeting");
+    var rt = document.getElementById("recallType").value.trim() || "*";
+    var base = c.host + P + dep + ",false,,;";
+    if(key==="tp")  return base + "sum:store:ad.targeting.tiktok.graph.recall.throughput{recall_type=literal_or(" + rt + ")}{};0";
+    if(key==="err") return base + "sum:store:top-10-max:ad.targeting.tiktok.graph.merge_test_recall_error.throughput{reason=literal_or(*),recall_name=literal_or(*),recall_type=literal_or(" + rt + "),step=literal_or(*)}{};0";
+    if(key==="cid") return base + "avg:store:ad.targeting.tiktok.rsp.new_multi_recall_cid.count.avg{cluster=literal_or(" + c.cluster + "),env=literal_or(" + env + "),recall_type=literal_or(" + rt + ")}{};0";
+    return base + "avg:store:ad.targeting.tiktok.rsp.new_multi_recall_aid.count.avg{cluster=literal_or(" + c.cluster + "),env=literal_or(" + env + "),recall_type=literal_or(" + rt + ")}{};0";
+  }
+
+  function selectedKeys(){ return ["tp","err","cid","aid"].filter(function(k){ return state.metrics[k]; }); }
+
+  function refreshBtn(){
+    var n = selectedKeys().length;
+    document.getElementById("goLabel").textContent = n ? ("打开 " + n + " 个监控页面") : "请至少勾选一个指标";
+    document.getElementById("goBtn").disabled = n === 0;
+  }
+
+  function launch(){
+    var keys = selectedKeys(); if(!keys.length) return;
+    var fb = document.getElementById("fallback");
+    var box = document.getElementById("fallbackLinks");
+    fb.classList.remove("show"); box.innerHTML = "";
+
+    // 先尝试全部打开，保留窗口引用以便回滚
+    var opened = [];
+    var blocked = false;
+    keys.forEach(function(k){
+      var w = window.open(buildUrl(k), "_blank");
+      if(w){ try{ w.opener = null; }catch(e){} opened.push(w); }
+      else { blocked = true; }
+    });
+
+    if(blocked){
+      // 全有或全无：只要有一个被拦截，关掉已打开的，全部转手动
+      opened.forEach(function(w){ try{ w.close(); }catch(e){} });
+      keys.forEach(function(k){
+        var a = document.createElement("a");
+        a.href = buildUrl(k); a.target = "_blank"; a.rel = "noopener";
+        a.innerHTML = METRIC_LABEL[k] + "<span>打开 ↗</span>";
+        box.appendChild(a);
+      });
+      fb.classList.add("show");
+    } else {
+      // 全部成功：停留在当前页面，不跳转
+      try{ window.focus(); }catch(e){}
+    }
+  }
+
+  function wireSeg(id, key, after){
+    var g = document.getElementById(id);
+    g.addEventListener("click", function(e){
+      var b = e.target.closest("button"); if(!b) return;
+      [].forEach.call(g.querySelectorAll("button"), function(x){ x.setAttribute("aria-pressed","false"); });
+      b.setAttribute("aria-pressed","true"); state[key] = b.dataset[key]; if(after) after();
+    });
+  }
+  wireSeg("segRegion","region");
+  wireSeg("segEnv","env", function(){ document.getElementById("swimWrap").classList.toggle("show", state.env==="omega"); });
+
+  document.getElementById("chips").addEventListener("click", function(e){
+    var c = e.target.closest(".chip"); if(!c) return;
+    var k = c.dataset.metric, on = c.getAttribute("aria-pressed") !== "true";
+    c.setAttribute("aria-pressed", on ? "true" : "false");
+    state.metrics[k] = on; refreshBtn();
+  });
+
+  document.getElementById("toggleAll").addEventListener("click", function(){
+    var allOn = selectedKeys().length === 4;
+    [].forEach.call(document.querySelectorAll(".chip"), function(c){
+      c.setAttribute("aria-pressed", allOn ? "false" : "true");
+      state.metrics[c.dataset.metric] = !allOn;
+    });
+    refreshBtn();
+  });
+
+  document.getElementById("goBtn").addEventListener("click", launch);
+  document.getElementById("recallType").addEventListener("keydown", function(e){ if(e.key==="Enter") launch(); });
+  refreshBtn();
+</script>
+</body>
+</html>

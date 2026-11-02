@@ -1,4 +1,4 @@
-model = "codex-auto-review"
+model = "gpt-6.1-sol"
 model_context_window = 1050000
 model_auto_compact_token_limit = 900000
 model_reasoning_effort = "high"

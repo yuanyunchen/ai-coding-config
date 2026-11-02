@@ -31,7 +31,7 @@ description: 将算法、策略、系统逻辑、技术数据链路或概念依�
 
 mermaid 用 `flowchart`(不用旧 `graph`)。**方向默认 LR(左右),不用 TD/TB**——见下「布局与长宽比」。按产物去向选落地形式:
 
-- **图要进飞书文档(默认目标)→ 渲染成 PNG 再嵌 Image 块(首选)**:飞书 API(lark-cli)路径下 `<whiteboard type="mermaid">` **不会**变成画板,会被 convert 拍平成纯文本;原生 Diagram 块也无法创建。要在文档里有一张真实可见的图,把图本地渲染成 **PNG** → 建 **Image(27) 块**(媒体上传 + 绑字节,convert 不会替你嵌图)→ 见 `lark-doc-writer/references/mcp-recipes.md` 配方3 与 `media-embed.md` 管线(原 §6b)。
+- **用户明确要求图进飞书文档或任务已有明确飞书目标→ 渲染成 PNG 再嵌 Image 块(首选)**:飞书 API(lark-cli)路径下 `<whiteboard type="mermaid">` **不会**变成画板,会被 convert 拍平成纯文本;原生 Diagram 块也无法创建。要在文档里有一张真实可见的图,把图本地渲染成 **PNG** → 建 **Image(27) 块**(媒体上传 + 绑字节,convert 不会替你嵌图)→ 见 `lark-doc-writer/references/mcp-recipes.md` 配方3 与 `media-embed.md` 管线(原 §6b)。
   - 🟢 **概念 / 依赖 / 全景类 DAG 的默认渲染器 = graphviz `dot`(不是 mermaid)**:多入边的概念关系网 / 变量依赖网 / 端到端全景这类图,**mermaid 渲染极易踩长宽比闸**——LR 出又扁又宽的薄条、TB 出又高又窄的竖条,且嵌套 subgraph 的 `direction` 被 mermaid 直接忽略(下「布局对齐」F5;两位 producer 实测 4 个方向变体全废)。**graphviz `dot`**(`rankdir=TB` + 每行 `rank=same` 锁平 + 隐形排序边控顺序 + 折行 fold 边)对蛇形 / 折行布局可控得多,实测一把过长宽比闸(opening 2534×1125 w/h=2.25、closing 1791×1427 w/h=1.26)。**所以:概念 / 依赖 / 全景 DAG 默认用 `dot` 渲 PNG;mermaid 仍可作授权语法(`flowchart` 源更易读写),但落地渲染走 `dot` 这条可靠路径。** 仅纯线性短链(`A→B→C`,无分支汇合)mermaid LR 也能稳过。长宽比闸数值不变(目标 w:h≈1.3–1.8、拒 h/w>1.2 / w/h>3、≤700×500、2× 渲染)。
 - **无渲染器可用时 → ASCII 退路**:把同一 DAG 用 **ASCII 画进 `<code language="text">`(Code(14) 块)**,等宽对齐、随处可用,是始终可落地的文本兜底。复杂逐行链路转 `ascii-strategy-diagram`。
 - **只在对话里展示(不落飞书)**:产出标准 markdown mermaid 代码块(` ```mermaid `)即可;这只是"给用户拷进 mermaid 渲染器的源码",**不会在文档内渲染**。

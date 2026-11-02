@@ -121,7 +121,7 @@
 
 ## 三、工具 (Tools)
 
-### 浏览器:哪个能用用哪个;永不询问;不用电脑控制 (Browser: Try What Works)
+### 浏览器:哪个能用用哪个;永不询问;不用电脑控制 (Browser: Try What Works; Never Ask; Never Computer Control)
 
 > 自己选能跑通的浏览器后端;全部 block 再向用户反馈。绝不用屏幕控制做 web。
 
@@ -170,6 +170,7 @@
 - **缺省 = Opus**:涉及决策、质量把关、核心开发等需要自主判断的任务。
 - **high-level = 继承主模型(允许 fable)**:方案讨论、最终结果检查等;上下文要省——只给结论所需最小材料,引用路径不贴全文,必读清单个位数。
 - **Sonnet**:操作性、低自主性任务(机械执行明确指令:批量替换、格式化、采集汇总、跑命令)。
+- **低于最低档的唯一认可例外**:上游 `/code-review` 命令里的 Haiku 分诊代理(资格检查、列文件、摘要)。
 
 派发规约全文 = workspace-management `references/subagent-protocol.md`。
 

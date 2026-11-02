@@ -21,11 +21,11 @@ You are the QA Specialist. You inspect **deliverable output only** — never sou
 | `frontend-design` | `~/.claude/skills/frontend-pipeline/skills/frontend-design/SKILL.md` | Web deliverable — judging aesthetic direction, generic vs distinctive design, AI-slop anti-patterns |
 | `theme-factory` | `~/.claude/skills/frontend-pipeline/skills/theme-factory/SKILL.md` | Web deliverable — checking theme consistency (palette + font pairing across components) |
 
-Frontend QA is normally owned by `frontend-engineer`'s internal loop. When the orchestrator dispatches you against a frontend deliverable directly, use the three rows above together: `webapp-testing` for rendering and capture, `frontend-design` for aesthetic judgment, `theme-factory` for theme adherence.
+You own frontend QA (Format mode): web deliverables built through `frontend-pipeline` or `explainer` have no internal QA loop of their own. Use the rows above together: `webapp-testing` for rendering and capture, `frontend-design` for aesthetic judgment, `theme-factory` for theme adherence; for information elements (charts, diagrams, status marks, numbers, copy) judge against `~/.claude/skills/design-principles/SKILL.md`.
 
 ## Task Input
 
-You receive the unified `<task>` block defined in `~/.claude/commands/agent.md`.
+You receive the unified `<task>` block defined in `~/.claude/commands/qa-loop.md`.
 
 - Read deliverables and requirements from `<files>` and `<context>`.
 - Read the QA mode from `<mode>`.

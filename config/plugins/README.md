@@ -72,7 +72,7 @@ git add -A && git commit && git push
 ## 当前安装一览
 
 <!-- installed:start -->
-_Updated: 2026-08-07 02:09 UTC_
+_Updated: 2026-11-02 03:10 UTC_
 
 ## claude
 
@@ -81,16 +81,16 @@ _Updated: 2026-08-07 02:09 UTC_
 | pluginId | kind | version | snapshot |
 |----------|------|---------|----------|
 | `claude-md-management@claude-plugins-official` | portable (off) | 1.0.0 | `claude/disabled/claude-md-management__claude-plugins-official/` |
-| `code-review@claude-plugins-official` | portable (off) | unknown | `claude/disabled/code-review__claude-plugins-official/` |
+| `code-review@claude-plugins-official` | portable (off) | ea10b213686c | `claude/disabled/code-review__claude-plugins-official/` |
 | `code-simplifier@claude-plugins-official` | portable (off) | 1.0.0 | `claude/disabled/code-simplifier__claude-plugins-official/` |
 | `codex@openai-codex` | hook (off) | 1.0.5 | `claude/disabled/codex__openai-codex/` |
-| `feature-dev@claude-plugins-official` | portable (off) | unknown | `claude/disabled/feature-dev__claude-plugins-official/` |
-| `hookify@claude-plugins-official` | hook | unknown | `claude/enabled/hookify__claude-plugins-official/` |
+| `feature-dev@claude-plugins-official` | portable (off) | ea10b213686c | `claude/disabled/feature-dev__claude-plugins-official/` |
+| `hookify@claude-plugins-official` | hook | ea10b213686c | `claude/enabled/hookify__claude-plugins-official/` |
 | `learning-output-style@claude-plugins-official` | hook | 1.0.0 | `claude/enabled/learning-output-style__claude-plugins-official/` |
 | `ralph-loop@claude-plugins-official` | hook | 1.0.0 | `claude/enabled/ralph-loop__claude-plugins-official/` |
-| `session-report@claude-plugins-official` | portable (off) | unknown | `claude/disabled/session-report__claude-plugins-official/` |
-| `skill-creator@claude-plugins-official` | portable (off) | unknown | `claude/disabled/skill-creator__claude-plugins-official/` |
-| `superpowers@claude-plugins-official` | hook | 6.2.0 | `claude/enabled/superpowers__claude-plugins-official/` |
+| `session-report@claude-plugins-official` | portable (off) | ea10b213686c | `claude/disabled/session-report__claude-plugins-official/` |
+| `skill-creator@claude-plugins-official` | portable (off) | ea10b213686c | `claude/disabled/skill-creator__claude-plugins-official/` |
+| `superpowers@claude-plugins-official` | hook | 7.0.0 | `claude/enabled/superpowers__claude-plugins-official/` |
 
 ## cursor
 
@@ -104,7 +104,7 @@ _Updated: 2026-08-07 02:09 UTC_
 | `code-simplifier@claude-plugins-official` | portable (off) | 1.0.0 | `cursor/disabled/code-simplifier__claude-plugins-official/` |
 | `continual-learning@cursor-public` | hook | 1.0.0 | `cursor/enabled/continual-learning__cursor-public/` |
 | `feature-dev@claude-plugins-official` | portable (off) | unknown | `cursor/disabled/feature-dev__claude-plugins-official/` |
-| `parallel@cursor-public` | portable (off) | 0.1.1 | `cursor/disabled/parallel__cursor-public/` |
+| `parallel@cursor-public` | portable (off) | 0.2.1 | `cursor/disabled/parallel__cursor-public/` |
 | `session-report@claude-plugins-official` | portable (off) | unknown | `cursor/disabled/session-report__claude-plugins-official/` |
 | `skill-creator@claude-plugins-official` | portable (off) | unknown | `cursor/disabled/skill-creator__claude-plugins-official/` |
 | `superpowers@cursor-public` | hook | 6.1.1 | `cursor/enabled/superpowers__cursor-public/` |
@@ -132,7 +132,7 @@ _Updated: 2026-08-07 02:09 UTC_
 | `ralph-loop@claude-plugins-official` | hook (off) | 1.0.0 | `codex/disabled/ralph-loop__claude-plugins-official/` |
 | `session-report@claude-plugins-official` | portable (off) | unknown | `codex/disabled/session-report__claude-plugins-official/` |
 | `skill-creator@claude-plugins-official` | portable (off) | local | `codex/disabled/skill-creator__claude-plugins-official/` |
-| `superpowers@openai-curated` | hook | 5.1.3 | `codex/enabled/superpowers__openai-curated/` |
+| `superpowers@openai-curated` | hook | 6.3.0 | `codex/enabled/superpowers__openai-curated/` |
 
 <details><summary>manifest 已关闭（无快照目录）</summary>
 

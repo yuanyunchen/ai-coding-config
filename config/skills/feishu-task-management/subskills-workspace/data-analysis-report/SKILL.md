@@ -1,6 +1,6 @@
 ---
 name: data-analysis-report
-description: "字节内网数据分析项目的端到端工作流:SQL 取数 → 多窗/控池分析 → 报告(**飞书 docx 交付,不产 HTML**)。统管「过程·口径·行文·语言·质量·检查」六件事,**编排并引用** sql-query / lark-doc-writer / chart-gen,不重复其细节。**写之前必读两份成稿飞书 docx 模版**(见 §0)。触发:数据分析报告、增量分析、cid 召回分析、广告算法离线分析、SQL 取数做报告、给 mentor/老板的分析交付。"
+description: "字节内网数据分析项目的端到端工作流:SQL 取数 → 多窗/控池分析 → 报告(飞书 docx 交付,可选 HTML 版)。统管「过程·口径·行文·语言·质量·检查」六件事,**编排并引用** sql-query / lark-doc-writer / chart-gen,不重复其细节。**写之前必读两份成稿飞书 docx 模版**(见 §0)。触发:数据分析报告、增量分析、cid 召回分析、广告算法离线分析、SQL 取数做报告、给 mentor/老板的分析交付。"
 ---
 
 # 数据分析报告 · 端到端工作流(字节内网)
@@ -38,9 +38,9 @@ description: "字节内网数据分析项目的端到端工作流:SQL 取数 →
 - **双版(docx 核心 + 完整)**:核心(决策向,一屏看懂、只放最强证据)+ 完整(同行复核,全量+趋势+附录),互链。
 
 ### 3.2 语言风格
-- **去 AI 味**:自然语言,不加「一图带走/如图所示」这类元解释旁注;**无 emoji**;不堆空泛形容。
+- **去 AI 味**:自然语言,不加「一图带走/如图所示」这类元解释旁注;不堆空泛形容。
 - **平白 + 控制字数 + 可读性优先**:短句、可扫读;密表压成「一句结论 + 图」。
-- **具体例 + 真实数字**,多源材料消化后**综合**成自己的论述,不拼接原文。(全局 AGENTS `Writing & Expression` / `User-Facing Messages`)
+- **具体例 + 真实数字**,多源材料消化后**综合**成自己的论述,不拼接原文。(全局 AGENTS `Writing & Expression` / `Human-Centered Interaction`)
 
 ### 3.3 质量 / 口径要求(诚实是底线)
 - 采样数标「估计/上界」;**反例不藏**(南美·大洋洲 pixel 反超、27 国反占优);推导值标「已校验」;断线不插值。
@@ -57,13 +57,13 @@ description: "字节内网数据分析项目的端到端工作流:SQL 取数 →
 
 ## 4 · 报告产出
 - **交付 = 飞书 docx**(照 §0 两份飞书 docx 模版的结构/口径/语言),写作通则走 `lark-doc-writer`。图表用 `chart-gen` 渲 SVG → 截 PNG → `lark-doc-writer` 媒体嵌入(`+media-insert`);读图三拍方法见 §3.1。
-- ⛔ **不产 HTML**(用户 2026-06-25:产出文档用飞书 docx,**不维护 HTML** —— HTML 在飞书 Preview 不跑 JS 图、且维护负担重)。**模版即 §0 两份飞书 docx,不引用任何数据分析 HTML**:analytical-report 的 `core.html`/`full.html` 双版**不用于本工作流**(其读图三拍/诚实口径 *方法论* 可借鉴,但**产物只出 docx**,不建 HTML)。
+- **HTML 版(可选)**:需要自包含 HTML 时走 `analytical-report`(core/full 双版),托管与平台选择走 `bytedance-internal-hosting`。
 
 ## 5 · 飞书交付 → 用 `feishu-task-management`(官方 lark-cli)
 - 飞书 docx 是**原生在线文档,本身即可分享链接**(无需 HTML 托管 / Goofy / Preview 渲染那一套);章序/图序/结论行与 §0 模版一致。
 - **lark-cli 执行 + 同步坑见全局** `~/.claude/skills/feishu-task-management/memory.md`(block_move OT 冲突→create+delete;raw-dump 验真;权限/分享不自动改)。
 
-## 6 · 收尾 → 用 `/workspace-checkpoint`(task-workspace v2;原 `record` 已于 2026-07-02 禁用)。
+## 6 · 收尾 → 用 `/project-update`(或对话指令走 workspace-management update 例程)。
 
 ## references
 - **模版(必读)**:核心 docx `RJCAdp9bjosJeDxUN68uimfMsAf` / 完整 docx `VLwRdYOqVoPeyMxzg5tubfDEsqg`(§0 链接)。

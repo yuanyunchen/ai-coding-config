@@ -1,0 +1,14 @@
+{
+ "session_id": "4f89d90c-b36b-4dcc-8178-dcd73764ac66",
+ "transcript_path": "/Users/yuanyunchen/.claude/projects/-private-tmp-claude-501--Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun-3c281167-6d20-4a74-ad91-50b524af5719-scratchpad-hook-probe-proj/4f89d90c-b36b-4dcc-8178-dcd73764ac66.jsonl",
+ "cwd": "/private/tmp/claude-501/-Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun/3c281167-6d20-4a74-ad91-50b524af5719/scratchpad/hook-probe/proj",
+ "prompt_id": "c148ef8f-f934-404d-9fe0-f77f947503f7",
+ "permission_mode": "bypassPermissions",
+ "hook_event_name": "UserPromptSubmit",
+ "prompt": "<task-notification>\n<task-id>a26b3ba225d6b1339</task-id>\n<tool-use-id>toolu_01GwRGLjqjs2wk4NDNz1GSKx</tool-use-id>\n<output-file>/private/tmp/claude-501/-private-tmp-claude-501--Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun-3c281167-6d20-4a74-ad91-50b524af5719-scratchpad-hook-probe-proj/4f89d90c-b36b-4dcc-8178-dcd73764ac66/tasks/a26b3ba225d6b1339.output</output-file>\n<status>completed</status>\n<summary>Agent \"Reply bg probe\" finished</summary>\n<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>\n<result>bg\n\nRESULT-WRITTEN bg</result>\n<usage><subagent_tokens>26527</subagent_tokens><tool_uses>0</tool_uses><duration_ms>3333</duration_ms></usage>\n</task-notification>",
+ "_env": {
+  "CLAUDE_PROJECT_DIR": "/private/tmp/claude-501/-Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun/3c281167-6d20-4a74-ad91-50b524af5719/scratchpad/hook-probe/proj",
+  "CLAUDE_CODE_ENTRYPOINT": "sdk-cli",
+  "CLAUDECODE": "1"
+ }
+}

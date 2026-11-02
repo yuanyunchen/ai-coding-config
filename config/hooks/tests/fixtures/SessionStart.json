@@ -1,0 +1,13 @@
+{
+ "session_id": "4f89d90c-b36b-4dcc-8178-dcd73764ac66",
+ "transcript_path": "/Users/yuanyunchen/.claude/projects/-private-tmp-claude-501--Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun-3c281167-6d20-4a74-ad91-50b524af5719-scratchpad-hook-probe-proj/4f89d90c-b36b-4dcc-8178-dcd73764ac66.jsonl",
+ "cwd": "/private/tmp/claude-501/-Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun/3c281167-6d20-4a74-ad91-50b524af5719/scratchpad/hook-probe/proj",
+ "hook_event_name": "SessionStart",
+ "source": "startup",
+ "_env": {
+  "CLAUDE_ENV_FILE": "/Users/yuanyunchen/.claude/session-env/4f89d90c-b36b-4dcc-8178-dcd73764ac66/sessionstart-hook-1.sh",
+  "CLAUDE_PROJECT_DIR": "/private/tmp/claude-501/-Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun/3c281167-6d20-4a74-ad91-50b524af5719/scratchpad/hook-probe/proj",
+  "CLAUDE_CODE_ENTRYPOINT": "sdk-cli",
+  "CLAUDECODE": "1"
+ }
+}

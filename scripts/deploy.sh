@@ -32,9 +32,10 @@ DRY_FLAG=$([ "$DRY_RUN" -eq 1 ] && echo --dry-run || true)
 echo "部署 agent 配置 -> $CLAUDE"
 [ "$DRY_RUN" -eq 1 ] && echo "  (dry-run：不写任何文件)"
 
-run "mkdir -p \"$CLAUDE/agents\" \"$CLAUDE/commands\" \"$CLAUDE/skills\" \"$CLAUDE/skills-disabled\""
+run "mkdir -p \"$CLAUDE/agents\" \"$CLAUDE/commands\" \"$CLAUDE/hooks\" \"$CLAUDE/skills\" \"$CLAUDE/skills-disabled\""
 
-for dir in agents commands; do
+# hooks 脚本在 settings 合并之前到位，合并写入的 hook 注册才不会指向缺失的文件
+for dir in agents commands hooks; do
     echo "[$dir]"
     run "rsync -a --exclude='node_modules' --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' \"$CONFIG/$dir/\" \"$CLAUDE/$dir/\""
 done

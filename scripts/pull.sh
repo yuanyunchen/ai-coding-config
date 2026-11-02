@@ -107,6 +107,16 @@ if [ -d "$SRC_BASE/scripts" ]; then
     fi
 fi
 
+if [ "$SOURCE" = claude ] && [ -d "$SRC_BASE/hooks" ]; then
+    echo "[hooks]"
+    if [ "$DRY_RUN" -eq 1 ]; then
+        echo "  [dry-run] rsync -a --delete ${RSYNC_EXCLUDE[*]} \"$SRC_BASE/hooks/\" \"$CONFIG/hooks/\""
+    else
+        mkdir -p "$CONFIG/hooks"
+        rsync -a --delete "${RSYNC_EXCLUDE[@]}" "$SRC_BASE/hooks/" "$CONFIG/hooks/"
+    fi
+fi
+
 echo "[AGENTS.md]"
 if [ -s "$SRC_BASE/AGENTS.md" ]; then
     if [ "$DRY_RUN" -eq 1 ]; then

@@ -15,11 +15,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 config/                        git 快照（跨设备迁移；唯一配置树）
-  agents/  commands/  AGENTS.md  AGENTS-cn.md
+  agents/  commands/  hooks/  AGENTS.md  AGENTS-cn.md
   skills/*（启用，扁平）  skills-disabled/*（禁用，同级目录）
   plugins/manifest.json  plugins/README.md
   plugins/{claude,cursor,codex}/{enabled,disabled}/
-  claude-personal/settings.personal.json  claude-personal/ccstatusline/   Claude Code 个性化 + 状态栏
+  claude-personal/settings.personal.json  claude-personal/hooks.json  claude-personal/ccstatusline/   Claude Code 个性化 + 自有 hook 注册 + 状态栏
   codex-personal/config.personal.toml      Codex 个性化
 agent-config                   统一 CLI 入口
 scripts/                       deploy | pull | sync | plugins | memory | migrate
@@ -157,7 +157,9 @@ Claude 与 Codex 的个性化（默认模型、推理强度、状态栏等）用
 - `env.ANTHROPIC_SMALL_FAST_MODEL` — 后台小任务用 Haiku
 - `statusLine`（指向 `ccstatusline`）、`skillListingBudgetFraction`、`verbose`、`agentPushNotifEnabled`
 
-**不纳管**（深合并不碰，避免打架）：`enabledPlugins`、`extraKnownMarketplaces`（归 `plugins/manifest.json` 管）、`hooks`（本机绝对路径，如 pixel-agents）。
+**hooks 只纳管自有的**：命令指向 `~/.claude/hooks/` 的 hook 组由 `pull` 存进 `claude-personal/hooks.json`（家目录写成 `$HOME`），脚本本身存进 `config/hooks/`；`deploy` 先放脚本，再用仓库里的组替换本机同命令的组。其他工具装的 hook（如 pixel-agents，本机绝对路径）不纳管。
+
+**不纳管**（深合并不碰，避免打架）：`enabledPlugins`、`extraKnownMarketplaces`（归 `plugins/manifest.json` 管）、非自有的 `hooks`。
 
 ### 状态栏（截图那条）
 
@@ -205,7 +207,7 @@ Claude 与 Codex 的个性化（默认模型、推理强度、状态栏等）用
 - **技能路径**：正文引用启用技能用 `~/.{tool}/skills/<name>/`，禁用的用 `~/.{tool}/skills-disabled/<name>/`；`sync` 会把旧式 `skills/enabled/` 拍平为 `skills/`、`skills/disabled/` 改写为 `skills-disabled/`。
 - **禁用 skill 不能放 `skills/` 子目录**：Cursor/Claude 把 `skills/` 的每个子目录当一个 skill，旧式 `skills/disabled/` 会被误当 skill 且让真 skill 不加载；禁用项必须放**同级** `skills-disabled/`。`deploy` 会清理残留的 `skills/{enabled,disabled}`。
 - **插件文档**：只维护 `config/plugins/README.md`；`pull`/`apply` 更新其中 `<!-- installed:start -->` 段。
-- **个性化深合并（Claude + Codex 同一套）**：`settings.personal.json` / `config.personal.toml` 经各自脚本 `deploy` **深合并**进本机 `settings.json` / `config.toml`，只覆盖纳管 key，不删本机未纳管 key（Claude 的 `hooks`/`enabledPlugins`、Codex 的 `auth`/`mcp_servers` 等）；增删纳管 key 改对应脚本的 `MANAGED_KEYS` / `MANAGED_SCHEMA`。勿把 `enabledPlugins`/`hooks` 写进 `settings.personal.json`。
+- **个性化深合并（Claude + Codex 同一套）**：`settings.personal.json` / `config.personal.toml` 经各自脚本 `deploy` **深合并**进本机 `settings.json` / `config.toml`，只覆盖纳管 key，不删本机未纳管 key（Claude 的非自有 `hooks`/`enabledPlugins`、Codex 的 `auth`/`mcp_servers` 等）；增删纳管 key 改对应脚本的 `MANAGED_KEYS` / `MANAGED_SCHEMA`。勿把 `enabledPlugins`/`hooks` 写进 `settings.personal.json`：自有 hook 走同目录的 `hooks.json`。
 - **`ccstatusline` 要单独装**：`deploy` 只恢复 `~/.config/ccstatusline/` 配置，不装工具本身；新机器须 `npm i -g ccstatusline`（+ `jq`），见 SETUP。
 - **`SETUP.md`**：新机器给人看的 checklist；agent 改首次配置流程时同步更新 SETUP，细节放 SETUP 勿堆进本文件。
 - **Parallel**：`parallel-*` skill 与 Cursor 的 `parallel@cursor-public` 默认禁用；`parallel-cli` 仅作为 `webpage-content-extraction` 纯文本快速路径的可选依赖。

@@ -1,0 +1,80 @@
+{
+ "session_id": "4f89d90c-b36b-4dcc-8178-dcd73764ac66",
+ "transcript_path": "/Users/yuanyunchen/.claude/projects/-private-tmp-claude-501--Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun-3c281167-6d20-4a74-ad91-50b524af5719-scratchpad-hook-probe-proj/4f89d90c-b36b-4dcc-8178-dcd73764ac66.jsonl",
+ "cwd": "/private/tmp/claude-501/-Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun/3c281167-6d20-4a74-ad91-50b524af5719/scratchpad/hook-probe/proj",
+ "prompt_id": "3f1fd8f8-f841-4c7b-9a25-a07dda2c410d",
+ "permission_mode": "bypassPermissions",
+ "effort": {
+  "level": "xhigh"
+ },
+ "hook_event_name": "PostToolUse",
+ "tool_name": "Agent",
+ "tool_input": {
+  "description": "Reply hi probe retry",
+  "prompt": "ALLOWME Reply with the single word hi.",
+  "subagent_type": "general-purpose",
+  "model": "sonnet",
+  "run_in_background": false
+ },
+ "tool_response": {
+  "status": "completed",
+  "prompt": "ALLOWME Reply with the single word hi.",
+  "agentId": "a6efab95048d46555",
+  "agentType": "general-purpose",
+  "harnessNoteCount": 0,
+  "harnessTailCount": 0,
+  "harnessSectionHash": "8cbf326549fcd342",
+  "content": [
+   {
+    "type": "text",
+    "text": "hi\n\nRESULT-WRITTEN hi"
+   }
+  ],
+  "resolvedModel": "claude-sonnet-5-5",
+  "totalDurationMs": 3054,
+  "totalTokens": 27828,
+  "totalToolUseCount": 0,
+  "usage": {
+   "output_tokens_details": {
+    "thinking_tokens": 0
+   },
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 12658,
+   "cache_read_input_tokens": 15150,
+   "output_tokens": 18,
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 0,
+    "ephemeral_5m_input_tokens": 12658
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 18,
+     "cache_read_input_tokens": 15150,
+     "cache_creation_input_tokens": 12658,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 12658,
+      "ephemeral_1h_input_tokens": 0
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "canContinueAgent": true
+ },
+ "tool_use_id": "toolu_01LtrHgR5hohXN9ZpdjnZXVQ",
+ "duration_ms": 3055,
+ "_env": {
+  "CLAUDE_PROJECT_DIR": "/private/tmp/claude-501/-Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun/3c281167-6d20-4a74-ad91-50b524af5719/scratchpad/hook-probe/proj",
+  "CLAUDE_CODE_ENTRYPOINT": "sdk-cli",
+  "CLAUDECODE": "1"
+ }
+}

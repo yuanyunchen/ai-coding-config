@@ -5,9 +5,10 @@
 #   pull   <settings.json> <settings.personal.json>   抽取个性化 key 到仓库
 #   deploy <settings.personal.json> <settings.json>   深合并个性化 key 到本机
 #
-# 只动 MANAGED_KEYS；enabledPlugins / extraKnownMarketplaces / hooks 不碰
-# （插件归 manifest 管，hooks 是本机绝对路径）。深合并：dict 递归合并，
-# 标量/列表整体覆盖，不删除本机已有的未纳管 key。
+# 只动 MANAGED_KEYS；enabledPlugins / extraKnownMarketplaces 不碰（插件归 manifest 管）。
+# 深合并：dict 递归合并，标量/列表整体覆盖，不删除本机已有的未纳管 key。
+# hooks 只纳管自有的：命令指向 ~/.claude/hooks/ 的 hook 组存进同目录 hooks.json
+# （家目录写成 $HOME）；deploy 时替换本机同命令的组，其他工具的 hook（如 pixel-agents）不碰。
 ################################################################################
 
 import json
@@ -28,6 +29,34 @@ MANAGED_KEYS = [
 ]
 
 
+HOOKS_FILE = "hooks.json"
+OWN_HOOK_DIR = "/.claude/hooks/"
+
+
+def _commands(group: dict) -> set:
+    return {h.get("command", "") for h in group.get("hooks", [])}
+
+
+def own_hooks(hooks: dict, home: str) -> dict:
+    """Hook groups that run scripts under ~/.claude/hooks/, with the home path made portable."""
+    out = {}
+    for event, groups in (hooks or {}).items():
+        kept = [g for g in groups if any(OWN_HOOK_DIR in c for c in _commands(g))]
+        if kept:
+            out[event] = json.loads(json.dumps(kept).replace(home, "$HOME"))
+    return out
+
+
+def merge_own_hooks(settings: dict, repo_hooks: dict, home: str) -> int:
+    """Replace local groups sharing a command with the repo's; leave every other hook alone."""
+    hooks = settings.setdefault("hooks", {})
+    repo_hooks = json.loads(json.dumps(repo_hooks).replace("$HOME", home))
+    for event, groups in repo_hooks.items():
+        cmds = set().union(*(_commands(g) for g in groups))
+        hooks[event] = [g for g in hooks.get(event, []) if not _commands(g) & cmds] + groups
+    return sum(len(g) for g in repo_hooks.values())
+
+
 def deep_merge(base: dict, overlay: dict) -> dict:
     for k, v in overlay.items():
         if isinstance(v, dict) and isinstance(base.get(k), dict):
@@ -46,6 +75,9 @@ def cmd_pull(src: Path, dst: Path) -> None:
     dst.parent.mkdir(parents=True, exist_ok=True)
     dst.write_text(json.dumps(personal, indent=2, ensure_ascii=False) + "\n")
     print(f"  抽取 {len(personal)} 个个性化 key -> {dst.name}")
+    own = own_hooks(settings.get("hooks"), str(Path.home()))
+    (dst.parent / HOOKS_FILE).write_text(json.dumps(own, indent=2, ensure_ascii=False) + "\n")
+    print(f"  抽取 {sum(len(g) for g in own.values())} 组自有 hook -> {HOOKS_FILE}")
 
 
 def cmd_deploy(src: Path, dst: Path, dry_run: bool) -> None:
@@ -54,13 +86,15 @@ def cmd_deploy(src: Path, dst: Path, dry_run: bool) -> None:
         return
     personal = {k: v for k, v in json.loads(src.read_text()).items() if k in MANAGED_KEYS}
     if dry_run:
-        print(f"  [dry-run] 深合并 {len(personal)} 个个性化 key 到 {dst}")
+        print(f"  [dry-run] 深合并 {len(personal)} 个个性化 key 和 {HOOKS_FILE} 里的自有 hook 到 {dst}")
         return
     settings = json.loads(dst.read_text()) if dst.exists() else {}
     deep_merge(settings, personal)
+    hooks_src = src.parent / HOOKS_FILE
+    n_hooks = merge_own_hooks(settings, json.loads(hooks_src.read_text()), str(Path.home())) if hooks_src.exists() else 0
     dst.parent.mkdir(parents=True, exist_ok=True)
     dst.write_text(json.dumps(settings, indent=2, ensure_ascii=False) + "\n")
-    print(f"  深合并 {len(personal)} 个个性化 key -> {dst.name}")
+    print(f"  深合并 {len(personal)} 个个性化 key、{n_hooks} 组自有 hook -> {dst.name}")
 
 
 def main() -> None:

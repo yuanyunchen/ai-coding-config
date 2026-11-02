@@ -1,0 +1,25 @@
+{
+ "session_id": "4f89d90c-b36b-4dcc-8178-dcd73764ac66",
+ "transcript_path": "/Users/yuanyunchen/.claude/projects/-private-tmp-claude-501--Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun-3c281167-6d20-4a74-ad91-50b524af5719-scratchpad-hook-probe-proj/4f89d90c-b36b-4dcc-8178-dcd73764ac66.jsonl",
+ "cwd": "/private/tmp/claude-501/-Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun/3c281167-6d20-4a74-ad91-50b524af5719/scratchpad/hook-probe/proj",
+ "prompt_id": "3f1fd8f8-f841-4c7b-9a25-a07dda2c410d",
+ "permission_mode": "bypassPermissions",
+ "effort": {
+  "level": "xhigh"
+ },
+ "hook_event_name": "PreToolUse",
+ "tool_name": "Agent",
+ "tool_input": {
+  "description": "Reply bg probe",
+  "prompt": "ALLOWME Reply with the single word bg.",
+  "subagent_type": "general-purpose",
+  "model": "sonnet",
+  "run_in_background": true
+ },
+ "tool_use_id": "toolu_01GwRGLjqjs2wk4NDNz1GSKx",
+ "_env": {
+  "CLAUDE_PROJECT_DIR": "/private/tmp/claude-501/-Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun/3c281167-6d20-4a74-ad91-50b524af5719/scratchpad/hook-probe/proj",
+  "CLAUDE_CODE_ENTRYPOINT": "sdk-cli",
+  "CLAUDECODE": "1"
+ }
+}

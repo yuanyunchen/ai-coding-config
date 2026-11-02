@@ -1,13 +1,19 @@
-# update — 整理落盘(子模块;手动 = 对话指令或 /project-update 分发,auto/full 模式下 agent 按纪律自调)
+# update — 阶段收口、收尾、移交（手动 = 对话指令或 /project-update）
 
-家族根 = `~/.claude/skills/workspace-management/`(WM)。参数:`[--handoff <下一session要干什么>] [--deep 全面盘点:逐文件核对索引/task 节点/能力层对账,非只本会话增量]`。承接原 workspace-checkpoint(record 名已统一为 update,2026-07-03)。
-**边界钉死(spec §10)**:只更新工作区内部文件,含其线上对应的飞书任务夹(交付发布、MEMORY.md 飞书台账同步);**不碰**全局枢纽记忆 / 时间线 / harness auto-memory / 全局 AI 索引 / mira-sync——全局层归 memory-management(三库双触发:里程碑时主 agent 按其纪律顺手全局 update,那是主 agent 的动作,不是本例程的)。
+家族根 = `~/.claude/skills/workspace-management/`。参数：`[--handoff <下一个会话要做什么>] [--deep]`（`--deep`：逐个核对所有节点和 memory，而不只看本会话）。
 
-## 流程
+**边界**：只更新工作区内部；仅在已有明确飞书目标时，包括它的飞书任务夹。不碰全局枢纽、时间线、全局 AI 索引、mira-sync——全局层归 memory-management。
 
-1. **回看采集**:盘点本会话新增——需求 / 决策 / 进展 / 踩坑 / 新文件 / 新能力物 / 新外部 doc。
-2. **按 spec §8 写盘**:`.agent/MEMORY.md`、`.agent/memory/`(goal、progress、task 节点、note、requirement 原文补录与总结)、能力层路由表、飞书台账。以「新增是否达到记录必要」取舍;信息量优先,过长拆文件不删信息。requirement 补录贴用户原语义,不改写已录条目。
-3. **任务收尾时**(用户说收尾/归档):交付发布到本任务飞书 Task 夹(执行走 feishu-task-management 规约)→ 双侧归档(tasks/_archive/ + 飞书 Archive/;.agent/ 能力层零处置,仅存在根级 .claude/ 时改名 `.claude.archived/`,见 spec §9)。
-4. **--handoff(可选,跨环境移交才用)**:生成移交文档——不重复工作区已有内容、一律引 path;含 suggested-skills 节;按参数「下一 session 要干什么」定制;脱敏(API key / 个人信息)。存 deliverables/process/。
-5. **冲突检查(最后一步,必做)**:核对文件间矛盾与陈旧事实——goal/progress/总结 vs requirement 原文、MEMORY.md 索引 vs 实物;仲裁基准 = requirement 原文 > 实物 > 记忆;依记忆直接消解、不问人,消解动作写入 MEMORY.md 关键决策留痕,可回溯。顺手跑 `WM/scripts/lint.sh <根>`,error 当场修。
-6. 向用户回简短确认:更新了哪些文件、消解了什么冲突(如有)、lint 结果。
+1. **回看本会话**：新需求、决策、进展、意外发现、踩坑、新文件、新外部资源。
+2. **清 inbox**：`ws inbox`，逐条 `ws req … --entry` 归档或 `ws req --not-req`。
+3. **更新节点**：决策和意外用 `ws log <ID> --tag decision|surprise "…"` 记下；做完的节点写 result.md（结论、产物、验证、偏差、写入 memory），再 `ws task status <ID> done`；被门槛拦下就按提示补齐，不要随手 `--force`。
+4. **整理 memory**：跨任务有用的知识写进 `.agents/memory/<主题>/`；审阅草稿，转正、合并或删除。
+5. **更新 AGENTS.md 手写节**：偏好、规则（用户裁决）、关键决策、风险、外部资源。超过 200 行时把细节移进 memory 留指针。
+6. **检查**：`ws index`，再 `ws check`，error 当场修。
+7. **冲突检查（最后一步，必做）**：goal / plan / result / AGENTS.md / memory 与 task.md 原话是否矛盾，索引与实物是否一致。仲裁顺序：task.md > 实际产物 > 自己写的记录。直接消解，不问人，消解结果记进 AGENTS.md「关键决策」。
+8. **任务收尾**（用户说收尾或归档时）：
+   - 顶层节点写好 result.md 并标 done；
+   - 仅用户要求飞书交付或已有明确飞书目标时，按 feishu-task-management 发布到飞书 `Task/` 并归档飞书 `Archive/`；
+   - task 类型的工作区整体移到 `~/Desktop/AI Workspace/tasks/_archive/`；根上若有 `.claude/`，改名 `.claude.archived/`。
+9. **`--handoff`**（跨环境移交才用）：在当前顶层节点写 `handoff.md`。不重复工作区已有内容，一律引用路径；写明下一个会话要做什么、建议用哪些 skill；去掉 API key 和个人信息。
+10. **回报**：更新了哪些文件、消解了哪些冲突、`ws check` 的结果。

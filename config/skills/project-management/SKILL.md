@@ -1,6 +1,6 @@
 ---
 name: project-management
-description: "三系统编排层:一条命令把 workspace + memory + harness 走齐。触发:/project-init(开工一条龙,--mode none/auto/full)、/project-recall(三层重读定向)、/project-update(三层统一落盘);触发词:项目开工、项目初始化、全面 recall、全面收尾、三层更新。边界:单层操作用对话指令走对应系统,不经本层。"
+description: "三系统编排层:一条命令把 workspace + memory + harness 走齐。触发:/project-init(开工一条龙,--mode none/auto)、/project-recall(三层重读定向)、/project-update(三层统一落盘);触发词:项目开工、项目初始化、全面 recall、全面收尾、三层更新。边界:单层操作用对话指令走对应系统,不经本层。"
 ---
 
 # project-management — 项目编排层(三系统一次走齐)
@@ -9,19 +9,20 @@ description: "三系统编排层:一条命令把 workspace + memory + harness �
 
 ## 模式映射(/project-init --mode 设定;缺省 none)
 
-| project 模式 | workspace | harness | memory(全局,不随项目) |
-|---|---|---|---|
-| **--none(缺省)** | none | none | 保持全局模式(缺省 auto) |
-| **--auto** | auto | auto | 同上 |
-| **--full** | full | auto | 同上 |
+工作区 v4 没有模式(建了工作区,规则即全部生效),--mode 只映射 harness:
 
-落点:工作区 `.agent/MEMORY.md` 模式行 `模式:workspace=<m> · harness=<m>`(harness 字段 = 项目内覆写其全局缺省)。
+| project 模式 | harness | memory(全局,不随项目) |
+|---|---|---|
+| **--none(缺省)** | none | 保持全局模式(缺省 auto) |
+| **--auto** | auto | 同上 |
+
+落点:工作区 AGENTS.md 头部的 `harness=<m>`(repo 类型在 ws 区块头部),在该工作区内覆写 harness-management 的全局缺省。
 
 ## 子模块(`modules/`;统一流程见各文件,不是三次简单转发)
 
 | 场景 | 走 |
 |---|---|
-| 项目开工:建工作区 → recall 全局记忆 → 理解 context → 构建初期记忆 | `modules/init.md`(手动 = `/project-init`) |
+| 项目开工:recall 全局记忆 → 建工作区 → 首个任务与输入 → 定 harness 模式 | `modules/init.md`(手动 = `/project-init`) |
 | 全面定向:三层重读,一份合并摘要(在哪 / 知道什么 / 守什么规) | `modules/recall.md`(手动 = `/project-recall`) |
 | 全面落盘:一次采集 → 判桶三路分发 → 顺序执行 → 合并清单 | `modules/update.md`(手动 = `/project-update`) |
 

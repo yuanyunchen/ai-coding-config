@@ -1,63 +1,72 @@
 ---
 name: workspace-management
-description: "Agent 工作区文件系统唯一权威:结构规范、记忆模式(none/auto/full)、init·recall·update 三例程。触发:长任务开工或用户明确要求时——建任务文件夹/工作区、任务收尾、归档、发布交付、恢复工作区上下文、工作区内派发 subagent、管理项目级能力物、设置记忆模式;触发词:工作区、workspace、长期任务、收尾、归档、record、MEMORY.md。边界:轻任务不加载,常驻核心在 AGENTS.md Workspace 板块。"
+description: "Agent 工作区 v4 的唯一规范：结构、ws 命令行、派发协议、memory 组织，以及 init / recall / update 三个例程。触发：长任务开工或用户要求时——建工作区、任务收尾、恢复工作区上下文、在工作区里拆任务或派发子智能体、整理工作区 memory、管理工作区 skill；当前目录向上能找到 .agents/ws.json（v4）或 .agent/（v3 旧版）时。触发词：工作区、workspace、长期任务、收尾、归档、ws、.agents。边界：轻任务不建工作区；全局记忆归 memory-management，harness 变更归 harness-management。"
 ---
 
-# workspace-management — Agent 工作区文件系统(规范权威 + 模式 + 子模块)
+# workspace-management — Agent 工作区 v4
 
-一个工作区 = 根级**共用区**(人可见:AGENTS.md/CLAUDE.md + context/ + deliverables/,不放人不需要看的)+ **`.agent/` 私有区**(agent 的一切:记忆·过程·能力层)。
-入口 = **`.agent/MEMORY.md`**(agent 自维护;根上 AGENTS.md/CLAUDE.md 归项目规范 + 一行指针,agent 不自行改)。飞书侧 `Task/<中文名>/`(根=交付 + context/refs/agent)不变。
-2026-07-03 起为唯一权威(v3:原 task-workspace v2 改名重构——requirement 并入 memory/、更新纪律改三模式、三命令 skill 收编为内置子模块 + 薄 command;record 子模块 2026-07-03 统一更名 update)。上层编排 = `project-management`(/project-init·recall·update,三系统一次走齐)。
+一个工作区 = 根目录的 `AGENTS.md`（agent 维护的入口和地图）+ `.agents/`（agent 的一切）。结构性写入全部走 `ws` 命令行；hook `~/.claude/hooks/workspace-guard.py` 负责注入现状、记录用户原文、拦截不合规的派发、收回子智能体的结果。规则正文写进每个工作区 AGENTS.md 的「工作协议」区块，主 agent 和子智能体每次会话都会读到。
 
-## 结构一图
+## 结构
 
 ```
 <workspace>/
-├── AGENTS.md|CLAUDE.md(根上唯一 agent 相关文件:项目规范 + 指针行 → .agent/MEMORY.md)
-├── context/(人给的输入)   ├── deliverables/(根=正式交付;过程产物入子夹)
-└── .agent/
-    ├── MEMORY.md(记忆主入口,含模式行 + 能力层路由表)
-    ├── memory/(goal·plan·progress 按需单文件 + note/ + requirement/ + task/<子任务>/… + task/Archive/)
-    ├── subagent/<模块>/<实例>/(task.md 输入 · result.md 输出 · message/ 多轮)
-    ├── files/(refs/ 自查参考 + 私有中间结果)
-    └── skills/ · agents/(能力层:路由表加载,非 harness 注册;根 .claude/ 仅 hooks 等执行物按需建)
+├── AGENTS.md                 入口和地图，agent 维护，100–200 行；<!-- ws:… --> 区块由 ws index 生成
+└── .agents/
+    ├── ws.json               激活标记：有它才是 v4 工作区
+    ├── inbox/                hook 记下的用户原文（只追加，600 权限，不进 git）
+    ├── .state/               锁、归档记录、绕过计数、hooks-off 开关（不进 git）
+    ├── memory/               知识库：目录按主题，类型等写在 frontmatter；INDEX.md 自动生成
+    ├── skills/<名>/SKILL.md  工作区专属 skill，AGENTS.md 的 Skills 表自动列出
+    └── task/NN-<名>/         任务节点，结构到哪一层都一样：
+        ├── task.md           上层写，只追加（人的原文或父节点的说明）
+        ├── goal.md · plan.md 自己写，开工前
+        ├── progress.md       frontmatter status + 只追加的日志
+        ├── result.md         自己写，收尾时交给上层
+        ├── input/            用户交来的文件（可选）
+        ├── subagent/NN-<名>/ 派发：task.md 进，result.md 出（子智能体自己写）
+        └── task/NN-<名>/     子任务，同样结构
 ```
 
-两 profile:任务工作区(`~/Desktop/AI Workspace/tasks/<kebab名>/`)= 全量;代码 repo = 只铺 .agent/(repo 的 AGENTS.md 不动,加指针须人确认)。
+ID 由路径推出：`T01.02` 是任务 01 的子任务 02，`T01.02/S03` 是它的第 3 次派发。
 
-## 记忆模式(v3 核心;细则见 spec §8)
+## 八条硬规则
 
-模式管的是**状态型文件的自动更新纪律**(MEMORY.md、memory/ 各文件、note、requirement、task 节点);日志型派发留档(subagent/ task.md·result.md)不受模式影响,派发/回传即写。模式记在 `.agent/MEMORY.md` 头部模式行;init 例程 --mode(经 /project-init)设定,用户会话中随时可改。
+1. **是不是工作区只看 `.agents/ws.json`。** 家目录下的 `~/.agents/skills` 是 lark-cli 托管的 skill 副本，与工作区无关；`ws` 和 hook 都不会越过 `$HOME` 往上找。
+2. **结构只由 `ws` 创建。** 任务、派发、编号、索引都用命令生成；不手建 `NN-` 目录，不手改 `<!-- ws:… -->` 区块。
+3. **需求原文不丢。** 用户消息由 hook 自动记进 inbox；凡是需求或方向变化，当轮用 `ws req` 归档进对应节点的 task.md。task.md 只追加，执行者不改写。
+4. **节点有门槛。** goal 和 plan 写好才能 active；result.md 合格、派发都有结果、子任务收尾、本节点的 draft 转正、inbox 清空，才能 done。
+5. **派发走文件。** 先 `ws dispatch` 生成 task.md，再原样使用它打印的 prompt；子智能体自己写 result.md，聊天回复不算结果。协议见 `references/subagent-protocol.md`。
+6. **memory 只放跨任务有用的知识。** 目录按主题，类型写在 frontmatter；子智能体写的标 `status: draft`，节点收尾时转正；进度和中间结果留在节点里。
+7. **AGENTS.md 是地图。** 控制在 100–200 行，细节放进 memory 留指针；「规则」一节只记用户的裁决，自己想出的规则走 harness-management。
+8. **v3 工作区原样保留。** 有 `.agent/MEMORY.md` 或 `.agent/memory/` 的目录按 `references/v3-legacy.md` 办，不自动转换。
 
-| 模式 | 纪律 |
+## 命令
+
+`ws` 在 `~/.local/bin`（软链到本 skill 的 `scripts/ws`）；不在 PATH 时用 `python3 <本 skill>/scripts/ws`。
+
+| 命令 | 作用 |
 |---|---|
-| **--none(缺省)** | 不自动更新记忆。只写完成任务所必需的文件:派发 task.md、必须传递的 note、交付物。手动触发照常可用(对话指令或 /project-*) |
-| **--auto** | 事后更新:大模块结束、或状态与记忆系统出现较大出入时,agent 自动跑 update 例程 post-更新(以「新增是否达到记录必要」取舍) |
-| **--full** | 即时更新,先写后行动:goal/plan 先落盘再执行,progress 随做随更;新 session 接入自动跑 recall 例程 |
+| `ws init [DIR] [--profile task\|repo] [--title] [--yes]` | 新建工作区；repo 类型只在 AGENTS.md 末尾追加一个区块，需用户同意后加 `--yes` |
+| `ws req --new <slug> --entry <id>` · `ws req <ID> --entry <id>` · `ws req --not-req <id>` | 把 inbox 原文开成新任务、追加进已有节点，或标成"不是需求"；`--stdin` 用于没有 hook 的环境 |
+| `ws task new <slug> [--parent ID] [--title] [--stdin]` | 新建任务节点（上层的说明从 stdin 进 task.md） |
+| `ws task status <ID> <planned\|active\|blocked\|done\|dropped>` | 改状态，带门槛检查；`--force "<原因>"` 跳过检查，原因记进 progress |
+| `ws dispatch <ID> <slug> --stdin` | 新建派发目录和 task.md，打印派发用的那行 prompt |
+| `ws log <ID> "…" [--tag decision\|surprise\|note]` | 在 progress.md 追加一行 |
+| `ws inbox` · `ws status` · `ws check` · `ws index` | 未归档原文 · 现状摘要 · 全面检查 · 刷新生成区块 |
 
-## 子模块与命令(要干什么 → 一跳)
+## 例程与参考
 
-init / recall / update 是本 skill 的三个内置子模块(`modules/`):**手动** = 对话指令或 /project-* 命令分发;**自动** = auto/full 模式下 agent 按上表纪律自调(none 模式不自调)。
-
-| 场景 | 走 |
+| 场景 | 读 |
 |---|---|
-| 新任务开工 / 初始化工作区(理解输入、构建初期记忆) | `modules/init.md`(手动 = 对话指令或 /project-init;脚手架 = `scripts/scaffold.sh`) |
-| 会话压缩恢复 / 新 session 接入 / 上下文漂移(recall 记忆) | `modules/recall.md`(手动 = 对话指令或 /project-recall) |
-| 阶段收口 / 收尾落盘 / 移交(更新记忆,最后查冲突) | `modules/update.md`(手动 = 对话指令或 /project-update) |
-| 派发子智能体 | **必读** `references/subagent-protocol.md` + `scripts/new-dispatch.sh` |
-| 建/改工作区能力物(skill·命令·派发类型·hook)/ 查路由表机制 | `references/capability-layer.md`(路由表加载;hook 一律给用户过目) |
-| 查规范细则(结构/模式/索引/归档/接缝) | `references/spec.md`(§ 编号与设计稿一致) |
-| MEMORY.md / 派发 task.md / 指针行 模板 | `templates/` |
-| 巡检(结构/新鲜度/死链/索引/留档/能力层) | `scripts/lint.sh <根>`(无自动执行:update 例程末步顺手跑或人调触发) |
-| 结构摘要 / 状态文件新鲜度速看 | `scripts/tree-summary.sh <根>` |
+| 开工、建工作区 | `modules/init.md` |
+| 新会话接手、压缩后恢复 | `modules/recall.md` |
+| 阶段收口、收尾、移交 | `modules/update.md` |
+| 派发子智能体（主 agent 必读第二节，并把路径交给子智能体读第一节） | `references/subagent-protocol.md` |
+| 完整规则：识别、repo 类型、节点生命周期、inbox、memory、AGENTS.md、hook、检查项、边界、已知限制 | `references/spec.md` |
+| 工作区 skill 与根 `.claude/` | `references/capability-layer.md` |
+| v3 旧工作区 | `references/v3-legacy.md`；巡检 `scripts/legacy/lint-v3.sh` |
+| 模板 | `templates/`（AGENTS 两种、协议、节点五件、派发、memory 笔记） |
+| 版本历史 | `CHANGELOG.md` |
 
-## 硬纪律(全文见 references/spec.md,此处只列绝不可违)
-
-1. **私有/共用轴**:人不需要看的不出 `.agent/`(含 MEMORY.md 与能力层);人要看的不埋里面(过程产物 → deliverables/ 子夹)。根上除 AGENTS.md/CLAUDE.md、context/、deliverables/ 外不放东西。
-2. **模式纪律(spec §8)**:状态型文件按当前模式更新,缺省 --none 不自动更;requirement 已并入 memory/,与其他状态型同步更新(update 例程补录),不再即时追加;日志型派发留档不受模式影响,派发/回传即写,永不回改。
-3. **update 边界**:只更新工作区内部(含其飞书任务夹);全局枢纽/时间线/AI 索引/mira-sync 不碰。update 收尾必做冲突检查(仲裁基准 = requirement 原文 > 实物 > 记忆)。
-4. **老规范兼容**:根为 memory.md 的存量任务 = 旧规范(07-01 版四件:memory.md+context/work/deliverables),维持原样不"纠正",巡检只查死链;迁移仅在用户要求时做。
-5. **归档**:双侧归档沿用(tasks/_archive/ + 飞书 Archive/);.agent/ 能力层零处置,仅存在根级 .claude/(hooks 等)时改名 `.claude.archived/`。
-6. **能力层登记即存在**:.agent/skills|agents 只经 MEMORY.md 路由表加载——不登表 = 不存在;新增能力物与路由表同笔更新。
-
-新会话进工作区:先读 `.agent/MEMORY.md` 再干活(根 AGENTS.md/CLAUDE.md 指针行已接线;auto/full 模式按模式行执行对应纪律)。
+测试：`python3 -m unittest discover -s scripts/tests`（ws）与 `python3 -m unittest discover -s ~/.claude/hooks/tests`（hook）。

@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+"""ws — workspace v4 command line. Logic lives in wslib.py next to this file."""
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import wslib  # noqa: E402
+
+sys.exit(wslib.main(sys.argv[1:]))

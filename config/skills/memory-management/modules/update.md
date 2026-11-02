@@ -6,7 +6,7 @@
 
 ## 流程
 
-1. **采集**:读目标工作区 MEMORY.md 关键决策 + `.agent/memory/note/`，对照三库找该记未记。
+1. **采集**:读目标工作区 AGENTS.md「关键决策」+ `.agents/memory/`（v3：`.agent/MEMORY.md` 关键决策 + `.agent/memory/note/`），对照三库找该记未记。
 2. **落位(无痕)**:
    - 定位卡 / 时间条目 / hub 主题 → `--project hub`（`write-note`/`edit-note` 或改 md）。
      落到 `hub/ns/<域>/<slug>.md`；域不确定时按主归属选一个，多归属靠 `topics` 多值表达。
@@ -48,7 +48,7 @@
    本例程里**不要自己跑 `bm reindex`**（无并发保护；迁移期工作树是脏的，会把中间态入库）。
    正确做法：写完后在回话里说明"卡已落盘，`search-notes` 要等下一次 reindex 才查得到"，
    需要立刻可检索时交给用户/主控串行跑（前置：`pgrep -fa 'basic-memory mcp'` 为空 + 工作树干净 + detached）。
-5. **冲突检查(必做)**:仲裁序 = requirement > 工作区实物 > 全局记忆；事实性直接修；
+5. **冲突检查(必做)**:仲裁序 = 工作区 task.md 上层原话（v3：requirement/）> 工作区实物 > 全局记忆；事实性直接修；
    语义矛盾列用户；不静默删。回简短清单。
 
 ## 只增不减的解法

@@ -5,7 +5,7 @@ description: "Harness 层(skill/command/agent/hook/全局规则/settings)一切�
 
 # harness-management — Harness 层管理(规范权威 + 模式 + 子模块)
 
-Harness 层 = 约束 agent 行为的持久配置:skill(含 subskill/伪 skill)、command、agent(派发类型)、hook、全局规则(AGENTS.md)、settings。**对这一层的任何新增/修改都走本 skill**——判桶 → 判层 → 冲突检查 → 按模式审批 → 路由执行。与 workspace-management(工作区)、memory-management(全局记忆)同构三件套:模式 + recall/update 子模块 + 薄 command;三层 recall 各管一件事——workspace 恢复任务状态、memory 恢复长期记忆、harness 恢复行为约束。
+Harness 层 = 约束 agent 行为的持久配置:skill(含 subskill/伪 skill)、command、agent(派发类型)、hook、全局规则(AGENTS.md)、settings。**对这一层的任何新增/修改都走本 skill**——判桶 → 判层 → 冲突检查 → 按模式审批 → 路由执行。与 workspace-management(工作区)、memory-management(全局记忆)同构三件套:recall/update 子模块 + 薄 command(工作区 v4 不设模式,本 skill 与 memory-management 各有模式);三层 recall 各管一件事——workspace 恢复任务状态、memory 恢复长期记忆、harness 恢复行为约束。
 
 2026-07-03 起替代 continue-learning(已归档/移除;sole successor = 本 skill);原「过 continue-learning 门」语义 = 走本 skill update 流程、按当前模式定审批。上层编排 = `project-management`(/project-init·recall·update,三系统一次走齐)。
 
@@ -16,9 +16,9 @@ Harness 层 = 约束 agent 行为的持久配置:skill(含 subskill/伪 skill)�
 | 模式 | 纪律 |
 |---|---|
 | **none(缺省)** | 对话中零主动沉淀、零修改。只在人调 update 例程(对话指令或 /project-update)时反思本会话:找需求与现有 skill 的出入、可抽象复用的过程 → 给方案(哪层/改什么/为什么)→ 提问 → 审批后执行 |
-| **auto** | 实时关注两类信号:① 需求与现有 skill/规则有出入;② 对话中出现可留存的可复用过程。**项目级**(项目 agent 配置目录、项目 AGENTS/CLAUDE 指导文件、工作区 .agent/skills\|agents)直接改,回复中一行报备;**全局级**(当前工具 home 下 skill/规则/command/agent,如 `~/.claude`/`~/.codex`/`~/.cursor`)向用户提简短建议——什么问题、如何改——批准后才改 |
+| **auto** | 实时关注两类信号:① 需求与现有 skill/规则有出入;② 对话中出现可留存的可复用过程。**项目级**(项目 agent 配置目录、项目 AGENTS/CLAUDE 指导文件、工作区 .agents/skills 与工作区 AGENTS.md「规则」节)直接改,回复中一行报备;**全局级**(当前工具 home 下 skill/规则/command/agent,如 `~/.claude`/`~/.codex`/`~/.cursor`)向用户提简短建议——什么问题、如何改——批准后才改 |
 
-项目内可覆写:工作区 `.agent/MEMORY.md` 模式行的 `harness=` 字段(project-init 设定)在该工作区内优先于本节全局模式行。模式无关恒成立:**hook 任何层级一律给用户过目**;记忆桶内容(事实/状态/偏好取值)不归本 skill,转 memory-management(其模式独立,缺省 auto 无痕写三库不受本 skill 模式影响)。
+项目内可覆写:工作区 AGENTS.md 头部(repo 类型在 ws 区块头部)的 `harness=` 字段(project-init 设定)在该工作区内优先于本节全局模式行。模式无关恒成立:**hook 任何层级一律给用户过目**;记忆桶内容(事实/状态/偏好取值)不归本 skill,转 memory-management(其模式独立,缺省 auto 无痕写三库不受本 skill 模式影响)。
 
 ## 总体原则(对 continue-learning 机制内核的承接)
 
@@ -43,7 +43,7 @@ recall / update 是内置子模块(`modules/`):手动 = 对话指令或 /project
 | 写/审 AGENTS.md、CLAUDE.md 等 agent 指导文件 | `subskills/agent-file/SKILL.md`(原全局 write-agent-file) |
 | 三源同步(+GitHub) / deploy / pull / links / 从 GitHub 更新推三工具(任意 cwd) | `subskills/multi-source-sync/SKILL.md` |
 | hook / 权限 / settings.json / env | 内置 update-config skill(session 内置,外部执行层;hook 过目后才落) |
-| 工作区 .agent/ 能力物的结构与登记规范 | workspace-management `references/capability-layer.md`(执行规范在彼;沉淀决策在本 skill) |
+| 工作区 .agents/skills 的结构与登记规范 | workspace-management `references/capability-layer.md`(执行规范在彼;沉淀决策在本 skill) |
 
 插件侧同类物(superpowers:writing-skills、anthropic-skills:skill-creator)已有内部替代,不外用;插件与 lark-cli 托管副本(当前工具 home 的 `plugins/**`、`~/.agents/skills/**`)不动结构(skill-authoring 边界节)。
 

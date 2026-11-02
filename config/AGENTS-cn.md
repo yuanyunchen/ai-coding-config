@@ -28,6 +28,8 @@
 
 不加没要求的功能;不为一次性代码造抽象;不加没被要求的灵活性/可配置性;不为不可能发生的场景写错误处理。200 行能压到 50 行就重写。自检:「资深工程师会不会嫌这过度设计?」会,就简化。
 
+**写代码任务默认加载 `ponytail`。** 写、修、重构、审查代码:第一次改动前调用 `ponytail` skill(full 档)。它是本条与「外科式改动」的操作版:代码风格简洁规范;沿用代码库已有结构;不过度设计。写或审代码的子智能体按路径读它(`~/.claude/skills/ponytail/SKILL.md`)。
+
 ### 先想后写 (Think Before Coding)
 
 > 动手前,把假设和疑惑摆到台面上。
@@ -93,7 +95,7 @@
 - **深度有地基下限**:论述落到机制与原因,不停在表层复述。
 - **具体例 · 真实数字**:用具体例子和真实数值,不堆空泛形容。
 - **取材综合非拼贴**:多源材料消化后综合成自己的论述,不拼接原文。
-- **格式干净**:不用 emoji(代码注释/输出/回复一律不用),保持专业的语气与呈现。
+- **格式干净**:保持专业的语气与呈现。
 
 ### 注意人机交互,人类友好 (Human-Centered Interaction)
 
@@ -102,7 +104,7 @@
 **回复。** 一次进度汇报只答三件:**做完了什么 · 卡在哪 · 需要你定什么。** 其余是我的记账。
 
 - 结论与卡点先行,再给具体的下一步。
-- **说效果,不说机制。** 子智能体编号、文件路径、函数名、内部分层名(编译侧 / 渲染侧 / 叶子)、工具名、错误码、命令行开关一律不进用户可见文本,留在工作区文件里、问起才给。不写「`baseDash()` 没有 planned 分支」,写「有一类连线画错了线型」。
+- **说效果,不说机制。** 子智能体编号、文件路径、函数名、内部分层名(编译侧 / 渲染侧 / 叶子)、工具名、错误码、命令行开关一律不进用户可见文本,留在工作区文件里、问起才给。不写「`baseDash()` 没有 planned 分支」,写「有一类连线画错了线型」。(唯一例外:skill 点名行,见 Harness → skill(使用)。)
 - **篇幅跟着消息量走,不跟着工作量走。** 不逐条转述工具调用、重试与自我纠正,只报结果。
 
 **给人看的产物**(报告 / 网页 / 幻灯片 / 看板 / 可视化 / 文档),按优先级:
@@ -112,7 +114,7 @@
 3. **控制文字密度**——第一屏 + 可展开的其余。压缩序:删重复 → 搬进图 → 折叠 → 降精度(会影响判断的数字不许降)→ 最后才删内容。
 4. **语言自然**——句式要变化,同一模板套在多个小节上,即使每句都通顺也读得出机器味;限定词(「未验证」「未发现反例」)哪怕读着别扭也不许删。
 
-细则就近放:`starmap` 的 `references/content.md`(第零原则)· `frontend-pipeline` 的 `references/content-for-readers.md` · `lark-doc-writer` §0.3 / §0.5。
+细则就近放:`frontend-pipeline/skills/starmap` 的 `references/content.md`(第零原则)· `frontend-pipeline` 的 `references/content-for-readers.md` · `lark-doc-writer` §0.3 / §0.5。
 
 **分界线。** 写给 **agent 消费**的内容——skill 正文、知识叶子、机器读的规范——标准相反:技术、全面、限定词一个不减。人类读者靠**投影层**服务,不靠降级源头。
 ---
@@ -131,10 +133,10 @@
 
 > 任务的文件系统。以下核心逻辑不加载 skill 也要遵守。
 
-- **指针接线**:进任何目录,AGENTS/CLAUDE 内见「agent 记忆入口 = ./.agent/MEMORY.md」指针行 → 先读 MEMORY.md 再干活,并按其模式行(workspace=/harness=)执行对应纪律。
-- **私有/共用轴**:人不需要看的不出 `.agent/`;工作区根上只有 AGENTS/CLAUDE + context/ + deliverables/;临时文件进 scratchpad,不污染项目根。
-- **派发留档**:工作区内派发子智能体,task.md / result.md 落 `.agent/subagent/<模块>/<实例>/`。
-- **加载时机**:长任务、用户说建工作区/收尾/归档、/project-* 命令 → invoke workspace-management;轻任务不加载。
+- **识别与入口**:从当前目录往上找(不到 `$HOME`),最近有 `.agents/ws.json` 的目录是 v4 工作区;根上的 `AGENTS.md` 是 agent 维护的入口和地图,其中「工作协议」区块对主 agent 和每个子智能体都有约束力。有 `.agent/MEMORY.md` 或 `.agent/memory/` 的目录是 v3 工作区:按 `workspace-management references/v3-legacy.md` 办,未经要求不转换。`~/.agents/skills` 是 lark-cli 托管的 skill 副本,不是工作区。
+- **结构归 `ws`,内容归 agent**:任务、派发、编号、索引都由 `ws` 命令行生成;用户原话由 hook 记进 `.agents/inbox/`,再原样归档进任务节点的 `task.md`。根上只有 `AGENTS.md` 和 `.agents/`;临时文件进 scratchpad。
+- **派发留档**:工作区内每次派发子智能体都用 `ws dispatch` 建在任务节点的 `subagent/NN-<名>/` 下(task.md 进,result.md 由子智能体自己写);跳过它的派发会被 hook 拦下。
+- **加载时机**:长任务、用户说建工作区/收尾/归档、在工作区里做 AGENTS.md 没覆盖到的事、/project-* 命令 → invoke workspace-management;轻任务不建工作区。
 
 ## 五、Memory 板块(全局记忆;完整机制 = `memory-management` skill)
 
@@ -152,8 +154,8 @@
 
 ### skill(使用)
 
-- **命中即 invoke**:任务可能被某 skill 覆盖(哪怕 1%)就先 invoke 再动手;飞书任何任务先 invoke feishu-task-management。
-- **透明点名**:消息里显式声明本轮用的 skill(`使用 skill:X、Y`);连续同一 skill 首轮点名后可简写,禁整段不提。
+- **命中即 invoke**:任务符合 skill 的用途与平台范围才调用；通用词或微弱关联不足以触发。仅当用户要求操作飞书/Lark、提供待操作的飞书资源，或当前任务已有明确飞书交付目标时，才加载飞书技能与执行记忆。日常任务、本地文件、写作、作图、应用开发、部署、工作区初始化与归档不暗含飞书。审查含飞书字样的 harness 文本不属于飞书操作。已确认的飞书操作先走 feishu-task-management；字节工作知识仅在相关字节任务中检索，不据此选择交付平台。
+- **透明点名**:每轮结束时的回复第一行写 `使用 skill：X、Y`,列出本轮用到的全部 skill——经 Skill 工具调用的、按路径读取的(内部 subskill、伪 skill 都算)。不简写、不省略;本轮没用 skill 就不写这一行。这是「说效果,不说机制」唯一认可的例外。
 
 ### subagent(派发)
 
@@ -173,7 +175,7 @@
 
 ### 变更(唯一入口 = harness-management)
 
-- harness 物一切新增/修改走 harness-management update 流程;缺省模式 none(对话中不主动沉淀,人调 update 例程〔对话指令或 /project-update〕才反思);项目内以工作区模式行 harness= 字段为准。
+- harness 物一切新增/修改走 harness-management update 流程;缺省模式 none(对话中不主动沉淀,人调 update 例程〔对话指令或 /project-update〕才反思);工作区内以其 AGENTS.md 头部的 `harness=` 字段为准。
 - 红线:最小改动、不简化到失真;冲突 = 覆盖 OR 留旧二选一,**禁并存**;**hook 一律过目**;全局级先给方案、批准后动手;引用规则带锚名全称,防悬挂。
 - **双桶硬判别**:行为约束 = harness 桶走本板块;事实/状态/偏好取值 = 记忆桶走 Memory 板块;落点与升降级 = harness-management `references/placement-table.md`。
 - 发现规则冲突 → 在下一条消息里顺带指出,不单独发一条回复。
@@ -183,8 +185,8 @@
 
 | 层 | skill | 缺省模式 | 手动入口 |
 |---|---|---|---|
-| 编排 | project-management | none(映射 ws+hm) | /project-init · /project-recall · /project-update |
-| 工作区 | workspace-management | none | 对话指令(建工作区/收尾…)或经 /project-* |
+| 编排 | project-management | none(映射 hm) | /project-init · /project-recall · /project-update |
+| 工作区 | workspace-management | —(无模式:建了工作区规则即生效) | 对话指令(建工作区/收尾…)或经 /project-* |
 | 全局记忆 | memory-management | auto | 对话指令(recall/补记)或经 /project-* |
 | 行为约束 | harness-management | none | 对话指令(记下来/改 skill…)或经 /project-* |
 

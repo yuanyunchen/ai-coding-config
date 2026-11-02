@@ -20,7 +20,7 @@
 | 问题 | 参数 |
 |---|---|
 | 关于 X 我知道什么 | `"X"` |
-| X 项目在哪 / 什么状态 | `"X" --type project`（P5 前该过滤器返回 0，去掉它只用 `"X"`）；细节去工作区 MEMORY.md，定位卡只给指针 |
+| X 项目在哪 / 什么状态 | `"X" --type project`（P5 前该过滤器返回 0，去掉它只用 `"X"`）；细节去工作区 AGENTS.md（v3：`.agent/MEMORY.md`），定位卡只给指针 |
 | 已完结 / 活跃项目有哪些 | `--status closed --page-size 20` / `--status active`（不带 query）。**P5 reindex 前 hub 上返回 0**，此期间读 `hub/MEMORY.md` 人肉筛 |
 | 我有哪些偏好 | `--type feedback --page-size 20`。**偏好卡的 type 是 `feedback`，`user` 这个值在 hub 里一张都没有** |
 | 上周 / 最近哪些文件被动过 | `--after_date 7d`（也接 `'2d'` `'1 week'`）——查文件 mtime，只做交叉验证 |
@@ -32,7 +32,7 @@
 | 大结果集翻页 | `--page 2`（配 `--page-size`） |
 | bytedance 观察/关系粒度 | `--entity-type observation --category <类>` |
 
-`--deep` 时二跳展开：命中卡的 `_detail/<slug>/` 全部切片、对应工作区 MEMORY.md、
+`--deep` 时二跳展开：命中卡的 `_detail/<slug>/` 全部切片、对应工作区 AGENTS.md（v3：`.agent/MEMORY.md`）、
 `hub/timeline/TIMELINE.md` + `hub/timeline/records/`（P5 后为 `hub/timeline/`）里同名条目、
 bytedance 命中的 `source.quote` 原文。
 

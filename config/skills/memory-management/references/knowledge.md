@@ -47,7 +47,7 @@
 - 索引:`hub/MEMORY.md`(L0)与 `hub/ns/<域>/INDEX.md`(L1)由 `<repo>/bin/build-index.py` 从 frontmatter 派生,**不手写**;手写行会被下一次派生覆盖。
 - 写入:`<repo>/bin/bm tool write-note|edit-note --project hub …`,或直接改 md。
   ⛔ 改完 md **不要**自己跑同步:`bm sync` 在 0.22.1 不存在,唯一同步路径 `bm reindex` 无并发保护,入库交触发层 L2(见 `update-rules.md` §四、§五)。
-- 来源:工作区 note 中跨任务恒真的内容,经里程碑 / update 升华。
+- 来源:工作区 `.agents/memory/`(v3:`.agent/memory/note/`)中跨任务恒真的内容,经里程碑 / update 升华。
 - **规则不进这里**:行为约束 → harness(AGENTS / SKILL);这里只放事实、状态、偏好取值。
 
 ## 三、检索契约(别只用裸 query)

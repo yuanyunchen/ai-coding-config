@@ -1,116 +1,142 @@
-# 工作区规范全文(spec)
+# 工作区 v4 规范全文
 
-> 来源 = 任务 task-workspace-fs-upgrade 设计稿 v4(2026-07-02 经 R1–R6 多轮裁决定稿;v2.1 同日修订:MEMORY.md 与能力层收进 .agent/,能力加载 = MEMORY.md 路由表 + 按需 Read;**v3 修订 2026-07-03,用户指令:skill 改名 workspace-management;requirement 并入 memory/、废止原文即时追加;§8 更新纪律改为三模式 none/auto/full;三命令 skill 收编为内置子模块 modules/{init,recall,update} + 薄 command;record 收尾必做冲突检查;record 子模块同日统一更名 update**);§ 编号与设计稿一致,外部引用 §N 均指本文件对应节。§5 派发契约独立成 `subagent-protocol.md`,§11 命令层 = 薄 command + 内置子模块,§12 能力层独立成 `capability-layer.md`。
+面向 agent。SKILL.md 是摘要；本文件是完整规则。版本历史见 `../CHANGELOG.md`。
 
-## §1 设计总则(五条,规范的宪法层)
+## 1. 设计原则
 
-1. **私有/共用轴**:`.agent/` 内 = agent 私有工作态,外面 = agent 与人共用区。不需要给人看的一律不放外面;需要给人看的一律不埋里面。(`.claude/` 是 harness 约定目录,归能力层,见 `capability-layer.md`。)
-2. **文件三分法**:每类文件显式声明性质——**日志型**(只追加永不回改:subagent 留档)、**状态型**(须保持为真:MEMORY.md、note、task 文件、requirement——原文只补录不改写,v3 起归状态型节奏)、**生成型/静态**(索引可重建、资料写完不动)。更新节奏由三模式统辖(§8),这是设计核心而非附注。
-3. **按需生长**:规范定义的是最大形态与生长规则,不是开工模板。各类文件不必都有;特定场景才要看的记忆单独成文件按需分流,不塞主文件。文件类型不限于本文列举。
-4. **单层索引**:索引不设专门目录——作为文件内章节、文内引用、或就地的 index 文件存在;每层只引相关的下一层,不穷举展开。被引对象可以是普通文件、note、外部文件、index 文件。
-5. **信息量优先,软约束兜底**:记忆与 note 要保证信息量、不过度简略;规模用软指引 + 巡检提醒控制,不硬卡(防止为凑预算牺牲内容)。
+1. **工具管结构，agent 管内容。** 编号、目录、索引、生成区块都由 `ws` 写；agent 只写自然语言内容。手写的结构必然漂移（v3 的 VideoAgent 工作区里，手写索引指向了不存在的目录）。
+2. **规则必须在场。** 规则写进工作区 AGENTS.md 的「工作协议」区块：Claude Code 在没有 CLAUDE.md 时会自动加载 AGENTS.md，子智能体同样加载（2026-11-01，Claude Code 2.1.316，用埋暗号的探针实测）。只放在按需加载的 skill 里的规则会被忽略。
+3. **能交给机器的检查不交给自觉。** 用户原文由 hook 记录；派发由 hook 把关；结果文件由 hook 追收；状态门槛由 `ws` 检查。
+4. **记录分两类。** 日志只追加（task.md、progress.md、inbox、派发留档），状态必须为真（goal、plan、AGENTS.md 手写节、memory）。日志用来复盘和仲裁，永不回改。
+5. **失败开放。** hook 出错一律放行，不能因为守卫本身的问题卡住工作。
 
-## §2 架构全景(最大形态;按 §9 生长规则按需实例化)
+## 2. 结构与文件职责
 
 ```
-<workspace>/                       ← 根 = 共用区:只有人要看的东西
-├── AGENTS.md / CLAUDE.md          ← 根上唯一 agent 相关文件:项目规范(人向)+ 一行指针 → .agent/MEMORY.md [静态]
-├── context/                       ← 输入:人传入或指定传入,与用户共看 [静态]
-├── deliverables/                  ← 根=正式交付;过程产物入子夹(如 process/)[静态]
-└── .agent/                        ← agent 私有区(记忆·过程·能力)
-    ├── MEMORY.md                  ← agent 记忆主入口(§3;含模式行,v3)[状态型]
-    ├── memory/                    ← 认知区(§4)
-    │   ├── goal.md · progress.md · index.md …  ← 主任务层,按需单文件 [状态型]
-    │   ├── note/                  ← 可复用理解单元 [状态型·厚]
-    │   ├── requirement/           ← 用户消息原文 + 总结(§6;v3 起在此)[状态型]
-    │   └── task/
-    │       ├── <子任务>/          ← 递归同构,文件按需 [状态型]
-    │       └── Archive/           ← 做完的子任务移入
-    ├── subagent/<模块…>/<子智能体>/ ← 派发实例留档 = 其工作目录(subagent-protocol.md)[日志型]
-    ├── files/                     ← agent 私有资料(§6):refs/ 自查参考 + 私有中间结果 [静态]
-    ├── skills/<名>/SKILL.md       ← 能力层:工作区 skill(路由表加载,capability-layer.md)[能力]
-    └── agents/<名>.md             ← 能力层:派发类型定义文本 [能力]
+<workspace>/
+├── AGENTS.md
+└── .agents/
+    ├── ws.json · .gitignore（inbox/、.state/）
+    ├── inbox/YYYY-MM-DD.md
+    ├── .state/{lock, inbox-filed.log, skips.log, hooks-off?}
+    ├── memory/{INDEX.md, <主题>/…}
+    ├── skills/<名>/SKILL.md
+    └── task/NN-<名>/{task.md, goal.md, plan.md, progress.md, result.md, input/, subagent/NN-<名>/, task/NN-<名>/}
 ```
 
-> 能力加载:`.agent/skills|agents` **不被 harness 自动注册**——MEMORY.md 的「能力层路由表」是唯一入口,按需 `Read`(伪 skill 模式)。需要 harness 才能生效的执行物(hooks / 权限 / .mcp.json / 供 Agent tool 引用的注册型子智能体类型)仍须根级 `.claude/`——**按需才建、默认不存在、hook 一律过目**(capability-layer.md)。
+| 文件 | 谁写 | 何时 | 性质 |
+|---|---|---|---|
+| AGENTS.md 手写节 | 主 agent | 有变化时 | 状态 |
+| AGENTS.md 生成区块、memory/INDEX.md | `ws index`（hook 在每轮结束时自动跑） | 自动 | 生成 |
+| inbox | hook | 用户每条消息 | 日志 |
+| task.md | 上层：人的原文经 `ws req` 归档，或父节点经 `ws task new --stdin` / `ws dispatch --stdin` | 创建时 + 追加 | 日志 |
+| goal.md、plan.md | 执行者 | active 之前；plan 改动记进「修订记录」 | 状态 |
+| progress.md | 执行者用 `ws log`；`ws` 自动记 status/dispatch/req | 过程中 | 日志 |
+| result.md | 执行者（派发里是子智能体自己） | 收尾 | 状态，交给上层 |
+| memory 文件 | 主 agent、子智能体 | 产生可复用知识时 | 状态 |
 
-**作用范围两个 profile**:① 任务工作区(`~/Desktop/AI Workspace/tasks/<kebab名>/`)= 全量形态;② 代码 repo = 只铺 `.agent/`(含 MEMORY.md 与能力层),repo 本身即共用区(通常无 context/deliverables),repo 已有的 AGENTS.md/CLAUDE.md 一概不动、只加指针(改动先征得用户确认)。AI Workspace 根目录不铺(全局层已有记忆枢纽)。
+根目录（task 类型）只有 AGENTS.md 和 `.agents/`（另允许 .git、.gitignore、README.md）。产物放在产生它的任务节点里，由 result.md 列出；AGENTS.md 任务树链接各顶层节点的 result.md。
 
-## §3 入口:MEMORY.md 与 AGENTS.md 的分界
+## 3. 识别与两种类型
 
-| | AGENTS.md / CLAUDE.md | MEMORY.md |
-|---|---|---|
-| 是什么 | 项目规范:给所有 agent 的行为规则 | agent 过程记忆的主入口 |
-| 谁维护 | 人写或人审;agent 不自行改动 | agent 自维护 |
-| 装什么 | 项目约定、构建/规范、行为规则;不暴露内部 agent 文件细节 | 项目认知摘要、用户偏好、任务与进度、关键决策、核心索引(.agent 内部 + 能力层 + 共用区 + 任务相关外部源) |
-| 性质 | 静态(改动走人) | 状态型(按 §8 纪律更新) |
-| 接线 | AGENTS.md/CLAUDE.md 内一行指针连接:「agent 记忆入口 = ./.agent/MEMORY.md」(文案见 templates/pointer-line.md);MEMORY.md 住 .agent/ 内,根上不露 | |
+- **识别**：从 cwd 向上找，停在 `$HOME` 之前，最近的 `.agents/ws.json`（v4）或 `.agent/MEMORY.md` / `.agent/memory/`（v3）胜出。只有 `.agent/` 而没有这两者的目录（例如 OpenClaw 的 `.agent/workflows`）不算工作区。
+- **命名冲突**：`~/.agents/skills/` 是 lark-cli 托管的 skill 副本，Codex 会自动注册它；它和工作区的 `.agents/` 同名不同物，工作区规则从不作用于 `$HOME`。
+- **task 类型**：任务工作区，位置 `~/Desktop/AI Workspace/tasks/<kebab名>/`；AGENTS.md 全部由 agent 维护；整体归档到 `tasks/_archive/`。
+- **repo 类型**：代码仓库。AGENTS.md 由人维护，`ws init --profile repo --yes` 只在末尾追加 `<!-- ws:begin -->…<!-- ws:end -->` 区块，区块外一个字不改；追加前必须征得用户同意。仓库若已有 CLAUDE.md 且没有 `@AGENTS.md`，Claude Code 读不到区块，`ws init` 会提示，由用户决定是否加引用。`.agents/` 是否提交进 git 逐个仓库问用户；不提交时写进 `.git/info/exclude`，不改被跟踪的 .gitignore。
+- **harness 模式覆写**：AGENTS.md 头部（repo 类型在区块头部）的 `harness=none|auto` 在本工作区内优先于 harness-management 的全局模式。工作区本身没有模式：建了工作区，规则就全部生效；轻任务不建工作区。
 
-MEMORY.md 节结构(按需增删,骨架见 templates/MEMORY.template.md):定位 · 现状与进度(摘要,细节引 memory/)· 用户偏好与规则指针 · 核心索引(下一跳:memory/ 各文件、活跃 task 节点、deliverables、**能力层路由表**、任务相关外部 doc 台账)· 关键决策(一行一条含日期)。与全局记忆枢纽的 MEMORY.md 同名同惯例、不同作用域——分形一致。
+## 4. 任务节点
 
-## §4 memory/ 认知区
+- **编号**：两位数起，每个父目录下 `task/` 与 `subagent/` 各自从 01 连续编号；`ws` 在锁内分配，并行安全。重试用新编号，失败的那次原样保留。
+- **状态**：`planned → active → done`，以及 `blocked`、`dropped`；记在 progress.md frontmatter，变化由 `ws task status` 记一行日志。
+- **门槛**：
+  - active：goal.md 和 plan.md 去掉标题和注释后必须有内容；
+  - done：result.md 的 status 为 DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED 之一且有内容；所有派发都有 result.md；所有子任务 done 或 dropped；`source` 指向本节点的 draft memory 已转正；inbox 没有未归档原文；
+  - `--force "<原因>"` 可跳过，原因记进 progress，`ws check` 不会替你掩盖遗留问题。
+- **拆分**：一步能做完的直接做；需要独立验收、跨多步或跨会话的建子任务；交给子智能体执行的走派发。同一波次可并行的派发，各自负责的文件不能重叠（写进 plan.md「拆分」表）。层级建议不超过 3 层。
+- **不挪目录**：完成的节点原地标 done；AGENTS.md 任务树只展开含 active 节点的子树，其余折叠成一行。
+- **输入文件**：用户交来的文件复制进该节点的 `input/` 并在 task.md 里引用；大数据集、代码仓库只记路径。需要跨任务复用的，提取后写进 memory（type: source）。
 
-- **顶层单文件 = 主任务层**:goal.md(agent 依据 requirement 自写的目标与验收标准)、plan.md(具体计划、方法、方法论)、progress.md、index.md 等,按需存在、类型不限。特定场景才需要看的记忆单独成文件,主文件只留一行引用。
-- **note/ = 可复用理解单元**:经验、踩坑、核心结论、代码模块 summary、可复用的模块理解。一事一文件,内容要厚。诞生规则:结论先写在其诞生的 task 节点,第二处要用时抽到 note/,原地改引用。note/ 同时是向全局层(skill/全局规则,走 harness-management update 流程)输送候选的中转池。
-- **task/ = 子任务节点,递归同构**:每个子任务/子模块一个目录,goal/plan/progress/memory 等按需(小节点单文件即可);内部可继续嵌子模块目录。做完的节点移入 `task/Archive/`。
-- **requirement/ = 需求记录**(v3 起并入 memory/):细则见 §6,更新与其他状态型同节奏(§8 模式)。
+## 5. 需求原文与 inbox
 
-## §5 subagent 派发契约
+- hook 在 UserPromptSubmit 时把用户亲手输入的消息原样追加进 `.agents/inbox/<日期>.md`，条目 ID 形如 `p1a2b3c4d`。不记：子智能体回报（`<task-notification>`）、跨会话消息、本地命令输出、`claude -p` 等非交互会话（`WS_HOOKS=force` 可强制记录）。
+- 不少于 20 个字符的消息会附带一行提示，给出条目 ID；更短的（"继续""好的"）静默记录，无需归档。
+- 归档：`ws req <ID> --entry <id>` 追加进已有节点 task.md 的「## 追加 <时间> · 用户原文 · <id>」；`ws req --new <slug> --entry <id> [--parent ID]` 开新任务；`ws req --not-req <id>…` 标成不是需求（提问、闲聊）。
+- 含疑似密钥（`sk-`、`ghp_`、`AKIA`、`xox?-`、私钥头、`XXX_KEY=…`）的原文拒绝归档，除非加 `--allow-secret`：task.md 可能进 git，inbox 不会。
+- 没有 hook 的环境（Codex、Cursor、Trae）：把用户原话照录，`ws req <ID> --stdin` 或 `ws task new <slug> --stdin`。
 
-→ 独立文件 `subagent-protocol.md`(派发规约唯一 home;派发时把该文件 path 写进 task.md 让子智能体 Read)。
+## 6. 派发
 
-## §6 memory/requirement/ 与 files/
+协议正文见 `subagent-protocol.md`。hook 在 PreToolUse(Agent) 时检查：
+- 只读类型直接放行：Explore、Plan、claude-code-guide、web-fetch、statusline-setup；
+- prompt 含 `[ws:skip]` 放行，但记进 `.state/skips.log`，SessionStart 时显示近 7 天次数。只用于结果不进工作区的只读调研；
+- 其余派发，prompt 必须引用一个真实存在、还没有 result.md、且「任务与背景」「成功标准」已填写的 `.agents/task/…/subagent/NN-*/task.md`，否则拒绝，拒绝原因里给出 `ws dispatch` 的用法。
+- SubagentStop 时，若对应派发没有合格的 result.md：第一次拦下并要求补写；第二次仍没有，hook 把它最后一条消息存为 `status: UNVERIFIED` 的 result.md，并在父节点 progress 记一笔。主 agent 核对后改成正式状态。
 
-- **memory/requirement/**(v3 起并入 memory/,废止即时追加):两形态——原文记录(构成需求或改变方向的用户消息,update 例程时从对话补录,贴原语义;已录条目不改写)+ 总结文件(保留原语义不简化)。两者均按 §8 模式与其他状态型同节奏更新。goal.md 与总结口径冲突时,以 requirement 原文为准回溯。
-- **files/**:`refs/` 装 agent 自己查的参考(context 是人给的,refs 是自己找的);其余装私有中间结果。判断口径一条:人需要看的放 deliverables/ 子夹,只有 agent 自己用的留 files/。
+已知绕过途径（hook 管不到，靠规则约束）：Bash 里直接跑 `claude -p` / `codex exec`、Workflow 工具、用 SendMessage 续接已有子智能体。续接时把新要求追加进原派发的 task.md，或新建派发。
 
-## §7 共用区与索引规范
+## 7. memory
 
-根级共用区三样:AGENTS.md/CLAUDE.md(含指针行)、context/、deliverables/(根=正式交付,过程产物入子夹)。不新增根级散文件;MEMORY.md 与能力层都在 .agent/ 内。
+- **组织**：目录表示"关于什么"（主题，由 agent 起名，可多层）；类型写在 frontmatter，不做目录。
+- **frontmatter**：`summary`（一句话，INDEX 由它生成）、`type`（knowledge / convention / source / lesson / decision）、`tags`、`source`（节点或派发 ID）、`status`（draft / stable）、`updated`。模板：`templates/memory-note.md`。
+- **生长**：一个主题先是一个文件；超过约 300 行变成同名目录并拆分；一个目录超过约 10 个文件时再按子主题分。
+- **索引**：`memory/INDEX.md` 由 `ws index` 生成，含完整目录树、按类型视图、草稿清单；AGENTS.md 只列顶层目录和篇数。
+- **草稿**：子智能体新写的一律 `status: draft`、`source: <派发ID>`；节点收尾时主 agent 审阅后改为 stable 或合并进已有文件。
+- **不放**：进度、状态、只对某个节点有用的中间结果（留在节点里）。
+- **规范类内容**（代码风格、报告格式、角色说明、同一批派发共用的说明）写成 `type: convention`，派发 task.md 的「必读」只引用路径。
+- **升级到全局**：跨项目仍成立的内容交给 memory-management（全局记忆）或 harness-management（规则、skill）。
 
-索引:① 形态 = 文件内章节 / 文内引用 / 就地 index.md,不设 index 目录;② 单层引用,每层只引相关的下一层;③ 任务涉及外部文档(飞书/Drive/外部代码)时,任务相关条目登进本工作区索引(token/path + 一句话),只限本项目任务相关,全量目录权威在飞书 AI 索引;④ 本工作区能力物(.agent/skills|agents,及根 .claude/ 若有)逐条登 MEMORY.md 能力层路由表——路由表即加载机制(capability-layer.md);⑤ 能由目录结构推导的清单交巡检重建,手写索引只写机器推不出的语义。
+## 8. AGENTS.md
 
-## §8 记忆模式与更新纪律(设计核心;v3 起模式统辖状态型)
+- 十节：定位、用户偏好与约定、规则、环境与命令、地图（外部资源 + memory 区块）、任务树（区块）、关键决策、风险与已知坑、工作协议（区块）、Skills（区块）。模板：`templates/AGENTS.task.md`、`templates/AGENTS.repo-block.md`。
+- 篇幅 100–200 行（`ws check` 超过 200 行告警）：每次会话都会加载，长度就是每轮的成本；细节写进 memory，这里留一行指针。
+- 区块 `<!-- ws:NAME -->…<!-- /ws:NAME -->` 由 `ws index` 生成，不带时间戳，重复生成结果不变；标记不成对时 `ws index` 报错退出，不猜。
+- 「规则」节属于项目级行为约束：用户的裁决照录并注明出处；agent 自己总结的规则按 harness-management 的流程和模式处理。其余各节是工作区状态，agent 直接维护。
+- 「外部资源」记录本工作区相关的飞书 token、外部代码路径、数据表，供 doc-curation 等定时任务读取。
 
-**三模式**(管状态型文件的自动更新节奏;记在 .agent/MEMORY.md 头部模式行,init 例程 --mode(经 /project-init)设定,用户会话中随时可改,改后更新模式行):
+## 9. hook 行为（`~/.claude/hooks/workspace-guard.py`）
 
-| 模式 | 纪律 |
+| 事件 | 行为 |
 |---|---|
-| **--none(缺省)** | 不自动更新记忆。只写完成任务所必需的文件:派发 task.md、必须传递给下游的 note、交付物。手动触发(对话指令或 /project-*)照常可用,人调才更 |
-| **--auto** | 事后更新:大模块结束、或状态与记忆系统出现较大出入时,agent 自动跑 update 例程 post-更新(以「新增是否达到记录必要」取舍,非每次对话必更;不逐步更新,防 overhead 与反复修改) |
-| **--full** | 即时更新,先写后行动:goal/plan 先落盘再执行,progress 随做随更,requirement 随需求变化即时补录;新 session 接入自动跑 recall 例程 |
+| SessionStart | v4：注入 `ws status`（active 节点、目标首句、最近进度、未归档原文、检查摘要、绕过次数）；v3：注入一句"按 v3 办，不要转换" |
+| UserPromptSubmit | 记录用户亲手输入的消息（见 §5） |
+| PreToolUse(Agent) | 派发把关（见 §6） |
+| SubagentStop | 追收 result.md（见 §6） |
+| Stop | 静默运行 `ws index` |
 
-**按文件性质分流**(模式只作用于状态型):
+开关：`WS_HOOKS=off` 全局关闭；`.agents/.state/hooks-off` 关闭单个工作区；`WS_HOOKS=force` 在非交互会话里也记录原文。单次调用约 50 毫秒（实测）。测试：`~/.claude/hooks/tests/`，用 Claude Code 2.1.316 的真实输入样例。
 
-| 文件 | 性质 | 写入触发 |
+## 10. 检查与收尾
+
+`ws check` 的检查项（error 会让退出码为 1）：
+
+| code | 级别 | 内容 |
 |---|---|---|
-| MEMORY.md · memory/ 单文件 · note/ · task 节点 · requirement 原文与总结 | 状态 | 按当前模式(上表);另两个模式无关触发点恒成立:**内容要被复用前、派发子智能体要传它前**,须先更到为真 |
-| subagent/(task.md·result.md·message/) | 日志 | 派发/回传即写(通信本身就是写文件),永不回改;不受模式影响 |
-| 各处索引 | 生成/状态 | 手写部分随宿主文件同触发;可推导部分由巡检重建 |
-| 能力层(.agent/skills|agents + MEMORY.md 路由表;根 .claude/ 仅 harness 执行物) | 能力 | 新增/修改能力物时同步登路由表(不登=不存在);hook 类(根 .claude/)一律给用户过目;不受模式影响 |
-| context/ · deliverables/ · files/ | 静态 | 产生时写,基本不回改 |
+| ws-json / structure | error | 标记文件、memory/、task/、AGENTS.md 缺失 |
+| number | error | `task/`、`subagent/` 下有不符合 `NN-<名>` 的条目或重复编号 |
+| node-file / task-status | error | 节点缺文件、status 非法 |
+| result-status | error | result.md 状态非法或只有骨架；done 节点缺 result.md |
+| dispatch / dispatch-open | error / info | 派发缺 task.md；还没回结果（父节点已 done 时为 error） |
+| markers | error | 生成区块标记不成对 |
+| skeleton | warn | active 节点的 goal/plan 仍是骨架 |
+| unverified | warn | hook 代存的 result.md 待核对 |
+| memory-fm / memory-draft | warn | memory 缺 summary/type；来源已收尾的草稿 |
+| agents-length / dead-link / root-file / legacy | warn | AGENTS.md 超 200 行；失效链接；根目录有多余文件；同时存在 `.agent/` |
+| inbox | warn | 未归档原文 |
+| stale | info | 生成内容过期（`ws index` 修复） |
 
-auto/full 模式下的自动更新 = agent 直接执行 `modules/update.md` 例程(自调,不经 command);人手动触发同一例程 = 对话指令或 /project-update 分发。规模软指引(巡检提醒不硬卡):MEMORY.md 保持一屏读完的量级;过长优先拆文件而不是删信息——信息量优先。
+收尾时的冲突仲裁：task.md（上层的原话）优先，其次是实际产物，最后是自己写的记录；消解结果记进 AGENTS.md「关键决策」。
 
-## §9 生命周期与巡检
+## 11. 边界
 
-- **开工**:init 例程(手动 = 对话指令或 /project-init,含 --mode 定模式)。建 `.agent/MEMORY.md`(含模式行)+ context/ + deliverables/(任务 profile 另建飞书任务夹,沿用双侧机制)+ AGENTS.md/CLAUDE.md 指针行;`.agent/` 其余子目录按需出现(首次派发才建 subagent/,首条 note 才建 note/,首个能力物才建 skills/)。
-- **生长**:单文件超规模→拆;子任务完结→task/Archive/;结论被第二处引用→抽 note/;可复用流程/派发模板成熟→固化进 .agent/ 能力层;废稿→就地清理或随节点归档。会话恢复/新 session 接入→recall 例程(手动 = 对话指令或 /project-recall;full 模式自动);阶段收口/移交→update 例程(手动 = 对话指令或 /project-update;auto/full 模式按 §8 自动)。
-- **收尾**:update 例程(工作区内状态型终更 + 交付发布到本任务飞书夹 + 台账同步 + 末步冲突检查)→ 工作区级归档沿用双侧机制(tasks/_archive/ + 飞书 Archive/)。全局 AI 索引登记由周一飞书文档整理任务(原 doc-curation-daily,2026-07-02 降频合并)周度增量兜底,不是 update 例程职责;全局记忆更新也不在本例程(归 project-update 编排或 memory-management 自身纪律,2026-07-03 用户裁决)。**归档时能力层处置**:`.agent/skills|agents` 走路由表、无 harness 注册,随目录归档零残留;仅当工作区建过根级 `.claude/`(hooks 等)时才需归档改名 `.claude.archived/`、hookify 规则停用,恢复时改回。
-- **巡检六项**(scripts/lint.sh;**无自动执行**——由 update 例程末步顺手跑或人调触发,没有定时任务对各工作区跑它,别按「每周自动」预期):① 结构合规(含双根 MEMORY.md+memory.md 并存 = error);② 状态型新鲜度(none 模式常态偏旧属预期,只对 auto/full 报);③ 死链(索引引用 path 存在性);④ 可推导索引核对;⑤ 派发留档完整性(task.md/result.md 成对;越界写由 update 时 agent 判断);⑥ 能力层对账(.agent/skills|agents 实物 ↔ MEMORY.md 路由表;归档区无活跃根级 .claude/)。
+- **全局记忆**（memory-management）：枢纽只留项目定位卡，细节以工作区 AGENTS.md 和 `.agents/` 为准；工作区 update 例程不碰全局枢纽。
+- **harness**（harness-management）：AGENTS.md「规则」节和 `.agents/skills` 属于项目级 harness；全局 skill、规则、hook 的改动走 harness-management。
+- **飞书**：只有用户要求飞书交付或任务已有明确飞书目标时，才建并维护飞书侧 `Task/<中文名>/`（结构沿用：根 = 交付 + context/ + refs/ + agent/）；token 记进 AGENTS.md「外部资源」。
+- **`/agent` 命令**：有自己的 `.workspace/` + `deliverables/` 结构，与 v4 不兼容；不要在 v4 工作区里运行它。
+- **v3 工作区**：见 `v3-legacy.md`。
 
-## §10 接缝与切换
+## 12. 已知限制
 
-- **update 边界(钉死)**:只更新工作区内部文件,含其线上对应的飞书任务夹(交付发布、台账同步);**不碰**全局枢纽记忆、时间线、harness auto-memory、全局 AI 索引、mira-sync——全局层维护不属本系统(定时任务兜底存量 + 用户显式指令)。
-- **全局项目记忆(定位卡)**:细节唯一权威 = 工作区 MEMORY.md,枢纽只留定位卡(≤6 行:path/token/现状行);维护 = memory-management 按其模式(缺省 auto 里程碑无痕 + 对话指令/项目命令手动),对账随其 update 例程或人调做、无自动执行,2026-07-02 起生效。
-- **飞书双侧不动**:Task/<中文名> 结构(根=交付 + context/ + refs/ + agent/)、「中间过程与记忆不上飞书」原则、双侧归档全部沿用。
-- **老规范兼容(软切换)**:根为 memory.md 的存量任务 = 旧规范,维持原样、不按新规范"纠正";巡检对其只查死链;迁移仅在用户要求时做(scaffold 遇 memory.md 拒绝执行并提示走迁移)。
-- **三层元系统**:harness-management(harness 桶变更唯一入口 + 落点决策表;2026-07-03 替代 continue-learning)与 memory-management(全局记忆 Meta skill,三库)分工见各自 SKILL.md;原独立 record skill 已归档(2026-07-02),工作区收尾由本 skill update 子模块承接(v3)、全局侧按 memory-management 双触发。
-
-## §11 命令层(v3:薄 command + 内置子模块)
-
-三个内置子模块 = `modules/init.md`(开工)、`modules/recall.md`(定向)、`modules/update.md`(落盘,末步冲突检查)。**手动入口** = 对话指令或上层 /project-* 命令分发(单层薄 command 已于 2026-07-03 撤销;原三个命令 skill 已删除、不保留副本);**自动入口** = auto/full 模式下 agent 按 §8 纪律直接执行模块例程(none 模式不自调)。工具脚本在本 skill `scripts/`,模板在 `templates/`。
-
-## §12 能力层管理
-
-→ 独立文件 `capability-layer.md`。
+- Codex、Cursor、Trae 没有这套 hook：规则仍在 AGENTS.md 里生效，`ws` 照常可用，但原文记录、派发把关、结果追收都要靠 agent 自觉（协议里写了兜底做法）。Codex 是否自动注册项目内 `.agents/skills/` 未验证。
+- `claude -p` 测不到会话恢复、上下文压缩、后台子智能体回报这些交互场景；hook 在这些场景下的表现以真实会话的冒烟测试为准。
+- Claude Code 不会自动发现 `.agents/skills/`（2026-11-01，2.1.316，探针实测），工作区 skill 靠 AGENTS.md 的 Skills 表按路径读取。

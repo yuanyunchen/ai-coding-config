@@ -28,6 +28,8 @@ No drive-by edits to adjacent code, comments, or formatting; don't refactor what
 
 No unrequested features; no abstractions for one-off code; no unrequested flexibility or configurability; no error handling for impossible scenarios. If 200 lines can be 50, rewrite. Self-check: "Would a senior engineer call this over-engineered?" If yes, simplify.
 
+**Coding tasks load `ponytail` by default.** Writing, fixing, refactoring or reviewing code: invoke the `ponytail` skill (level full) before the first edit. It is the operational form of this rule and Surgical Changes: concise, conventional code style; keep the structure the codebase already has; no over-design. Subagents that write or review code read it by path (`~/.claude/skills/ponytail/SKILL.md`).
+
 ### Think Before Coding
 
 > Put assumptions and doubts on the table before writing.
@@ -92,7 +94,7 @@ Serialising is legitimate only when the work genuinely contends — the same que
 - **Depth has a floor**: arguments reach mechanisms and causes, not surface paraphrase.
 - **Concrete examples, real numbers**: specific cases and actual values, not vague adjectives.
 - **Synthesis, not collage**: digest multiple sources into your own argument; don't stitch original text together.
-- **Clean formatting**: no emoji anywhere (code comments / output / replies); professional tone and presentation.
+- **Clean formatting**: professional tone and presentation.
 
 ### Human-Centered Interaction
 
@@ -101,7 +103,7 @@ Serialising is legitimate only when the work genuinely contends — the same que
 **Replies.** One progress update answers three things: **what is done · where it is stuck · what needs your decision.** The rest is my bookkeeping.
 
 - Conclusion and blocker first, then the concrete next step.
-- **State the effect, not the mechanism.** Subagent ids, file paths, function names, internal layer names (compiler / renderer / leaf), tool names, error codes, flags stay out of user-visible text; they live in workspace files, provided when asked. Not "`baseDash()` has no `planned` branch" — "one class of edges is drawn with the wrong line style".
+- **State the effect, not the mechanism.** Subagent ids, file paths, function names, internal layer names (compiler / renderer / leaf), tool names, error codes, flags stay out of user-visible text; they live in workspace files, provided when asked. Not "`baseDash()` has no `planned` branch" — "one class of edges is drawn with the wrong line style". (One exception: the skill attribution line, see Harness → skill (usage).)
 - Length follows the news, not the effort. Don't narrate tool calls, retries, or self-corrections; report the outcome.
 
 **Artifacts built for people** (report / page / deck / dashboard / visualization / doc), in priority order:
@@ -111,7 +113,7 @@ Serialising is legitimate only when the work genuinely contends — the same que
 3. **Control text density** — first screen plus an expandable rest. Shrink in this order: remove duplication → move into diagrams → collapse → reduce precision (never on numbers that change a decision) → and only then cut content.
 4. **Natural language** — vary sentence shape; one template repeated across sections reads as machine-written even when every sentence is fine. Keep qualifiers ("not verified", "no counterexample found") even when they read awkwardly.
 
-Detail lives where it is used: `starmap` → `references/content.md` (第零原则) · `frontend-pipeline` → `references/content-for-readers.md` · `lark-doc-writer` §0.3 / §0.5.
+Detail lives where it is used: `frontend-pipeline/skills/starmap` → `references/content.md` (第零原则) · `frontend-pipeline` → `references/content-for-readers.md` · `lark-doc-writer` §0.3 / §0.5.
 
 **The dividing line.** Content written for an agent to consume — skill bodies, knowledge leaves, machine-read specs — takes the opposite standard: technical, exhaustive, every qualifier intact. Serve human readers with a projection layer, never by degrading the source.
 
@@ -131,10 +133,10 @@ When a web/browser task needs automation (open pages, read rendered content, scr
 
 > The task file system. The core logic below applies even when the skill is not loaded.
 
-- **Pointer wiring**: on entering any directory, if AGENTS/CLAUDE contains the pointer line "agent memory entry = ./.agent/MEMORY.md" → read MEMORY.md before working, and follow its mode line (workspace=/harness=).
-- **Private/shared axis**: what humans don't need to see stays inside `.agent/`; a workspace root holds only AGENTS/CLAUDE + context/ + deliverables/; temp files go to the scratchpad, never pollute the project root.
-- **Dispatch records**: subagent dispatches inside a workspace put task.md / result.md under `.agent/subagent/<module>/<instance>/`.
-- **When to load**: long tasks; the user asks to create a workspace / wrap up / archive; /project-* commands → invoke workspace-management. Light tasks: don't load.
+- **Recognition and entry**: a directory is a v4 workspace when the nearest `.agents/ws.json` up the tree (never `$HOME`) exists; its root `AGENTS.md` is the agent-maintained entry and map, and its 「工作协议」 block binds the main agent and every subagent. A directory with `.agent/MEMORY.md` or `.agent/memory/` is a v3 workspace: follow `workspace-management references/v3-legacy.md` and never convert it unasked. `~/.agents/skills` is lark-cli's managed skill copy, not a workspace.
+- **Structure by `ws`, content by the agent**: tasks, dispatches, numbering and indexes come from the `ws` CLI; the user's words are captured to `.agents/inbox/` by a hook and filed verbatim into the task node's `task.md`. The root holds only `AGENTS.md` and `.agents/`; temp files go to the scratchpad.
+- **Dispatch records**: every subagent dispatch inside a workspace is created with `ws dispatch` under the task node's `subagent/NN-<name>/` (task.md in, result.md written by the subagent itself); a hook denies dispatches that skip it.
+- **When to load**: long tasks; the user asks to create a workspace / wrap up / archive; work inside a workspace that goes beyond its AGENTS.md; /project-* commands → invoke workspace-management. Light tasks: no workspace.
 
 ## 5. Memory Section (global memory; full mechanics = `memory-management` skill)
 
@@ -152,8 +154,8 @@ When a web/browser task needs automation (open pages, read rendered content, scr
 
 ### skill (usage)
 
-- **Invoke on match**: if a skill might cover the task (even a 1% chance), invoke it before acting; any Feishu task invokes feishu-task-management first.
-- **Transparent attribution**: state explicitly in the message which skills were used this turn ("使用 skill:X、Y"); after the first mention, consecutive uses of the same skill may be shortened, never omitted entirely.
+- **Invoke on match**: invoke a skill when the task matches its purpose and platform scope; generic words or a weak possible association are not enough. Feishu/Lark skills and execution memory apply only when the user requests operations on Feishu/Lark, supplies a Feishu resource to operate on, or the current task already has a confirmed Feishu destination. Daily tasks, local files, writing, diagrams, apps, deployment, workspace setup and archiving do not imply Feishu. Inspecting harness text that mentions Feishu is not a Feishu operation. Confirmed Feishu operations enter through feishu-task-management; ByteDance work knowledge is retrieved only for relevant ByteDance work and does not select a delivery platform.
+- **Transparent attribution**: the reply that ends a turn opens with one line `使用 skill：X、Y` listing every skill used in that turn — invoked through the Skill tool or read by path (internal subskills and pseudo-skills count). Never shortened or omitted; a turn that used no skill has no line. This is the one sanctioned exception to "State the effect, not the mechanism".
 
 ### subagent (dispatch)
 
@@ -173,7 +175,7 @@ Full dispatch protocol = workspace-management `references/subagent-protocol.md`.
 
 ### change (sole entrance = harness-management)
 
-- Every addition/modification of a harness object goes through the harness-management update flow; default mode none (no proactive persistence mid-conversation; reflection only when the update routine is invoked by dialogue request or /project-update); inside a project, the workspace mode line's harness= field takes precedence.
+- Every addition/modification of a harness object goes through the harness-management update flow; default mode none (no proactive persistence mid-conversation; reflection only when the update routine is invoked by dialogue request or /project-update); inside a workspace, the `harness=` field in the header of its AGENTS.md takes precedence.
 - Red lines: minimal change without distortion; conflict = override OR keep-old, ask the user to pick one, **never coexist**; **hooks are always shown to the user**; global-level changes: plan first, act after approval; reference rules by anchor name to prevent dangling references.
 - **Hard bucket test**: behavioral constraints = harness bucket, this section; facts / state / preference values = memory bucket, Memory Section; placement and promotion/demotion = harness-management `references/placement-table.md`.
 - Rule conflict discovered → mention it in passing in the next message; don't send a standalone reply for it.
@@ -183,8 +185,8 @@ Full dispatch protocol = workspace-management `references/subagent-protocol.md`.
 
 | Layer | Skill | Default mode | Manual entry |
 |---|---|---|---|
-| Orchestration | project-management | none (maps ws+hm) | /project-init · /project-recall · /project-update |
-| Workspace | workspace-management | none | dialogue request (create workspace / wrap up…) or via /project-* |
+| Orchestration | project-management | none (maps hm) | /project-init · /project-recall · /project-update |
+| Workspace | workspace-management | — (no modes: rules apply once a workspace exists) | dialogue request (create workspace / wrap up…) or via /project-* |
 | Global memory | memory-management | auto | dialogue request (recall / backfill) or via /project-* |
 | Behavior constraints | harness-management | none | dialogue request (remember this / change skill…) or via /project-* |
 

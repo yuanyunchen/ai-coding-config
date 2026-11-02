@@ -43,6 +43,10 @@ hub 域（P5 后权威清单以 `hub/MEMORY.md` 为准）：`search-city-signal`
 
 新机器：`clone global-memory` → `./bin/setup` → `./agent-config memory status`。契约见仓内 `manifest.json` / `README.md`。
 
+## 域边界
+
+日常任务按需检索 hub；仅当前任务确实涉及字节工作知识时检索 bytedance。索引中出现飞书历史项目不构成加载飞书技能或执行记忆的理由，也不改变当前任务的交付平台。飞书执行记忆仅供已确认的飞书操作使用。
+
 ## 检索契约
 
 `bin/bm tool search-notes` 支持 `--page-size` `--page` `--type` `--status` `--meta k=v` `--tag`
@@ -106,7 +110,7 @@ hub 域（P5 后权威清单以 `hub/MEMORY.md` 为准）：`search-city-signal`
   不设门禁就是单向增长（实测退化速率 21.5 KB/天）。细则见 `modules/update.md`
 - **索引派生不手写**：`MEMORY.md` / `INDEX.md` 由 `bin/build-index.py` 生成，手改会被覆盖
 - **无痕**：auto/full 下三库内容直接落盘，不审批不汇报；可审计 = `updated` + git
-- **仲裁序**：requirement > 工作区实物 > 全局记忆；不静默删文件；update 末步冲突检查
+- **仲裁序**：工作区 task.md 上层原话 > 工作区实物 > 全局记忆；不静默删文件；update 末步冲突检查
 - **域执行坑**仍在域 skill memory（如 `feishu-task-management/memory.md`），**不**进 bytedance 事实库
 
 ## 索引同步与维护

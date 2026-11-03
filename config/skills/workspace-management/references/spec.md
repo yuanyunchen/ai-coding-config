@@ -7,7 +7,7 @@
 1. **工具管结构，agent 管内容。** 编号、目录、索引、生成区块都由 `ws` 写；agent 只写自然语言内容。手写的结构必然漂移（v3 的 VideoAgent 工作区里，手写索引指向了不存在的目录）。
 2. **规则必须在场。** 规则写进工作区 AGENTS.md 的「工作协议」区块：Claude Code 在没有 CLAUDE.md 时会自动加载 AGENTS.md，子智能体同样加载（2026-11-01，Claude Code 2.1.316，用埋暗号的探针实测）。只放在按需加载的 skill 里的规则会被忽略。
 3. **能交给机器的检查不交给自觉。** 用户原文由 hook 记录；派发由 hook 把关；结果文件由 hook 追收；状态门槛由 `ws` 检查。
-4. **记录分两类。** 日志只追加（task.md、progress.md、inbox、派发留档），状态必须为真（goal、plan、AGENTS.md 手写节、memory）。日志用来复盘和仲裁，永不回改。
+4. **记录分两类。** 日志只追加（task.md、progress.md、conversation.md、派发留档），状态必须为真（goal、plan、AGENTS.md 手写节、memory）。日志用来复盘和仲裁，永不回改。
 5. **失败开放。** hook 出错一律放行，不能因为守卫本身的问题卡住工作。
 
 ## 2. 结构与文件职责
@@ -16,26 +16,29 @@
 <workspace>/
 ├── AGENTS.md
 └── .agents/
-    ├── ws.json · .gitignore（inbox/、.state/）
-    ├── inbox/YYYY-MM-DD.md
-    ├── .state/{lock, inbox-filed.log, skips.log, hooks-off?}
-    ├── memory/{INDEX.md, <主题>/…}
+    ├── ws.json · .gitignore（conversation.md、secrets.env）
+    ├── conversation.md        用户 Q + 每轮最终回答 A + 归档标记，只追加
+    ├── secrets.env            密钥（600，不进 git）
+    ├── memory/{INDEX.md, <主题>.md, <主题>/{README.md, …}}
     ├── skills/<名>/SKILL.md
-    └── task/NN-<名>/{task.md, goal.md, plan.md, progress.md, result.md, input/, subagent/NN-<名>/, task/NN-<名>/}
+    └── task/NN-<名>/{task.md, goal.md, plan.md, progress.md, result.md, brief.md?, input/, deliverables/, subagent/NN-<名>/, task/NN-<名>/}
 ```
 
 | 文件 | 谁写 | 何时 | 性质 |
 |---|---|---|---|
 | AGENTS.md 手写节 | 主 agent | 有变化时 | 状态 |
 | AGENTS.md 生成区块、memory/INDEX.md | `ws index`（hook 在每轮结束时自动跑） | 自动 | 生成 |
-| inbox | hook | 用户每条消息 | 日志 |
+| conversation.md | hook（Q：用户每条消息；A：每轮最终回答）；`ws req` 追加归档标记 | 自动 | 日志 |
 | task.md | 上层：人的原文经 `ws req` 归档，或父节点经 `ws task new --stdin` / `ws dispatch --stdin` | 创建时 + 追加 | 日志 |
 | goal.md、plan.md | 执行者 | active 之前；plan 改动记进「修订记录」 | 状态 |
 | progress.md | 执行者用 `ws log`；`ws` 自动记 status/dispatch/req | 过程中 | 日志 |
-| result.md | 执行者（派发里是子智能体自己） | 收尾 | 状态，交给上层 |
+| result.md | 执行者（派发里是子智能体自己） | 收尾 | 状态，交给上层；核心 + 附件索引，≤6KB |
+| brief.md | 节点执行者 | 同一节点多次派发共用的说明 | 状态；`ws dispatch` 自动列进必读 |
 | memory 文件 | 主 agent、子智能体 | 产生可复用知识时 | 状态 |
 
-根目录（task 类型）只有 AGENTS.md 和 `.agents/`（另允许 .git、.gitignore、README.md）。产物放在产生它的任务节点里，由 result.md 列出；AGENTS.md 任务树链接各顶层节点的 result.md。
+根目录（task 类型）只有 AGENTS.md 和 `.agents/`（另允许 .git、.gitignore、README.md）。产物放在产生它的任务节点里：给人看的放节点的 `deliverables/`，工作文件放节点根目录，都由 result.md 列出；AGENTS.md 任务树链接各顶层节点的 result.md。
+
+锁加在 `.agents/ws.json` 上；hook 开关是 ws.json 里的 `"hooks": "off"`。v4.0 的 `inbox/`、`.state/` 由 `ws migrate` 迁到 v4.1。
 
 ## 3. 识别与两种类型
 
@@ -51,25 +54,26 @@
 - **状态**：`planned → active → done`，以及 `blocked`、`dropped`；记在 progress.md frontmatter，变化由 `ws task status` 记一行日志。
 - **门槛**：
   - active：goal.md 和 plan.md 去掉标题和注释后必须有内容；
-  - done：result.md 的 status 为 DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED 之一且有内容；所有派发都有 result.md；所有子任务 done 或 dropped；`source` 指向本节点的 draft memory 已转正；inbox 没有未归档原文；
+  - done：result.md 的 status 为 DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED 之一且有内容；所有派发都有 result.md；所有子任务 done 或 dropped；`source` 指向本节点的 draft memory 已转正；conversation.md 没有未归档的用户原文；
   - `--force "<原因>"` 可跳过，原因记进 progress，`ws check` 不会替你掩盖遗留问题。
-- **拆分**：一步能做完的直接做；需要独立验收、跨多步或跨会话的建子任务；交给子智能体执行的走派发。同一波次可并行的派发，各自负责的文件不能重叠（写进 plan.md「拆分」表）。层级建议不超过 3 层。
+- **拆分**：一步能做完的直接做；需要独立验收、跨多步或跨会话的建子任务；交给子智能体执行的走派发。同一波次可并行的派发，各自负责的文件不能重叠（写进 plan.md「拆分」表）。一个节点派发超过 6 次、或分了多个波次，就按波次拆成子任务（`ws check` 提醒）。层级建议不超过 3 层。计划只保留一份 plan.md。
 - **不挪目录**：完成的节点原地标 done；AGENTS.md 任务树只展开含 active 节点的子树，其余折叠成一行。
 - **输入文件**：用户交来的文件复制进该节点的 `input/` 并在 task.md 里引用；大数据集、代码仓库只记路径。需要跨任务复用的，提取后写进 memory（type: source）。
 
-## 5. 需求原文与 inbox
+## 5. 对话记录与需求原文
 
-- hook 在 UserPromptSubmit 时把用户亲手输入的消息原样追加进 `.agents/inbox/<日期>.md`，条目 ID 形如 `p1a2b3c4d`。不记：子智能体回报（`<task-notification>`）、跨会话消息、本地命令输出、`claude -p` 等非交互会话（`WS_HOOKS=force` 可强制记录）。
+- 格式：`## Q <id> · <日期时间> · s:<会话>` + 用户原文；`### A → <id>[, <id>] · <时间>` + 该轮最终回答；`<!-- ws:filed|not-req|skip … -->` 标记行。只追加，不改写。
+- hook 在 UserPromptSubmit 时把用户亲手输入的消息记成 Q，条目 ID 形如 `p1a2b3c4d`；在 Stop 时把该轮最终回答记成 A，挂到本会话所有未答的 Q 上；没有未答的 Q（例如后台任务回来后才给答复）时记成「A（续）→ 上一条 Q」。单条 A 超过 6000 字截断并注明（`ANSWER_MAX_CHARS`）。不记：子智能体回报（`<task-notification>`）、跨会话消息、本地命令输出、`claude -p` 等非交互会话（`WS_HOOKS=force` 可强制记录）。
 - 不少于 20 个字符的消息会附带一行提示，给出条目 ID；更短的（"继续""好的"）静默记录，无需归档。
 - 归档：`ws req <ID> --entry <id>` 追加进已有节点 task.md 的「## 追加 <时间> · 用户原文 · <id>」；`ws req --new <slug> --entry <id> [--parent ID]` 开新任务；`ws req --not-req <id>…` 标成不是需求（提问、闲聊）。
-- 含疑似密钥（`sk-`、`ghp_`、`AKIA`、`xox?-`、私钥头、`XXX_KEY=…`）的原文拒绝归档，除非加 `--allow-secret`：task.md 可能进 git，inbox 不会。
+- 含疑似密钥（`sk-`、`ghp_`、`AKIA`、`xox?-`、私钥头、`XXX_KEY=…`）的原文拒绝归档，除非加 `--allow-secret`：task.md 可能进 git，conversation.md 不会。密钥统一放 `.agents/secrets.env`（600，不进 git），不得写进 task.md、memory 或派发说明。
 - 没有 hook 的环境（Codex、Cursor、Trae）：把用户原话照录，`ws req <ID> --stdin` 或 `ws task new <slug> --stdin`。
 
 ## 6. 派发
 
 协议正文见 `subagent-protocol.md`。hook 在 PreToolUse(Agent) 时检查：
 - 只读类型直接放行：Explore、Plan、claude-code-guide、web-fetch、statusline-setup；
-- prompt 含 `[ws:skip]` 放行，但记进 `.state/skips.log`，SessionStart 时显示近 7 天次数。只用于结果不进工作区的只读调研；
+- prompt 含 `[ws:skip]` 放行，但在 conversation.md 记一条 skip 标记，SessionStart 时显示近 7 天次数。只用于结果不进工作区的只读调研；
 - 其余派发，prompt 必须引用一个真实存在、还没有 result.md、且「任务与背景」「成功标准」已填写的 `.agents/task/…/subagent/NN-*/task.md`，否则拒绝，拒绝原因里给出 `ws dispatch` 的用法。
 - SubagentStop 时，若对应派发没有合格的 result.md：第一次拦下并要求补写；第二次仍没有，hook 把它最后一条消息存为 `status: UNVERIFIED` 的 result.md，并在父节点 progress 记一笔。主 agent 核对后改成正式状态。
 
@@ -77,13 +81,15 @@
 
 ## 7. memory
 
-- **组织**：目录表示"关于什么"（主题，由 agent 起名，可多层）；类型写在 frontmatter，不做目录。
-- **frontmatter**：`summary`（一句话，INDEX 由它生成）、`type`（knowledge / convention / source / lesson / decision）、`tags`、`source`（节点或派发 ID）、`status`（draft / stable）、`updated`。模板：`templates/memory-note.md`。
-- **生长**：一个主题先是一个文件；超过约 300 行变成同名目录并拆分；一个目录超过约 10 个文件时再按子主题分。
-- **索引**：`memory/INDEX.md` 由 `ws index` 生成，含完整目录树、按类型视图、草稿清单；AGENTS.md 只列顶层目录和篇数。
+- **放什么**：只放跨任务有用的五类——事实（代码、数据、领域的现状，注明依据版本）、做法、教训、资料摘要、长期决策及理由。
+- **不放什么**：计划、建议、改进点、TODO → 任务节点的 plan.md 或 result.md；进度 → progress.md；只服务一个任务的派发说明 → 该节点的 `brief.md`；用户裁决 → AGENTS.md「规则」节（唯一位置）。`ws check` 发现 memory 里有「改进 / 建议 / 计划 / TODO / 切入点 / 下一步」类标题会提醒。
+- **组织**：目录表示"关于什么"（主题，可多层），不按类型分目录；类型写在 frontmatter。
+- **frontmatter**：`summary`（一句话，INDEX 和上层 README 由它生成）、`type`（knowledge / convention / source / lesson / decision）、`tags`、`source`（节点或派发 ID）、`status`（draft / stable）、`updated`；代码或数据类笔记再写 `basis`（依据的 git 提交）和 `covers`（覆盖的目录列表）。模板：`templates/memory-note.md`。
+- **要点先行**：每个文件开头写 5–10 行要点。
+- **分层**：单文件超过 8KB 就改成同名目录，含 `README.md` 和下层文件。README（≤3KB，模板 `templates/memory-readme.md`）写多数场合够用的要点，加一张下层文件表（文件、讲什么、什么时候读），读完 README 就能干活，需要细节时只往下读一个文件。下层文件 ≤8KB，再大就继续分层。`ws check`：目录缺 README 或表里漏列文件为 error，超限为 warn。
+- **索引**：`memory/INDEX.md` 由 `ws index` 生成：顶层文件一行、顶层目录取其 README 的 summary 一行，另附按类型视图和草稿清单；AGENTS.md 只列顶层。
+- **过期**：有 `basis` 和 `covers` 的笔记，`ws check` 用 git 比对覆盖目录在 basis 之后是否有改动，有就提醒；节点设为 done 时同样列出。核对后更新内容和 basis。
 - **草稿**：子智能体新写的一律 `status: draft`、`source: <派发ID>`；节点收尾时主 agent 审阅后改为 stable 或合并进已有文件。
-- **不放**：进度、状态、只对某个节点有用的中间结果（留在节点里）。
-- **规范类内容**（代码风格、报告格式、角色说明、同一批派发共用的说明）写成 `type: convention`，派发 task.md 的「必读」只引用路径。
 - **升级到全局**：跨项目仍成立的内容交给 memory-management（全局记忆）或 harness-management（规则、skill）。
 
 ## 8. AGENTS.md
@@ -99,12 +105,12 @@
 | 事件 | 行为 |
 |---|---|
 | SessionStart | v4：注入 `ws status`（active 节点、目标首句、最近进度、未归档原文、检查摘要、绕过次数）；v3：注入一句"按 v3 办，不要转换" |
-| UserPromptSubmit | 记录用户亲手输入的消息（见 §5） |
+| UserPromptSubmit | 把用户亲手输入的消息记成 Q（见 §5） |
 | PreToolUse(Agent) | 派发把关（见 §6） |
 | SubagentStop | 追收 result.md（见 §6） |
-| Stop | 静默运行 `ws index` |
+| Stop | 把本轮最终回答记成 A（见 §5），再静默运行 `ws index` |
 
-开关：`WS_HOOKS=off` 全局关闭；`.agents/.state/hooks-off` 关闭单个工作区；`WS_HOOKS=force` 在非交互会话里也记录原文。单次调用约 50 毫秒（实测）。测试：`~/.claude/hooks/tests/`，用 Claude Code 2.1.316 的真实输入样例。
+开关：`WS_HOOKS=off` 全局关闭；ws.json 里 `"hooks": "off"` 关闭单个工作区；`WS_HOOKS=force` 在非交互会话里也记录 Q/A。单次调用约 50 毫秒（实测）。测试：`~/.claude/hooks/tests/`，用 Claude Code 2.1.316 的真实输入样例。
 
 ## 10. 检查与收尾
 
@@ -120,9 +126,11 @@
 | markers | error | 生成区块标记不成对 |
 | skeleton | warn | active 节点的 goal/plan 仍是骨架 |
 | unverified | warn | hook 代存的 result.md 待核对 |
-| memory-fm / memory-draft | warn | memory 缺 summary/type；来源已收尾的草稿 |
+| memory-readme | error | memory 目录缺 README.md，或 README 的文件表漏列 |
+| memory-fm / memory-draft / memory-size / memory-plan / memory-stale | warn | 缺 summary/type；来源已收尾的草稿；文件超 8KB 或 README 超 3KB；计划类标题；basis 之后覆盖目录有改动 |
+| result-size / split | warn | result.md 超 6KB；节点派发超 6 次且没有子任务 |
 | agents-length / dead-link / root-file / legacy | warn | AGENTS.md 超 200 行；失效链接；根目录有多余文件；同时存在 `.agent/` |
-| inbox | warn | 未归档原文 |
+| inbox | warn | conversation.md 里未归档的用户原文 |
 | stale | info | 生成内容过期（`ws index` 修复） |
 
 收尾时的冲突仲裁：task.md（上层的原话）优先，其次是实际产物，最后是自己写的记录；消解结果记进 AGENTS.md「关键决策」。

@@ -1,5 +1,15 @@
 # workspace-management 版本历史
 
+## v4.1（2026-11-02）
+
+审查真实 v4 工作区（ai-eng-takehome-claude）后的修订：
+
+- `inbox/` 与 `.state/` 合并为 `conversation.md`：hook 记 Q（用户原文）和 A（每轮最终回答），归档、绕过都是追加的标记行；锁挂在 ws.json，hook 开关写进 ws.json，密钥统一放 `.agents/secrets.env`。`ws migrate` 迁移旧工作区。
+- result.md 改为「核心 + 附件索引」：上层下一步要用的写进正文（≤6KB），只有复核才看的放附件。起因：最长的派发结果 18KB，其中约 11KB 只在复核时才用。
+- memory 分层：超过 8KB 的文件改成目录 + README.md（要点 + 下层文件表）；目录按主题分。起因：5 篇 21–25KB 的笔记被 23 次派发整篇读取。
+- memory 与计划分开：计划、建议留在任务节点；一次性派发说明改为节点的 brief.md（派发时自动列进必读）；用户裁决只写 AGENTS.md 规则节；代码类笔记带 basis/covers 以检查过期。起因：作弊禁区裁决只存在于一份派发说明里；代码说明在实现后仍标 stable。
+- 新检查：result 篇幅、memory 目录 README、文件大小、计划类标题、过期笔记、节点平铺派发过多。
+
 ## v4（2026-11-01）
 
 用户逐条裁定的重构，起因是 v3 在真实工作区里普遍没被遵守：默认 none 模式等于不写；进度挤进 note；根目录另起 handoff 文件；VideoAgent 35 份派发结果里 28 份是主 agent 从聊天回复代存的；手写索引出现失效链接。

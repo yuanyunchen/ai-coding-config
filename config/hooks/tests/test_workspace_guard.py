@@ -85,7 +85,8 @@ class TestActivation(GuardTest):
 
     def test_off_switches_and_bad_input(self):
         self.assertIsNone(self.run_hook(fixture("PreToolUse-fg", cwd=str(self.root)), env={"WS_HOOKS": "off"}))
-        (self.ws.state_dir / "hooks-off").write_text("")
+        cfg = self.ws.config(); cfg["hooks"] = "off"
+        (self.ws.agents / "ws.json").write_text(json.dumps(cfg))
         self.assertIsNone(self.run_hook(fixture("PreToolUse-fg", cwd=str(self.root))))
         p = subprocess.run([sys.executable, str(HOOK)], input="not json", capture_output=True, text=True, env=self.env)
         self.assertEqual((p.returncode, p.stdout), (0, ""))
@@ -101,22 +102,22 @@ class TestPrompts(GuardTest):
     def test_typed_prompt_captured_with_hint(self):
         msg = "把导出的报表改成按周汇总，并且加上环比的列"
         out = self.run_hook(fixture("UserPromptSubmit-typed", cwd=str(self.root), prompt=msg))
-        entries = self.ws.inbox_entries()
+        entries = self.ws.questions()
         self.assertEqual([e["text"] for e in entries], [msg])
         self.assertIn(entries[0]["id"], out["hookSpecificOutput"]["additionalContext"])
 
     def test_short_prompt_captured_silently(self):
         self.assertIsNone(self.run_hook(fixture("UserPromptSubmit-typed", cwd=str(self.root), prompt="继续")))
-        self.assertEqual(len(self.ws.inbox_entries()), 1)
+        self.assertEqual(len(self.ws.questions()), 1)
         self.assertEqual(self.ws.unfiled(), [])
 
     def test_notifications_and_sdk_runs_skipped(self):
         self.assertIsNone(self.run_hook(fixture("UserPromptSubmit-notification", cwd=str(self.root))))
         typed = fixture("UserPromptSubmit-typed", cwd=str(self.root))
         self.assertIsNone(self.run_hook(typed, env={"CLAUDE_CODE_ENTRYPOINT": "sdk-cli"}))
-        self.assertEqual(self.ws.inbox_entries(), [])
+        self.assertEqual(self.ws.questions(), [])
         self.run_hook(typed, env={"CLAUDE_CODE_ENTRYPOINT": "sdk-cli", "WS_HOOKS": "force"})
-        self.assertEqual(len(self.ws.inbox_entries()), 1)
+        self.assertEqual(len(self.ws.questions()), 1)
 
 
 class TestDispatchGate(GuardTest):
@@ -167,6 +168,26 @@ class TestSubagentStop(GuardTest):
         self.assertIsNone(self.run_hook(fixture("SubagentStop-first", cwd=str(self.root), agent_transcript_path=tp)))
         tp2 = self.transcript("[ws:skip] research something")
         self.assertIsNone(self.run_hook(fixture("SubagentStop-first", cwd=str(self.root), agent_transcript_path=tp2)))
+
+
+class TestAnswers(GuardTest):
+    def test_stop_records_answer_for_open_question(self):
+        q = fixture("UserPromptSubmit-typed", cwd=str(self.root), prompt="请帮我检查一下评测结果为什么下降了这么多")
+        self.run_hook(q)
+        self.run_hook(fixture("Stop", cwd=str(self.root), session_id=q["session_id"], last_assistant_message="进度：已定位原因"))
+        text = self.ws.conv.read_text()
+        self.assertIn("### A → ", text)
+        self.assertIn("进度：已定位原因", text)
+        self.assertTrue(all(x["answered"] for x in self.ws.questions()))
+
+    def test_stop_skips_sdk_and_hook_continuations(self):
+        q = fixture("UserPromptSubmit-typed", cwd=str(self.root), prompt="一条足够长的问题文本用来测试回答记录")
+        self.run_hook(q, env={"CLAUDE_CODE_ENTRYPOINT": "sdk-cli", "WS_HOOKS": "force"})
+        self.run_hook(fixture("Stop", cwd=str(self.root), session_id=q["session_id"], last_assistant_message="a"),
+                      env={"CLAUDE_CODE_ENTRYPOINT": "sdk-cli"})
+        self.run_hook(fixture("Stop", cwd=str(self.root), session_id=q["session_id"], stop_hook_active=True,
+                              last_assistant_message="b"))
+        self.assertFalse(any(x["answered"] for x in self.ws.questions()))
 
 
 class TestStopAndLatency(GuardTest):

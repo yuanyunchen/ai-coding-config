@@ -338,4 +338,4 @@ if [ "$MIRROR" -eq 1 ]; then
 else
     echo "完成。以 $SOURCE 为源，已增量同步到:$(echo " $TARGETS")。"
 fi
-[ "$DRY_RUN" -eq 1 ] && echo "（dry-run：未写任何文件，去掉 --dry-run 实际执行）"
+if [ "$DRY_RUN" -eq 1 ]; then echo "（dry-run：未写任何文件，去掉 --dry-run 实际执行）"; fi

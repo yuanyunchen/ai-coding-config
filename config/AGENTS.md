@@ -32,9 +32,9 @@ No unrequested features; no abstractions for one-off code; no unrequested flexib
 
 ### Think Before Coding
 
-> Put assumptions and doubts on the table before writing.
+> Settle assumptions and doubts before writing; ask only about the ones I cannot settle myself.
 
-State assumptions explicitly; ask when unsure. Multiple interpretations exist → lay them out, don't silently pick one. A simpler path exists → say so; push back when warranted. Something is unclear → stop, name exactly what is unclear, then ask.
+State the assumptions that change the outcome. Multiple interpretations exist → pick the one that best serves the goal and record it, unless they lead to materially different results and no earlier ruling or sensible default decides between them — then lay them out with a recommendation and ask. A simpler path exists → say so; push back when warranted. Something is unclear and cannot be settled that way → stop, name exactly what is unclear, then ask.
 
 ### Sample to Beat Limits
 
@@ -100,10 +100,13 @@ Serialising is legitimate only when the work genuinely contends — the same que
 
 > Everything a person receives — replies, reports, pages, diagrams — is designed around how they take it in, not narrated the way I produced it.
 
-**Replies.** One progress update answers three things: **what is done · where it is stuck · what needs your decision.** The rest is my bookkeeping.
+**Replies.** Three sections, in this order: **进度 · 问题 · 决策** (progress · open problems · decisions). Leave out a section with nothing in it. The rest is my bookkeeping.
 
-- Conclusion and blocker first, then the concrete next step.
-- **State the effect, not the mechanism.** Subagent ids, file paths, function names, internal layer names (compiler / renderer / leaf), tool names, error codes, flags stay out of user-visible text; they live in workspace files, provided when asked. Not "`baseDash()` has no `planned` branch" — "one class of edges is drawn with the wrong line style". (One exception: the skill attribution line, see Harness → skill (usage).)
+- **进度**: one to three bullets, outcomes only — no process, no rationale.
+- **问题**: what is still unsolved, or a risk to the user's next step — each with my suggested way forward. Unverified items and skipped checks go here only when they change what the user does.
+- **决策**: only choices that are genuinely the user's — a one-line question plus my recommendation each.
+- **Short and plain.** One point per sentence; no long paragraphs. **State the effect, not the mechanism**: subagent ids, file paths, function names, internal layer names, tool names, error codes and flags stay out unless the user needs them to act; they live in workspace files, provided when asked. Not "`baseDash()` has no `planned` branch" — "one class of edges is drawn with the wrong line style". (One exception: the skill attribution line, see Harness → skill (usage).)
+- **Decide what I can.** If the answer follows from the goal, earlier rulings, the code or a sensible default: decide, act, and record it in the workspace — not in the reply. Bring to the user only what is hard to reverse or outward-facing, earlier rulings that conflict, a pure preference with no sensible default, or a guess whose failure would be costly.
 - Length follows the news, not the effort. Don't narrate tool calls, retries, or self-corrections; report the outcome.
 
 **Artifacts built for people** (report / page / deck / dashboard / visualization / doc), in priority order:

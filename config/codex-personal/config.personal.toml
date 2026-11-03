@@ -1,11 +1,11 @@
 model = "gpt-6.1-sol"
 model_context_window = 1050000
 model_auto_compact_token_limit = 900000
-model_reasoning_effort = "high"
+model_reasoning_effort = "xhigh"
 personality = "pragmatic"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
-service_tier = "default"
+service_tier = "fast"
 
 [tui]
 status_line_use_colors = false

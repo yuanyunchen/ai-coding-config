@@ -53,7 +53,8 @@ class TestInitAndRoot(WsTestCase):
         self.assertEqual(json.loads((a / "ws.json").read_text())["version"], 4)
         for d in ("memory", "task", "skills"):
             self.assertTrue((a / d).is_dir(), d)
-        self.assertIn("inbox/", (a / ".gitignore").read_text())
+        self.assertIn("conversation.md", (a / ".gitignore").read_text())
+        self.assertFalse((a / ".state").exists())
         text = (self.root / "AGENTS.md").read_text()
         for b in wslib.BLOCKS:
             self.assertIn(f"<!-- ws:{b} -->", text)
@@ -220,20 +221,19 @@ class TestDispatch(WsTestCase):
 class TestInboxAndReq(WsTestCase):
     def test_inbox_capture_filing_and_threshold(self):
         long_text = "请把报告改成按地区拆分，并补上 2025 年的数据对比"
-        e1 = self.ws.inbox_append("sess-1", "aaaaaaaa-1111", long_text)
-        self.ws.inbox_append("sess-1", "bbbbbbbb-2222", "继续")
+        e1 = self.ws.record_question("sess-1", "aaaaaaaa-1111", long_text)
+        self.ws.record_question("sess-1", "bbbbbbbb-2222", "继续")
         self.assertEqual([e["id"] for e in self.ws.unfiled()], [e1])
         d, nid = self.ws.new_task("report")
         self.ws.file_req(nid, entry=e1)
         self.assertIn(long_text, (d / "task.md").read_text())
         self.assertIn("## 追加", (d / "task.md").read_text())
         self.assertEqual(self.ws.unfiled(), [])
-        inbox = next((self.root / ".agents" / "inbox").glob("*.md"))
-        self.assertEqual(inbox.stat().st_mode & 0o777, 0o600)
+        self.assertEqual(self.ws.conv.stat().st_mode & 0o777, 0o600)
 
     def test_req_new_and_not_req(self):
-        e1 = self.ws.inbox_append("s", "cccccccc-1", "做一个新的数据看板，展示每周的召回率变化")
-        e2 = self.ws.inbox_append("s", "dddddddd-2", "这个问题我想先了解一下背景再决定怎么做")
+        e1 = self.ws.record_question("s", "cccccccc-1", "做一个新的数据看板，展示每周的召回率变化")
+        e2 = self.ws.record_question("s", "dddddddd-2", "这个问题我想先了解一下背景再决定怎么做")
         d, nid = self.ws.file_req(new_slug="dashboard", entry=e1)
         self.assertEqual(nid, "T01")
         self.assertIn("召回率", (d / "task.md").read_text())
@@ -241,7 +241,7 @@ class TestInboxAndReq(WsTestCase):
         self.assertEqual(self.ws.unfiled(), [])
 
     def test_secret_refused(self):
-        e = self.ws.inbox_append("s", "eeeeeeee-1", "用这个 key 跑一下 sk-abcdefghijklmnopqrstuvwxyz123456 谢谢")
+        e = self.ws.record_question("s", "eeeeeeee-1", "用这个 key 跑一下 sk-abcdefghijklmnopqrstuvwxyz123456 谢谢")
         _, nid = self.ws.new_task("x")
         with self.assertRaises(wslib.WsError):
             self.ws.file_req(nid, entry=e)
@@ -251,8 +251,8 @@ class TestInboxAndReq(WsTestCase):
         d, nid = self.ws.new_task("x")
         self.fill(d)
         self.write_result(d)
-        self.ws.inbox_append("s", "ffffffff-1", "另外记得把图表的配色换成蓝色系，标题加上日期")
-        with self.assertRaisesRegex(wslib.WsError, "inbox"):
+        self.ws.record_question("s", "ffffffff-1", "另外记得把图表的配色换成蓝色系，标题加上日期")
+        with self.assertRaisesRegex(wslib.WsError, "未归档"):
             self.ws.set_status(nid, "done")
 
 
@@ -314,6 +314,121 @@ class TestIndexAndCheck(WsTestCase):
         self.assertIn("T01", text)
         self.assertIn("第一步完成", text)
         self.assertLess(len(text), 3500)
+
+
+class TestConversation(WsTestCase):
+    def test_answers_attach_to_open_questions_then_continue(self):
+        q1 = self.ws.record_question("sess-aaa1", "aaaaaaaa-1", "第一个问题，内容足够长需要归档的那种")
+        q2 = self.ws.record_question("sess-aaa1", "bbbbbbbb-2", "第二个问题")
+        other = self.ws.record_question("sess-zzz9", "cccccccc-3", "别的会话的问题")
+        self.ws.record_answer("sess-aaa1", "回答一")
+        qs = {q["id"]: q for q in self.ws.questions()}
+        self.assertTrue(qs[q1]["answered"] and qs[q2]["answered"])
+        self.assertFalse(qs[other]["answered"])
+        self.assertIn("回答一", self.ws.conv.read_text())
+        self.ws.record_answer("sess-aaa1", "后台任务回来后的补充")
+        self.assertIn(f"### A（续）→ {q2}", self.ws.conv.read_text())
+        self.assertIsNone(self.ws.record_answer("no-such", "x"))
+
+    def test_long_answer_is_cut_with_note(self):
+        self.ws.record_question("s1", "dddddddd-4", "问题")
+        self.ws.record_answer("s1", "长" * (wslib.ANSWER_MAX_CHARS + 50))
+        self.assertIn("已截断", self.ws.conv.read_text())
+
+    def test_marks_skips_and_hooks_off(self):
+        e = self.ws.record_question("s1", "eeeeeeee-5", "这是一条足够长的需求原文，需要被归档进任务")
+        self.ws.not_req([e])
+        self.assertEqual(self.ws.unfiled(), [])
+        self.ws.log_skip("s1", "Explore -- look")
+        self.assertEqual(self.ws.skip_count(), 1)
+        self.assertFalse(self.ws.hooks_off())
+        cfg = self.ws.config(); cfg["hooks"] = "off"
+        (self.root / ".agents" / "ws.json").write_text(json.dumps(cfg))
+        self.assertTrue(self.ws.hooks_off())
+
+    def test_migrate_from_v40(self):
+        a = self.root / ".agents"
+        (a / "inbox").mkdir()
+        (a / "inbox" / "2026-11-02.md").write_text(
+            "## p11111111 · 2026-11-02 20:00:00 · session abc\n\n老的需求原文，长度超过二十个字符的那一条\n\n"
+            "## p22222222 · 2026-11-02 20:05:00 · session abc\n\n另一条老需求原文，也超过二十个字符的长度\n\n")
+        (a / ".state").mkdir()
+        (a / ".state" / "inbox-filed.log").write_text("p11111111\tfiled\tT01\t2026-11-02 20:01\n")
+        (a / ".state" / "secrets.env").write_text("export K=v\n")
+        (a / ".state" / "lock").write_text("")
+        (self.ws.memory_dir / "howto.md").write_text("---\nsummary: s\ntype: convention\n---\n# h\n\n要点\n\nsource .agents/.state/secrets.env\n")
+        self.ws.record_question("new", "33333333-x", "迁移前 hook 已经写进新文件的问题，长度超过二十个字符")
+        msgs = self.ws.migrate()
+        self.assertTrue(msgs)
+        self.assertFalse((a / "inbox").exists() or (a / ".state").exists())
+        self.assertEqual((a / "secrets.env").stat().st_mode & 0o777, 0o600)
+        self.assertIn(".agents/secrets.env", (self.ws.memory_dir / "howto.md").read_text())
+        ids = [q["id"] for q in self.ws.questions()]
+        self.assertEqual(ids, ["p11111111", "p22222222", "p33333333"])
+        self.assertEqual([q["id"] for q in self.ws.unfiled()], ["p22222222", "p33333333"])
+        self.assertEqual(self.ws.migrate(), [])
+        self.ws.record_answer("abc", "迁移后第一条回答")
+        self.assertNotIn("A → p11111111, ", self.ws.conv.read_text().split("迁移：之前的回答未记录")[1])
+
+
+class TestMemoryLayers(WsTestCase):
+    def note(self, rel, body="# t\n\n要点\n", **fm):
+        fm = {"summary": "s", "type": "knowledge", **fm}
+        p = self.ws.memory_dir / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text("---\n" + "".join(f"{k}: {v}\n" for k, v in fm.items()) + "---\n" + body)
+        return p
+
+    def codes(self):
+        return {i.code for i in self.ws.check()}
+
+    def test_directory_needs_readme_listing_children(self):
+        self.note("codebase/agent.md")
+        self.assertIn("memory-readme", self.codes())
+        self.note("codebase/README.md", body="# 代码库\n\n要点\n\n| 文件 | 讲什么 |\n|---|---|\n", summary="代码库概览")
+        self.assertIn("memory-readme", self.codes())  # agent.md not listed
+        self.note("codebase/README.md", body="# 代码库\n\n| agent.md | 主循环 |\n", summary="代码库概览")
+        self.assertNotIn("memory-readme", self.codes())
+        self.ws.index()
+        idx = (self.ws.memory_dir / "INDEX.md").read_text()
+        self.assertIn("[codebase/](codebase/README.md) — 代码库概览", idx)
+
+    def test_size_and_plan_headings_warn(self):
+        self.note("big.md", body="# b\n" + "字" * 3000)
+        self.note("ideas.md", body="# x\n\n## 改进切入点\n- a\n")
+        codes = self.codes()
+        self.assertIn("memory-size", codes)
+        self.assertIn("memory-plan", codes)
+
+    def test_stale_note_detected_by_git(self):
+        import subprocess
+        run = lambda *a: subprocess.run(["git", "-C", str(self.root), *a], capture_output=True, check=True)
+        run("init", "-q"); run("config", "user.email", "t@t"); run("config", "user.name", "t")
+        (self.root / "src").mkdir(); (self.root / "src" / "a.py").write_text("x = 1\n")
+        run("add", "src"); run("commit", "-qm", "base")
+        basis = subprocess.run(["git", "-C", str(self.root), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+        self.note("code.md", basis=basis, covers="[src/]")
+        self.assertNotIn("memory-stale", self.codes())
+        (self.root / "src" / "a.py").write_text("x = 2\n")
+        self.assertIn("memory-stale", self.codes())
+
+
+class TestDispatchExtras(WsTestCase):
+    def test_brief_auto_listed_and_flat_dispatch_warning(self):
+        d, nid = self.ws.new_task("big")
+        (d / "brief.md").write_text("# 共用说明\n")
+        s, _ = self.ws.dispatch(nid, "w1", body="背景\n\n## 必读\n- a.md\n")
+        text = (s / "task.md").read_text()
+        self.assertIn(str(d / "brief.md"), wslib.section(text, "必读"))
+        self.assertIn("a.md", wslib.section(text, "必读"))
+        for i in range(wslib.MAX_FLAT_DISPATCHES):
+            self.ws.dispatch(nid, f"w{i + 2}")
+        self.assertIn("split", {i.code for i in self.ws.check()})
+
+    def test_result_size_warning(self):
+        d, nid = self.ws.new_task("x")
+        self.write_result(d, body="长" * 2500)
+        self.assertIn("result-size", {i.code for i in self.ws.check()})
 
 
 class TestCli(WsTestCase):

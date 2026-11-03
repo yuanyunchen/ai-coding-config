@@ -11,6 +11,8 @@ import fcntl
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 import uuid
 from contextlib import contextmanager
@@ -31,15 +33,26 @@ MEMORY_TYPES = ("knowledge", "convention", "source", "lesson", "decision")
 LOG_TAGS = ("status", "dispatch", "decision", "surprise", "note", "req")
 BLOCKS = ("memory", "tree", "protocol", "skills")
 INBOX_MIN_CHARS = 20  # shorter messages ("继续", "ok") never need filing
+ANSWER_MAX_CHARS = 6000  # one recorded answer; longer ones are cut with a note (spec §5)
+RESULT_MAX_BYTES = 6000  # result.md core; more goes to attachments (subagent-protocol)
+NOTE_MAX_BYTES = 8000  # a memory file; above this it becomes a directory with README.md
+README_MAX_BYTES = 3000
+MAX_FLAT_DISPATCHES = 6  # more dispatches without child tasks -> split into subtasks
+GITIGNORE = "conversation.md\nsecrets.env\n"
 AGENTS_MAX_LINES = 200
 ROOT_ALLOWED = {"AGENTS.md", ".agents", ".claude", ".claude.archived", ".git", ".gitignore", ".DS_Store", "README.md"}
+PLAN_HEADING_RE = re.compile(r"^#{1,6}\s.*(改进|建议|计划|TODO|切入点|下一步)", re.M)
 
 NUM_RE = re.compile(r"^(\d{2,})-([\w-]+)$")
 SLUG_RE = re.compile(r"^[\w][\w-]*$")
 ID_RE = re.compile(r"^T(\d+(?:\.\d+)*)(?:/S(\d+))?$")
 # Only the part from `.agents/` on is matched, so spaces earlier in an absolute path do not matter.
 DISPATCH_REF_RE = re.compile(r"\.agents/task/(?:[^\s/\"'`<>()]+/)+?subagent/\d{2,}-[^\s/\"'`<>()]+/task\.md")
-INBOX_HEAD_RE = re.compile(r"^## (p[0-9a-f]{8}) · ([0-9: -]+) · session (\S*)$", re.M)
+OLD_INBOX_HEAD_RE = re.compile(r"^## (p[0-9a-f]{8}) · ([0-9: -]+) · session (\S*)$", re.M)  # v4.0, for migrate
+CONV_RE = re.compile(
+    r"^(?:## Q (?P<q>p[0-9a-f]{8}) · (?P<time>[0-9: -]+) · s:(?P<sess>\S*)"
+    r"|### A(?P<cont>（续）)? → (?P<a>p[0-9a-f]{8}(?:, p[0-9a-f]{8})*) · [0-9: -]+"
+    r"|<!-- ws:(?P<kind>filed|not-req|skip) (?P<key>\S+)(?: (?P<rest>.*?))? -->)$", re.M)
 LINK_RE = re.compile(r"\]\(([^)\s#]+)(?:#[^)]*)?\)")
 SECRET_RE = re.compile(
     r"sk-[A-Za-z0-9_-]{16,}|ghp_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|xox[abpr]-[A-Za-z0-9-]{10,}"
@@ -221,8 +234,7 @@ class Workspace:
         self.task_dir = self.agents / "task"
         self.memory_dir = self.agents / "memory"
         self.skills_dir = self.agents / "skills"
-        self.inbox_dir = self.agents / "inbox"
-        self.state_dir = self.agents / ".state"
+        self.conv = self.agents / "conversation.md"
         self.agents_md = self.root / "AGENTS.md"
 
     @classmethod
@@ -237,10 +249,15 @@ class Workspace:
     def config(self) -> dict:
         return json.loads((self.agents / "ws.json").read_text())
 
+    def hooks_off(self) -> bool:
+        try:
+            return self.config().get("hooks") == "off"
+        except (OSError, ValueError):
+            return False
+
     @contextmanager
     def lock(self):
-        self.state_dir.mkdir(parents=True, exist_ok=True)
-        with open(self.state_dir / "lock", "a+") as f:
+        with open(self.agents / "ws.json", "a+") as f:
             fcntl.flock(f, fcntl.LOCK_EX)
             try:
                 yield
@@ -348,7 +365,7 @@ class Workspace:
             for rel, fm in self.drafts_for(nid):
                 problems.append(f"memory/{rel} 仍是 draft（source {fm.get('source')}）：转正为 stable 或合并")
             for e in self.unfiled():
-                problems.append(f"inbox 里 {e['id']} 未归档：ws req … --entry {e['id']} 或 ws req --not-req {e['id']}")
+                problems.append(f"conversation.md 里 {e['id']} 未归档：ws req … --entry {e['id']} 或 ws req --not-req {e['id']}")
         if problems and not force:
             raise WsError("不能设为 " + status + "：\n- " + "\n- ".join(problems))
         with self.lock():
@@ -376,52 +393,74 @@ class Workspace:
             "dispatch-task.md", id=did, parent=self.node_id(node), title=title or slug, date=today(),
             protocol=PROTOCOL_DOC, dir=d, result_template=TEMPLATES / "node" / "result.md",
             body="<!-- 要做什么、为什么；背景讲够，子智能体不继承你的上下文 -->")
-        (d / "task.md").write_text(fill_sections(brief, body) if body.strip() else brief)
+        brief = fill_sections(brief, body) if body.strip() else brief
+        if (node / "brief.md").is_file():
+            brief = re.sub(r"(^##\s+必读\s*\n)", lambda m: f"{m.group(1)}- {node / 'brief.md'}（本任务各派发共用说明，先读）\n",
+                           brief, count=1, flags=re.M)
+        (d / "task.md").write_text(brief)
         self.log(self.node_id(node), f"{did} {title or slug}", tag="dispatch")
         return d, did
 
-    # --- inbox ---
-    def inbox_append(self, session_id, prompt_id, prompt) -> str:
-        eid = "p" + (prompt_id or uuid.uuid4().hex).replace("-", "")[:8].lower()
-        self.inbox_dir.mkdir(parents=True, exist_ok=True)
-        stamp = _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        entry = f"## {eid} · {stamp} · session {(session_id or '-')[:8]}\n\n{prompt.rstrip()}\n\n"
-        fd = os.open(self.inbox_dir / f"{today()}.md", os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+    # --- conversation (user Q + core A, append-only) ---
+    def _append_conv(self, text: str):
+        fd = os.open(self.conv, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
         try:
-            os.write(fd, entry.encode())
+            os.write(fd, text.encode())
         finally:
             os.close(fd)
+
+    def record_question(self, session_id, prompt_id, prompt) -> str:
+        eid = "p" + (prompt_id or uuid.uuid4().hex).replace("-", "")[:8].lower()
+        stamp = _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self._append_conv(f"## Q {eid} · {stamp} · s:{(session_id or '-')[:8]}\n\n{prompt.rstrip()}\n\n")
         return eid
 
-    def inbox_entries(self) -> list[dict]:
-        out = []
-        for f in sorted(self.inbox_dir.glob("*.md")) if self.inbox_dir.is_dir() else []:
-            text = f.read_text()
-            heads = list(INBOX_HEAD_RE.finditer(text))
-            for i, h in enumerate(heads):
-                end = heads[i + 1].start() if i + 1 < len(heads) else len(text)
-                out.append({"id": h.group(1), "time": h.group(2), "session": h.group(3),
-                            "text": text[h.end():end].strip()})
-        return out
+    def record_answer(self, session_id, message) -> str | None:
+        """Attach the turn's final reply to this session's unanswered questions, else continue the last one."""
+        sess = (session_id or "-")[:8]
+        mine = [q for q in self.questions() if q["session"] == sess]
+        if not mine or not (message or "").strip():
+            return None
+        open_ids = list(dict.fromkeys(q["id"] for q in mine if not q["answered"]))
+        head = f"### A → {', '.join(open_ids)}" if open_ids else f"### A（续）→ {mine[-1]['id']}"
+        text = message.strip()
+        if len(text) > ANSWER_MAX_CHARS:
+            text = text[:ANSWER_MAX_CHARS] + f"\n\n…（超过 {ANSWER_MAX_CHARS} 字，已截断）"
+        self._append_conv(f"{head} · {_dt.datetime.now().strftime('%H:%M:%S')}\n\n{text}\n\n")
+        return head
 
-    def _filed(self) -> set[str]:
-        p = self.state_dir / "inbox-filed.log"
-        return {l.split("\t")[0] for l in p.read_text().splitlines() if l} if p.is_file() else set()
+    def _conv_items(self):
+        text = self.conv.read_text() if self.conv.is_file() else ""
+        items = list(CONV_RE.finditer(text))
+        for i, m in enumerate(items):
+            end = items[i + 1].start() if i + 1 < len(items) else len(text)
+            yield m, text[m.end():end].strip()
+
+    def questions(self) -> list[dict]:
+        qs, answered, marks = [], set(), {}
+        for m, body in self._conv_items():
+            if m.group("q"):
+                qs.append({"id": m.group("q"), "time": m.group("time"), "session": m.group("sess"), "text": body})
+            elif m.group("a"):
+                answered.update(m.group("a").split(", "))
+            elif m.group("kind") in ("filed", "not-req"):
+                marks[m.group("key")] = m.group("kind")
+        for q in qs:
+            q["answered"] = q["id"] in answered
+            q["mark"] = marks.get(q["id"])
+        return qs
 
     def _mark(self, eid, kind, target=""):
-        self.state_dir.mkdir(parents=True, exist_ok=True)
-        with open(self.state_dir / "inbox-filed.log", "a") as f:
-            f.write(f"{eid}\t{kind}\t{target}\t{now()}\n")
+        self._append_conv(f"<!-- ws:{kind} {eid}{' ' + target if target else ''} -->\n\n")
 
     def unfiled(self) -> list[dict]:
-        filed = self._filed()
-        return [e for e in self.inbox_entries() if e["id"] not in filed and len(e["text"]) >= INBOX_MIN_CHARS]
+        return [q for q in self.questions() if not q["mark"] and len(q["text"]) >= INBOX_MIN_CHARS]
 
     def entry(self, eid) -> dict:
-        for e in self.inbox_entries():
-            if e["id"] == eid:
-                return e
-        raise WsError(f"inbox 里没有 {eid}；ws inbox 列出未归档的条目")
+        for q in self.questions():
+            if q["id"] == eid:
+                return q
+        raise WsError(f"conversation.md 里没有 {eid}；ws inbox 列出未归档的条目")
 
     def file_req(self, target=None, entry=None, text=None, new_slug=None, title=None, parent=None,
                  allow_secret=False):
@@ -468,19 +507,8 @@ class Workspace:
     def render_memory_index(self) -> str:
         notes = list(self.memory_notes())
         lines = ["# Memory 索引", "", "<!-- 由 ws index 生成，不要手改；每个文件的 summary/type 写在它自己的 frontmatter 里 -->", "",
-                 "## 目录树", ""]
-        shown_dirs = set()
-        for rel, fm in notes:
-            parts = rel.split("/")
-            for depth in range(len(parts) - 1):
-                key = "/".join(parts[: depth + 1])
-                if key not in shown_dirs:
-                    shown_dirs.add(key)
-                    lines.append(f"{'  ' * depth}- {parts[depth]}/")
-            tag = f" `{fm.get('type', '?')}`" + (" draft" if fm.get("status") == "draft" else "")
-            lines.append(f"{'  ' * (len(parts) - 1)}- [{parts[-1]}]({rel}) — {fm.get('summary', '（缺 summary）')}{tag}")
-        if not notes:
-            lines.append("（暂无）")
+                 "## 顶层（目录先读它的 README.md，再按其中的表往下读）", ""]
+        lines += self._top_level_lines(link_prefix="") or ["（暂无）"]
         lines += ["", "## 按类型", ""]
         for t in MEMORY_TYPES + ("?",):
             items = [(r, f) for r, f in notes if f.get("type", "?") == t or (t == "?" and f.get("type") not in MEMORY_TYPES)]
@@ -497,16 +525,62 @@ class Workspace:
     def render_memory_block(self) -> str:
         if not self.memory_dir.is_dir():
             return "（暂无）"
+        lines = self._top_level_lines(link_prefix=".agents/memory/")
+        head = "索引和按类型视图：[.agents/memory/INDEX.md](.agents/memory/INDEX.md)；目录先读它的 README.md"
+        return head + ("\n\n" + "\n".join(lines) if lines else "\n\n（暂无）")
+
+    def _top_level_lines(self, link_prefix: str) -> list[str]:
         lines = []
-        for p in sorted(self.memory_dir.iterdir()):
+        for p in sorted(self.memory_dir.iterdir()) if self.memory_dir.is_dir() else []:
             if p.name.startswith(".") or p.name == "INDEX.md":
                 continue
             if p.is_dir():
-                lines.append(f"- `{p.name}/`（{sum(1 for _ in p.rglob('*.md'))} 篇）")
+                readme = p / "README.md"
+                summary = read_fm(readme.read_text())[0].get("summary", "") if readme.is_file() else "（缺 README.md）"
+                lines.append(f"- [{p.name}/]({link_prefix}{p.name}/README.md) — {summary}（{sum(1 for _ in p.rglob('*.md'))} 篇）")
             elif p.suffix == ".md":
-                lines.append(f"- `{p.name}` — {read_fm(p.read_text())[0].get('summary', '')}")
-        head = "完整目录树和按类型视图：[.agents/memory/INDEX.md](.agents/memory/INDEX.md)"
-        return head + ("\n\n" + "\n".join(lines) if lines else "\n\n（暂无）")
+                fm = read_fm(p.read_text())[0]
+                lines.append(f"- [{p.name}]({link_prefix}{p.name}) — {fm.get('summary', '（缺 summary）')} `{fm.get('type', '?')}`")
+        return lines
+
+    def memory_issues(self) -> list[Issue]:
+        out = []
+        if not self.memory_dir.is_dir():
+            return out
+        for d in sorted(p for p in self.memory_dir.rglob("*") if p.is_dir()):
+            rel = d.relative_to(self.memory_dir).as_posix()
+            readme = d / "README.md"
+            if not readme.is_file():
+                out.append(Issue("error", "memory-readme", f"memory/{rel}/ 缺 README.md：写要点和下层文件表"))
+                continue
+            text = readme.read_text()
+            for c in sorted(d.iterdir()):
+                if c.name not in ("README.md", ".DS_Store") and c.name not in text:
+                    out.append(Issue("error", "memory-readme", f"memory/{rel}/README.md 的文件表漏了 {c.name}"))
+            if len(text.encode()) > README_MAX_BYTES:
+                out.append(Issue("warn", "memory-size", f"memory/{rel}/README.md 超过 {README_MAX_BYTES} 字节：细节移到下层文件"))
+        for rel, fm in self.memory_notes():
+            p = self.memory_dir / rel
+            text = p.read_text()
+            if p.name != "README.md" and len(text.encode()) > NOTE_MAX_BYTES:
+                out.append(Issue("warn", "memory-size", f"memory/{rel} 超过 {NOTE_MAX_BYTES} 字节：拆成同名目录 + README.md"))
+            if PLAN_HEADING_RE.search(read_fm(text)[1]):
+                out.append(Issue("warn", "memory-plan", f"memory/{rel} 里有计划或建议类标题：这类内容放任务节点"))
+            if self.note_stale(fm):
+                out.append(Issue("warn", "memory-stale", f"memory/{rel} 依据 {fm['basis']}，之后 {', '.join(fm['covers'])} 有改动：核对后更新 basis"))
+        return out
+
+    def note_stale(self, fm) -> bool:
+        basis, covers = fm.get("basis"), fm.get("covers")
+        if not basis or not covers:
+            return False
+        covers = covers if isinstance(covers, list) else [covers]
+        try:
+            r = subprocess.run(["git", "-C", str(self.root), "diff", "--name-only", str(basis), "--", *covers],
+                               capture_output=True, text=True, timeout=10)
+        except (OSError, subprocess.SubprocessError):
+            return False
+        return r.returncode == 0 and bool(r.stdout.strip())
 
     def _has_active(self, d: Path) -> bool:
         return self.task_status(d) == "active" or any(self.task_status(c) == "active" for c in self.tasks(d / "task"))
@@ -621,7 +695,10 @@ class Workspace:
                 for f in ("goal.md", "plan.md"):
                     if (d / f).is_file() and not meaningful((d / f).read_text()):
                         add("warn", "skeleton", f"{nid} 已 active 但 {f} 还是空骨架")
-            for _, s in numbered(d / "subagent"):
+            subs = numbered(d / "subagent")
+            if len(subs) > MAX_FLAT_DISPATCHES and not numbered(d / "task"):
+                add("warn", "split", f"{nid} 有 {len(subs)} 次派发却没有子任务：按波次拆成子任务")
+            for _, s in subs:
                 sid = self.node_id(s)
                 if not (s / "task.md").is_file():
                     add("error", "dispatch", f"{sid} 缺少 task.md")
@@ -633,7 +710,11 @@ class Workspace:
                         add("warn", "unverified", f"{sid} 的 result.md 是 hook 代存的 UNVERIFIED：核对后改成正式状态")
                 else:
                     add("error" if st == "done" else "info", "dispatch-open", f"{sid} 还没有 result.md")
+            for r in [d / "result.md"] + [s / "result.md" for _, s in subs]:
+                if r.is_file() and len(r.read_bytes()) > RESULT_MAX_BYTES:
+                    add("warn", "result-size", f"{self.rel(r)} 超过 {RESULT_MAX_BYTES} 字节：复核才看的内容移到附件并在「附件」节列出")
         # memory
+        out += self.memory_issues()
         for rel, fm in self.memory_notes():
             if not fm.get("summary") or not fm.get("type"):
                 add("warn", "memory-fm", f"memory/{rel} 缺少 summary 或 type")
@@ -676,7 +757,7 @@ class Workspace:
                 if not (t if t.is_absolute() else f.parent / t).exists() and not (self.root / target).exists():
                     add("warn", "dead-link", f"{self.rel(f)} 链接到不存在的 {target}")
         for e in self.unfiled():
-            add("warn", "inbox", f"inbox {e['id']} 未归档：{e['text'][:40]}…")
+            add("warn", "inbox", f"conversation.md 里 {e['id']} 未归档：{e['text'][:40]}…")
         return out
 
     def status_text(self) -> str:
@@ -695,7 +776,7 @@ class Workspace:
             lines.append("没有 active 节点。新需求：ws req --new <slug> --entry <id>，或 ws task new <slug>。")
         unf = self.unfiled()
         if unf:
-            lines.append(f"inbox 未归档 {len(unf)} 条：" + "、".join(e["id"] for e in unf[:5]) + "（ws inbox 查看）")
+            lines.append(f"未归档的用户原文 {len(unf)} 条：" + "、".join(e["id"] for e in unf[:5]) + "（ws inbox 查看）")
         issues = self.check()
         errs = [i for i in issues if i.level == "error"]
         warns = [i for i in issues if i.level == "warn"]
@@ -708,16 +789,67 @@ class Workspace:
         return text if len(text) <= 3000 else text[:2990] + "\n…"
 
     def skip_count(self, days=7) -> int:
-        p = self.state_dir / "skips.log"
-        if not p.is_file():
-            return 0
-        cutoff = (_dt.datetime.now() - _dt.timedelta(days=days)).strftime("%Y-%m-%d %H:%M")
-        return sum(1 for l in p.read_text().splitlines() if l[:16] >= cutoff)
+        cutoff = (_dt.datetime.now() - _dt.timedelta(days=days)).strftime("%Y-%m-%dT%H:%M")
+        return sum(1 for m, _ in self._conv_items() if m.group("kind") == "skip" and m.group("key") >= cutoff)
 
     def log_skip(self, session_id, desc):
-        self.state_dir.mkdir(parents=True, exist_ok=True)
-        with open(self.state_dir / "skips.log", "a") as f:
-            f.write(f"{now()}\t{(session_id or '-')[:8]}\t{' '.join((desc or '').split())[:120]}\n")
+        stamp = _dt.datetime.now().strftime("%Y-%m-%dT%H:%M")
+        desc = " ".join((desc or "").replace("--", "-").split())[:120]
+        self._mark(stamp, "skip", f"s:{(session_id or '-')[:8]} {desc}")
+
+    def migrate(self) -> list[str]:
+        """v4.0 -> v4.1: inbox/ + .state/ become conversation.md + ws.json + .agents/secrets.env."""
+        msgs, inbox, state = [], self.agents / "inbox", self.agents / ".state"
+        with self.lock():
+            parts = []
+            for f in sorted(inbox.glob("*.md")) if inbox.is_dir() else []:
+                text = f.read_text()
+                heads = list(OLD_INBOX_HEAD_RE.finditer(text))
+                for i, h in enumerate(heads):
+                    end = heads[i + 1].start() if i + 1 < len(heads) else len(text)
+                    parts.append(f"## Q {h.group(1)} · {h.group(2)} · s:{h.group(3)}\n\n{text[h.end():end].strip()}\n\n")
+            log = state / "inbox-filed.log"
+            for line in log.read_text().splitlines() if log.is_file() else []:
+                eid, kind, target = (line.split("\t") + ["", ""])[:3]
+                parts.append(f"<!-- ws:{kind} {eid}{' ' + target if target else ''} -->\n\n")
+            skips = state / "skips.log"
+            for line in skips.read_text().splitlines() if skips.is_file() else []:
+                stamp, sess, desc = (line.split("\t") + ["", ""])[:3]
+                parts.append(f"<!-- ws:skip {stamp.replace(' ', 'T')} s:{sess} {desc} -->\n\n")
+            migrated = list(dict.fromkeys(p.split(" ")[2] for p in parts if p.startswith("## Q")))
+            if migrated:  # answers were not recorded in v4.0; close them so new answers do not attach to them
+                parts.append(f"### A → {', '.join(migrated)} · 00:00:00\n\n（v4.0 迁移：之前的回答未记录）\n\n")
+            if parts:
+                old = self.conv.read_text() if self.conv.is_file() else ""
+                self.conv.write_text("".join(parts) + old)
+                os.chmod(self.conv, 0o600)
+                msgs.append(f"inbox/ 与归档记录 -> conversation.md（{sum(p.startswith('## Q') for p in parts)} 条 Q）")
+            secrets = state / "secrets.env"
+            if secrets.is_file():
+                target = self.agents / "secrets.env"
+                if target.exists():
+                    raise WsError(f"{target} 已存在，先手动合并 {secrets}")
+                secrets.rename(target)
+                os.chmod(target, 0o600)
+                for f in [self.agents_md] + [self.memory_dir / r for r, _ in self.memory_notes()] + \
+                         list(self.task_dir.rglob("brief.md")):
+                    if f.is_file() and ".agents/.state/secrets.env" in f.read_text():
+                        f.write_text(f.read_text().replace(".agents/.state/secrets.env", ".agents/secrets.env"))
+                        msgs.append(f"更新密钥路径引用：{self.rel(f)}")
+                msgs.append("secrets.env -> .agents/secrets.env")
+            if (state / "hooks-off").exists():
+                cfg = self.config()
+                cfg["hooks"] = "off"
+                (self.agents / "ws.json").write_text(json.dumps(cfg, ensure_ascii=False, indent=1) + "\n")
+            for p in (inbox, state):
+                if p.is_dir():
+                    shutil.rmtree(p)
+                    msgs.append(f"删除 {self.rel(p)}/")
+            gi = self.agents / ".gitignore"
+            if not gi.is_file() or gi.read_text() != GITIGNORE:
+                gi.write_text(GITIGNORE)
+                msgs.append("更新 .agents/.gitignore")
+        return msgs
 
 
 def replace_blocks(text: str, blocks: dict) -> str:
@@ -751,7 +883,7 @@ def init(target, profile="task", title=None, yes=False) -> list[str]:
             raise WsError("将在现有 AGENTS.md 末尾追加 <!-- ws:begin -->…<!-- ws:end --> 区块。"
                           "这个文件由人维护，先征得用户同意，再加 --yes 重跑")
     ws = Workspace(root)
-    for d in (ws.memory_dir, ws.task_dir, ws.skills_dir, ws.state_dir):
+    for d in (ws.memory_dir, ws.task_dir, ws.skills_dir):
         d.mkdir(parents=True, exist_ok=True)
     cfg = ws.agents / "ws.json"
     if not cfg.is_file():
@@ -760,7 +892,7 @@ def init(target, profile="task", title=None, yes=False) -> list[str]:
         msgs.append("写入 .agents/ws.json")
     gi = ws.agents / ".gitignore"
     if not gi.is_file():
-        gi.write_text("inbox/\n.state/\n")
+        gi.write_text(GITIGNORE)
     if not has_marker:
         if profile == "task":
             agents_md.write_text(render("AGENTS.task.md", title=title or root.name, date=today()))
@@ -836,6 +968,7 @@ def main(argv=None) -> int:
     p.add_argument("text")
     p.add_argument("--tag", default="note", choices=LOG_TAGS)
     sub.add_parser("index", help="重新生成 memory/INDEX.md 和 AGENTS.md 的生成区块")
+    sub.add_parser("migrate", help="v4.0 -> v4.1：inbox/ 和 .state/ 迁到 conversation.md")
     p = sub.add_parser("check", help="检查工作区")
     p.add_argument("--json", action="store_true")
     p = sub.add_parser("status", help="现状摘要")
@@ -859,6 +992,10 @@ def main(argv=None) -> int:
             print(f"下一步：写好 goal.md 和 plan.md，然后 ws task status {nid} active")
         elif args.cmd == "task" and args.tcmd == "status":
             ws.set_status(args.id, args.status, force=args.force)
+            if args.status == "done":
+                for i in ws.memory_issues():
+                    if i.code == "memory-stale":
+                        print(f"提醒：{i.msg}")
             ws.index()
             print(f"{args.id} -> {args.status}")
         elif args.cmd == "dispatch":
@@ -887,6 +1024,10 @@ def main(argv=None) -> int:
                 print(f"{e['id']}  {e['time']}  {e['text'][:100]}")
         elif args.cmd == "log":
             ws.log(args.id, args.text, tag=args.tag)
+        elif args.cmd == "migrate":
+            msgs = ws.migrate()
+            ws.index()
+            print("\n".join(msgs) if msgs else "已是 v4.1，无需迁移")
         elif args.cmd == "index":
             changed = ws.index()
             print("已更新：" + "、".join(changed) if changed else "已是最新")

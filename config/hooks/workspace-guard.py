@@ -3,16 +3,17 @@
 
 Self-activates only inside a v4 workspace (nearest `.agents/ws.json`, never $HOME). Events:
 - SessionStart: inject `ws status` (v3 workspaces get a one-line "follow v3, don't convert" note).
-- UserPromptSubmit: record typed user prompts verbatim into `.agents/inbox/`; long ones get a
-  one-line hint with the entry id. Background reports, cross-session messages and `-p` runs are skipped.
+- UserPromptSubmit: record typed user prompts verbatim as Q entries in `.agents/conversation.md`; long ones
+  get a one-line hint with the entry id. Background reports, cross-session messages and `-p` runs are skipped.
 - PreToolUse(Agent): deny a dispatch whose prompt does not reference an existing, unanswered,
   filled-in `subagent/NN-*/task.md` created by `ws dispatch`. Read-only agent types and `[ws:skip]` pass.
 - SubagentStop: if the dispatch has no valid result.md, block once; on the second stop save the
   last message as an UNVERIFIED result.md.
-- Stop: refresh generated index blocks silently.
+- Stop: record the turn's final reply as the A entry for this session's open questions, then refresh
+  generated index blocks silently.
 
-Fails open: any internal error exits 0 with no output. Off switch: WS_HOOKS=off or
-`.agents/.state/hooks-off`. WS_HOOKS=force also captures prompts in non-interactive (-p) runs.
+Fails open: any internal error exits 0 with no output. Off switch: WS_HOOKS=off or `"hooks": "off"` in
+`.agents/ws.json`. WS_HOOKS=force also records Q/A in non-interactive (-p) runs.
 Spec: ~/.claude/skills/workspace-management/references/spec.md
 """
 import json
@@ -61,20 +62,23 @@ def active_ids(ws, limit=3):
 
 def on_session_start(ws, wslib, data):
     context("SessionStart", ws.status_text() + "\n本会话在 v4 工作区内，规则见 AGENTS.md「工作协议」："
-            "用户消息自动记入 inbox，需求当轮用 ws req 归档；派发先 ws dispatch；子智能体的结果以 result.md 为准。")
+            "用户消息和每轮回答自动记入 conversation.md，需求当轮用 ws req 归档；派发先 ws dispatch；子智能体的结果以 result.md 为准。")
+
+
+def interactive(data):
+    sdk = os.environ.get("CLAUDE_CODE_ENTRYPOINT", "").startswith("sdk")
+    return (not sdk or os.environ.get("WS_HOOKS") == "force") and not data.get("agent_id")
 
 
 def on_prompt(ws, wslib, data):
-    if os.environ.get("CLAUDE_CODE_ENTRYPOINT", "").startswith("sdk") and os.environ.get("WS_HOOKS") != "force":
-        return
-    if data.get("agent_id"):
+    if not interactive(data):
         return
     prompt = data.get("prompt") or ""
     if not prompt.strip() or prompt.lstrip().startswith(NON_TYPED_PREFIXES):
         return
-    eid = ws.inbox_append(data.get("session_id"), data.get("prompt_id"), prompt)
+    eid = ws.record_question(data.get("session_id"), data.get("prompt_id"), prompt)
     if len(prompt.strip()) >= wslib.INBOX_MIN_CHARS:
-        context("UserPromptSubmit", f"（ws）本条已记入 inbox：{eid}。是需求或方向变化就归档：ws req <节点ID> --entry {eid}"
+        context("UserPromptSubmit", f"（ws）本条已记入 conversation.md：{eid}。是需求或方向变化就归档：ws req <节点ID> --entry {eid}"
                 f"（新任务：ws req --new <slug> --entry {eid}）；不是需求：ws req --not-req {eid}。")
 
 
@@ -125,8 +129,11 @@ def on_subagent_stop(ws, wslib, data):
 
 
 def on_stop(ws, wslib, data):
-    if not data.get("stop_hook_active"):
-        ws.index()
+    if data.get("stop_hook_active"):
+        return
+    if interactive(data):
+        ws.record_answer(data.get("session_id"), data.get("last_assistant_message"))
+    ws.index()
 
 
 HANDLERS = {"SessionStart": on_session_start, "UserPromptSubmit": on_prompt,
@@ -149,7 +156,7 @@ def main():
             context(event, V3_NOTE)
         return
     ws = wslib.Workspace(root)
-    if (ws.state_dir / "hooks-off").exists():
+    if ws.hooks_off():
         return
     if event == "PreToolUse" and data.get("tool_name") in ("Agent", "Task"):
         on_pre_agent(ws, wslib, data)

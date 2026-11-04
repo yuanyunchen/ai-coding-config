@@ -3,7 +3,7 @@
 
 Self-activates only inside a v4 workspace (nearest `.agents/ws.json`, never $HOME). Events:
 - SessionStart: inject `ws status` (v3 workspaces get a one-line "follow v3, don't convert" note).
-- UserPromptSubmit: record typed user prompts verbatim as Q entries in `.agents/conversation.md`; long ones
+- UserPromptSubmit: record typed user prompts verbatim as Q entries in `.agents/conversation.md` (and in `.agents/inbox.md`, user messages only); long ones
   get a one-line hint with the entry id. Background reports, cross-session messages and `-p` runs are skipped.
 - PreToolUse(Agent): deny a dispatch whose prompt does not reference an existing, unanswered,
   filled-in `subagent/NN-*/task.md` created by `ws dispatch`. Read-only agent types and `[ws:skip]` pass.

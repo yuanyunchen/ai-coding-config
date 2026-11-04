@@ -176,7 +176,7 @@ class TestAnswers(GuardTest):
         self.run_hook(q)
         self.run_hook(fixture("Stop", cwd=str(self.root), session_id=q["session_id"], last_assistant_message="进度：已定位原因"))
         text = self.ws.conv.read_text()
-        self.assertIn("### A → ", text)
+        self.assertIn("🤖 A → ", text)
         self.assertIn("进度：已定位原因", text)
         self.assertTrue(all(x["answered"] for x in self.ws.questions()))
 

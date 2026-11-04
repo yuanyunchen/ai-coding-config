@@ -2,6 +2,7 @@
 import io
 import json
 import os
+import re
 import sys
 import tempfile
 import threading
@@ -33,7 +34,10 @@ class WsTestCase(unittest.TestCase):
             os.environ["HOME"] = self._old_home
         self._tmp.cleanup()
 
+    SPEC = "### 目标\n交付 X\n\n### 验收标准\n测试通过\n"
+
     def fill(self, node, goal=True, plan=True):
+        self.ws.set_spec(str(node), self.SPEC)
         if goal:
             (node / "goal.md").write_text("# 目标\n\n## 目标\n交付 X\n\n## 验收标准\n测试通过\n")
         if plan:
@@ -145,6 +149,11 @@ class TestTasks(WsTestCase):
         d, nid = self.ws.new_task("x")
         with self.assertRaises(wslib.WsError):
             self.ws.set_status(nid, "active")
+        self.fill(d, goal=True, plan=True)
+        (d / "task.md").write_text(wslib.render("node/task.md", id=nid, title="x", source="user", date="d", now="n",
+                                                spec=wslib.render("node/task-spec.md"), raw=""))
+        with self.assertRaisesRegex(wslib.WsError, "任务说明"):
+            self.ws.set_status(nid, "active")
         self.fill(d)
         self.ws.set_status(nid, "active")
         self.assertEqual(self.ws.task_status(d), "active")
@@ -227,9 +236,14 @@ class TestInboxAndReq(WsTestCase):
         d, nid = self.ws.new_task("report")
         self.ws.file_req(nid, entry=e1)
         self.assertIn(long_text, (d / "task.md").read_text())
-        self.assertIn("## 追加", (d / "task.md").read_text())
+        self.assertIn(f"· 用户原文 · {e1}", (d / "task.md").read_text().split("## 原文记录", 1)[1])
         self.assertEqual(self.ws.unfiled(), [])
         self.assertEqual(self.ws.conv.stat().st_mode & 0o777, 0o600)
+        inbox = self.ws.inbox.read_text()
+        self.assertIn(INDENT_TEXT(long_text), inbox)
+        self.assertIn("继续", inbox)
+        self.assertNotIn("🤖", inbox)
+        self.assertEqual(self.ws.inbox.stat().st_mode & 0o777, 0o600)
 
     def test_req_new_and_not_req(self):
         e1 = self.ws.record_question("s", "cccccccc-1", "做一个新的数据看板，展示每周的召回率变化")
@@ -327,7 +341,7 @@ class TestConversation(WsTestCase):
         self.assertFalse(qs[other]["answered"])
         self.assertIn("回答一", self.ws.conv.read_text())
         self.ws.record_answer("sess-aaa1", "后台任务回来后的补充")
-        self.assertIn(f"### A（续）→ {q2}", self.ws.conv.read_text())
+        self.assertIn(f"🤖 A（续） → {q2}", self.ws.conv.read_text())
         self.assertIsNone(self.ws.record_answer("no-such", "x"))
 
     def test_long_answer_is_cut_with_note(self):
@@ -414,21 +428,131 @@ class TestMemoryLayers(WsTestCase):
 
 
 class TestDispatchExtras(WsTestCase):
-    def test_brief_auto_listed_and_flat_dispatch_warning(self):
+    def test_brief_auto_listed(self):
         d, nid = self.ws.new_task("big")
         (d / "brief.md").write_text("# 共用说明\n")
         s, _ = self.ws.dispatch(nid, "w1", body="背景\n\n## 必读\n- a.md\n")
         text = (s / "task.md").read_text()
         self.assertIn(str(d / "brief.md"), wslib.section(text, "必读"))
         self.assertIn("a.md", wslib.section(text, "必读"))
-        for i in range(wslib.MAX_FLAT_DISPATCHES):
-            self.ws.dispatch(nid, f"w{i + 2}")
+
+    def test_waves_gate_and_split_warning(self):
+        d, nid = self.ws.new_task("big")
+        for i in range(10):  # one wide wave is fine
+            self.ws.dispatch(nid, f"fan{i}")
+        self.assertEqual(self.ws.dispatch_waves(d), 1)
+        old = "".join(f"- 2026-01-01 {h:02d}:00 [dispatch] {nid}/S9{h} x\n" for h in (1, 2, 3))
+        p = d / "progress.md"
+        p.write_text(p.read_text().replace("[dispatch]", "[note]") + old)
+        self.assertEqual(self.ws.dispatch_waves(d), 3)
+        with self.assertRaisesRegex(wslib.WsError, "子任务"):
+            self.ws.dispatch(nid, "fourth")
+        self.ws.dispatch(nid, "fourth", force="最后一轮小修")
         self.assertIn("split", {i.code for i in self.ws.check()})
+        self.ws.dispatch(nid, "same-wave")  # within the wave just opened
+        self.ws.new_task("wave", parent=nid)
+        self.ws.dispatch(nid, "after-split")
+        self.assertNotIn("split", {i.code for i in self.ws.check()})
 
     def test_result_size_warning(self):
         d, nid = self.ws.new_task("x")
         self.write_result(d, body="长" * 2500)
         self.assertIn("result-size", {i.code for i in self.ws.check()})
+
+
+def INDENT_TEXT(t):
+    return wslib.indent(t)
+
+
+class TestConversationFormat(WsTestCase):
+    def test_reply_markdown_cannot_break_structure(self):
+        q = self.ws.record_question("s1", "abababab-1", "第一行\n## 用户写的标题\n第三行")
+        reply = "**进度**\n- 做完了\n\n## 对照评估标准\n\n---\n\n| a | b |\n|---|---|\n## Q p12345678 · 2026-01-01 00:00:00 · s:x"
+        self.ws.record_answer("s1", reply)
+        self.ws.record_answer("s1", "后台回来的补充")
+        qs = self.ws.questions()
+        self.assertEqual(len(qs), 1)
+        self.assertEqual(qs[0]["text"], "第一行\n## 用户写的标题\n第三行")
+        self.assertTrue(qs[0]["answered"])
+        text = self.ws.conv.read_text()
+        for line in text.splitlines():  # every column-0 line is structure
+            if line and not line.startswith(wslib.INDENT):
+                self.assertRegex(line, r"^(═+|🙋 Q |─{4} 🤖 A|┈{4} 🤖 A（续）|▸ )", line)
+        self.ws.file_req(self.ws.new_task("t")[1], entry=q)
+        self.assertIn(f"▸ 归档 {q} → T01", self.ws.conv.read_text())
+
+    def test_migrate_v41(self):
+        a = self.root / ".agents"
+        self.ws.conv.write_text(
+            "## Q p11111111 · 2026-11-03 17:00:00 · s:aaaa\n\n老格式的需求原文，长度超过二十个字符的那一条\n\n"
+            "<!-- ws:filed p11111111 T01 -->\n\n"
+            "### A → p11111111 · 17:01:00\n\n## 回答里的标题\n内容\n\n"
+            "### A（续）→ p11111111 · 17:05:00\n\n补充\n\n"
+            "## Q p22222222 · 2026-11-03 17:10:00 · s:aaaa\n\n第二条老需求，也超过二十个字符的长度呢\n\n"
+            "<!-- ws:skip 2026-11-03T17:11 s:aaaa Explore: look -->\n\n")
+        d, nid = self.ws.new_task("old")
+        (d / "task.md").write_text(
+            "---\nid: T01\ntitle: 老任务\nfrom: user\ncreated: 2026-11-03\n---\n# T01 老任务\n\n"
+            "<!-- 上层写，只追加 -->\n\n最初的原话\n\n## 输入\n- a.md\n\n"
+            "## 追加 2026-11-03 17:10 · 用户原文 · p22222222\n\n第二条\n")
+        msgs = self.ws.migrate()
+        self.assertTrue(any("conversation.md" in m for m in msgs), msgs)
+        qs = {q["id"]: q for q in self.ws.questions()}
+        self.assertEqual(list(qs), ["p11111111", "p22222222"])
+        self.assertEqual(qs["p11111111"]["mark"], "filed")
+        self.assertTrue(qs["p11111111"]["answered"])
+        self.assertFalse(qs["p22222222"]["answered"])
+        self.assertEqual(qs["p22222222"]["text"], "第二条老需求，也超过二十个字符的长度呢")
+        self.assertIn("  ## 回答里的标题", self.ws.conv.read_text())
+        self.assertIn("p22222222", (a / "inbox.md").read_text())
+        t = (d / "task.md").read_text()
+        self.assertIsNotNone(wslib.task_spec(t))
+        raw = t.split("## 原文记录", 1)[1]
+        self.assertIn("最初的原话", raw)
+        self.assertIn("#### 输入", raw)
+        self.assertIn("### 2026-11-03 17:10 · 用户原文 · p22222222", raw)
+        self.assertEqual(wslib.spec_stale(t), "2026-11-03 17:10")
+        self.assertEqual(self.ws.migrate(), [])
+
+
+class TestTaskSpec(WsTestCase):
+    def test_spec_from_stdin_headings_or_raw(self):
+        d, _ = self.ws.new_task("a", body="## 目标\n做 A\n\n## 验收标准\n跑通\n")
+        self.assertEqual(wslib.spec_missing((d / "task.md").read_text()), [])
+        d2, _ = self.ws.new_task("b", parent="T01", body="父节点的一段说明")
+        t2 = (d2 / "task.md").read_text()
+        self.assertEqual(wslib.spec_missing(t2), ["目标", "验收标准"])
+        self.assertIn("· 上层说明 · T01", t2)
+
+    def test_req_makes_spec_stale_until_rewritten(self):
+        d, nid = self.ws.new_task("a", body="### 目标\n做 A\n### 验收标准\n跑通\n")
+        p = d / "task.md"
+        p.write_text(wslib.set_fm(p.read_text(), updated="2000-01-01 00:00"))
+        e = self.ws.record_question("s", "12121212-1", "再加一个要求：导出成 CSV，并且保留原始列名")
+        self.ws.file_req(nid, entry=e)
+        self.assertIn("task-spec-stale", {i.code for i in self.ws.check()})
+        self.ws.set_spec(nid, "### 目标\n做 A\n### 要求\n1. 导出 CSV（p12121212）\n### 验收标准\n跑通\n")
+        text = p.read_text()
+        self.assertNotIn("task-spec-stale", {i.code for i in self.ws.check()})
+        self.assertIn("导出 CSV", wslib.task_spec(text))
+        self.assertIn("再加一个要求", text.split("## 原文记录", 1)[1])
+
+
+class TestHistoryChecks(WsTestCase):
+    def test_close_ready_memory_empty_and_size(self):
+        d, nid = self.ws.new_task("x")
+        self.fill(d)
+        self.ws.set_status(nid, "active")
+        for i in range(wslib.HISTORY_MIN_RESULTS):
+            s, _ = self.ws.dispatch(nid, f"w{i}")
+            self.write_result(s)
+        p = d / "progress.md"
+        p.write_text(re.sub(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}", "2020-01-01 00:00", p.read_text()))
+        with open(s / "big.bin", "wb") as f:
+            f.truncate(wslib.DISPATCH_MAX_BYTES + 1)
+        codes = {i.code for i in self.ws.check()}
+        for c in ("close-ready", "memory-empty", "dispatch-size", "agents-length"):
+            self.assertIn(c, codes)
 
 
 class TestCli(WsTestCase):

@@ -7,7 +7,7 @@
 1. **工具管结构，agent 管内容。** 编号、目录、索引、生成区块都由 `ws` 写；agent 只写自然语言内容。手写的结构必然漂移（v3 的 VideoAgent 工作区里，手写索引指向了不存在的目录）。
 2. **规则必须在场。** 规则写进工作区 AGENTS.md 的「工作协议」区块：Claude Code 在没有 CLAUDE.md 时会自动加载 AGENTS.md，子智能体同样加载（2026-11-01，Claude Code 2.1.316，用埋暗号的探针实测）。只放在按需加载的 skill 里的规则会被忽略。
 3. **能交给机器的检查不交给自觉。** 用户原文由 hook 记录；派发由 hook 把关；结果文件由 hook 追收；状态门槛由 `ws` 检查。
-4. **记录分两类。** 日志只追加（task.md、progress.md、conversation.md、派发留档），状态必须为真（goal、plan、AGENTS.md 手写节、memory）。日志用来复盘和仲裁，永不回改。
+4. **记录分两类。** 日志只追加（task.md「原文记录」、progress.md、conversation.md、inbox.md、派发留档），状态必须为真（task.md「任务说明」、goal、plan、AGENTS.md 手写节、memory）。日志用来复盘和仲裁，永不回改。
 5. **失败开放。** hook 出错一律放行，不能因为守卫本身的问题卡住工作。
 
 ## 2. 结构与文件职责
@@ -16,8 +16,9 @@
 <workspace>/
 ├── AGENTS.md
 └── .agents/
-    ├── ws.json · .gitignore（conversation.md、secrets.env）
+    ├── ws.json · .gitignore（conversation.md、inbox.md、secrets.env）
     ├── conversation.md        用户 Q + 每轮最终回答 A + 归档标记，只追加
+    ├── inbox.md               只有用户消息（日期时间 + 编号 + 原文），只追加
     ├── secrets.env            密钥（600，不进 git）
     ├── memory/{INDEX.md, <主题>.md, <主题>/{README.md, …}}
     ├── skills/<名>/SKILL.md
@@ -29,7 +30,9 @@
 | AGENTS.md 手写节 | 主 agent | 有变化时 | 状态 |
 | AGENTS.md 生成区块、memory/INDEX.md | `ws index`（hook 在每轮结束时自动跑） | 自动 | 生成 |
 | conversation.md | hook（Q：用户每条消息；A：每轮最终回答）；`ws req` 追加归档标记 | 自动 | 日志 |
-| task.md | 上层：人的原文经 `ws req` 归档，或父节点经 `ws task new --stdin` / `ws dispatch --stdin` | 创建时 + 追加 | 日志 |
+| inbox.md | hook（与 Q 同时写，只有用户消息） | 自动 | 日志 |
+| task.md「任务说明」 | 上层（人的需求由主 agent 整理；子任务由父节点写），`ws task spec --stdin` 写回 | 创建时 + 每次需求变化 | 状态 |
+| task.md「原文记录」 | `ws req` 归档用户原文；`ws task new --stdin` 记上层说明 | 追加 | 日志 |
 | goal.md、plan.md | 执行者 | active 之前；plan 改动记进「修订记录」 | 状态 |
 | progress.md | 执行者用 `ws log`；`ws` 自动记 status/dispatch/req | 过程中 | 日志 |
 | result.md | 执行者（派发里是子智能体自己） | 收尾 | 状态，交给上层；核心 + 附件索引，≤6KB |
@@ -38,7 +41,7 @@
 
 根目录（task 类型）只有 AGENTS.md 和 `.agents/`（另允许 .git、.gitignore、README.md）。产物放在产生它的任务节点里：给人看的放节点的 `deliverables/`，工作文件放节点根目录，都由 result.md 列出；AGENTS.md 任务树链接各顶层节点的 result.md。
 
-锁加在 `.agents/ws.json` 上；hook 开关是 ws.json 里的 `"hooks": "off"`。v4.0 的 `inbox/`、`.state/` 由 `ws migrate` 迁到 v4.1。
+锁加在 `.agents/ws.json` 上；hook 开关是 ws.json 里的 `"hooks": "off"`。旧版 v4 工作区（v4.0 的 `inbox/`、`.state/`；v4.1 的对话格式和只追加的 task.md）由 `ws migrate` 升级到 v4.2。
 
 ## 3. 识别与两种类型
 
@@ -53,19 +56,44 @@
 - **编号**：两位数起，每个父目录下 `task/` 与 `subagent/` 各自从 01 连续编号；`ws` 在锁内分配，并行安全。重试用新编号，失败的那次原样保留。
 - **状态**：`planned → active → done`，以及 `blocked`、`dropped`；记在 progress.md frontmatter，变化由 `ws task status` 记一行日志。
 - **门槛**：
-  - active：goal.md 和 plan.md 去掉标题和注释后必须有内容；
+  - active：task.md「任务说明」的目标和验收标准有内容；goal.md 和 plan.md 去掉标题和注释后必须有内容；
   - done：result.md 的 status 为 DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED 之一且有内容；所有派发都有 result.md；所有子任务 done 或 dropped；`source` 指向本节点的 draft memory 已转正；conversation.md 没有未归档的用户原文；
   - `--force "<原因>"` 可跳过，原因记进 progress，`ws check` 不会替你掩盖遗留问题。
-- **拆分**：一步能做完的直接做；需要独立验收、跨多步或跨会话的建子任务；交给子智能体执行的走派发。同一波次可并行的派发，各自负责的文件不能重叠（写进 plan.md「拆分」表）。一个节点派发超过 6 次、或分了多个波次，就按波次拆成子任务（`ws check` 提醒）。层级建议不超过 3 层。计划只保留一份 plan.md。
+- **拆分**：一步能做完的直接做；需要独立验收、跨多步或跨会话的建子任务；交给子智能体执行的走派发。同一波次可并行的派发，各自负责的文件不能重叠（写进 plan.md「拆分」表）。一个节点最多派发 3 波（相隔 10 分钟以上的派发算新一波；同一波并行多少路不限），之后的波次建成子任务：`ws dispatch` 在第 4 波拦下，`--force "<原因>"` 放行并记进 progress。层级建议不超过 3 层。计划只保留一份 plan.md。
 - **不挪目录**：完成的节点原地标 done；AGENTS.md 任务树只展开含 active 节点的子树，其余折叠成一行。
+- **task.md 结构**（模板 `templates/node/task.md` 与 `templates/node/task-spec.md`）：
+  - 上半部「任务说明」：目标、背景、要求（编号，注明来源的原文 id 或上层节点）、约束、验收标准、输入、未定事项。它是当前有效的完整任务，读完就知道要做什么，不必翻原文。需求一变就整段改写成最新版本（不是追加修订），用 `ws task spec <ID> --stdin` 写回，frontmatter `updated` 随之更新。顶层任务由主 agent 根据用户原文整理；子任务由父节点写。
+  - 下半部「原文记录」：只追加。`ws req` 追加用户原文（`### <时间> · 用户原文 · <id>`），`ws task new --stdin` 记上层说明。它是任务说明的依据，冲突时以原文为准。
+  - `ws task new` 的 stdin 带「目标 / 验收标准」等小标题时直接作为任务说明，否则记进原文记录。
+  - 检查：最新一条原文晚于 `updated` → `task-spec-stale`；active 节点的任务说明缺目标或验收标准 → `task-spec`；设为 active 时同样拦下。
+  - 和 goal.md 的分工：task.md 是上层要什么，goal.md 是执行者承诺交付什么、怎么验收。
 - **输入文件**：用户交来的文件复制进该节点的 `input/` 并在 task.md 里引用；大数据集、代码仓库只记路径。需要跨任务复用的，提取后写进 memory（type: source）。
 
 ## 5. 对话记录与需求原文
 
-- 格式：`## Q <id> · <日期时间> · s:<会话>` + 用户原文；`### A → <id>[, <id>] · <时间>` + 该轮最终回答；`<!-- ws:filed|not-req|skip … -->` 标记行。只追加，不改写。
+- 格式（给人直接看原文，所以不靠 `#` 标题区分）：结构行顶格，内容每行缩进两格，回答里的标题、横线、表格都不会被当成结构。
+  ```
+  ════════════════════════════════════════════════════════════════
+  🙋 Q p1a2b3c4 · 2026-11-03 17:03:05 · s:4475b68a
+  ════════════════════════════════════════════════════════════════
+
+    用户原文
+
+  ▸ 归档 p1a2b3c4 → T01            （ws req 追加；还有「▸ 非需求 <id>」「▸ 绕过派发 <时间> …」）
+
+  ──── 🤖 A → p1a2b3c4 · 17:06:06 ────────────────────────
+
+    本轮最终回答
+
+  ┈┈┈┈ 🤖 A（续） → p1a2b3c4 · 17:08:10 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+
+    后台任务回来后的回复
+  ```
+  只追加，不改写。
+- `inbox.md`：hook 记 Q 时同步追加，只有用户消息：`━━━ <日期时间> · <id> ━━━` 加缩进的原文，不含回答和标记。
 - hook 在 UserPromptSubmit 时把用户亲手输入的消息记成 Q，条目 ID 形如 `p1a2b3c4d`；在 Stop 时把该轮最终回答记成 A，挂到本会话所有未答的 Q 上；没有未答的 Q（例如后台任务回来后才给答复）时记成「A（续）→ 上一条 Q」。单条 A 超过 6000 字截断并注明（`ANSWER_MAX_CHARS`）。不记：子智能体回报（`<task-notification>`）、跨会话消息、本地命令输出、`claude -p` 等非交互会话（`WS_HOOKS=force` 可强制记录）。
 - 不少于 20 个字符的消息会附带一行提示，给出条目 ID；更短的（"继续""好的"）静默记录，无需归档。
-- 归档：`ws req <ID> --entry <id>` 追加进已有节点 task.md 的「## 追加 <时间> · 用户原文 · <id>」；`ws req --new <slug> --entry <id> [--parent ID]` 开新任务；`ws req --not-req <id>…` 标成不是需求（提问、闲聊）。
+- 归档：`ws req <ID> --entry <id>` 追加进已有节点 task.md「原文记录」的 `### <时间> · 用户原文 · <id>`，然后当轮把变化合进「任务说明」（`ws task spec`）；`ws req --new <slug> --entry <id> [--parent ID]` 开新任务；`ws req --not-req <id>…` 标成不是需求（提问、闲聊）。
 - 含疑似密钥（`sk-`、`ghp_`、`AKIA`、`xox?-`、私钥头、`XXX_KEY=…`）的原文拒绝归档，除非加 `--allow-secret`：task.md 可能进 git，conversation.md 不会。密钥统一放 `.agents/secrets.env`（600，不进 git），不得写进 task.md、memory 或派发说明。
 - 没有 hook 的环境（Codex、Cursor、Trae）：把用户原话照录，`ws req <ID> --stdin` 或 `ws task new <slug> --stdin`。
 
@@ -95,7 +123,7 @@
 ## 8. AGENTS.md
 
 - 十节：定位、用户偏好与约定、规则、环境与命令、地图（外部资源 + memory 区块）、任务树（区块）、关键决策、风险与已知坑、工作协议（区块）、Skills（区块）。模板：`templates/AGENTS.task.md`、`templates/AGENTS.repo-block.md`。
-- 篇幅 100–200 行（`ws check` 超过 200 行告警）：每次会话都会加载，长度就是每轮的成本；细节写进 memory，这里留一行指针。
+- 篇幅 100–200 行（`ws check` 超过 200 行告警；有了一定历史仍不足 100 行也告警）：每次会话都会加载，长度就是每轮的成本；细节写进 memory，这里留一行指针。
 - 区块 `<!-- ws:NAME -->…<!-- /ws:NAME -->` 由 `ws index` 生成，不带时间戳，重复生成结果不变；标记不成对时 `ws index` 报错退出，不猜。
 - 「规则」节属于项目级行为约束：用户的裁决照录并注明出处；agent 自己总结的规则按 harness-management 的流程和模式处理。其余各节是工作区状态，agent 直接维护。
 - 「外部资源」记录本工作区相关的飞书 token、外部代码路径、数据表，供 doc-curation 等定时任务读取。
@@ -128,12 +156,15 @@
 | unverified | warn | hook 代存的 result.md 待核对 |
 | memory-readme | error | memory 目录缺 README.md，或 README 的文件表漏列 |
 | memory-fm / memory-draft / memory-size / memory-plan / memory-stale | warn | 缺 summary/type；来源已收尾的草稿；文件超 8KB 或 README 超 3KB；计划类标题；basis 之后覆盖目录有改动 |
-| result-size / split | warn | result.md 超 6KB；节点派发超 6 次且没有子任务 |
-| agents-length / dead-link / root-file / legacy | warn | AGENTS.md 超 200 行；失效链接；根目录有多余文件；同时存在 `.agent/` |
+| result-size / split | warn | result.md 超 6KB；节点派发超过 3 波且没有子任务 |
+| task-spec / task-spec-stale | warn | active 节点的任务说明缺目标或验收标准；原文记录有比 `updated` 更新的条目 |
+| close-ready | warn | active 节点的派发都已交结果、子任务都已收尾、2 小时没有新进展 |
+| memory-empty / dispatch-size | warn | 已有 10 份以上派发结果而 memory 为空；派发目录超过 20MB（大数据放项目数据目录） |
+| agents-length / dead-link / root-file / legacy | warn | AGENTS.md 超 200 行，或已有 10 份以上派发结果而不足 100 行；失效链接；根目录有多余文件；同时存在 `.agent/` |
 | inbox | warn | conversation.md 里未归档的用户原文 |
 | stale | info | 生成内容过期（`ws index` 修复） |
 
-收尾时的冲突仲裁：task.md（上层的原话）优先，其次是实际产物，最后是自己写的记录；消解结果记进 AGENTS.md「关键决策」。
+收尾时的冲突仲裁：task.md「原文记录」（上层的原话）优先，其次是实际产物，最后是自己写的记录；消解结果记进 AGENTS.md「关键决策」。
 
 ## 11. 边界
 

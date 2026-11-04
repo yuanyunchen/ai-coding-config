@@ -37,9 +37,18 @@ ANSWER_MAX_CHARS = 6000  # one recorded answer; longer ones are cut with a note 
 RESULT_MAX_BYTES = 6000  # result.md core; more goes to attachments (subagent-protocol)
 NOTE_MAX_BYTES = 8000  # a memory file; above this it becomes a directory with README.md
 README_MAX_BYTES = 3000
-MAX_FLAT_DISPATCHES = 6  # more dispatches without child tasks -> split into subtasks
-GITIGNORE = "conversation.md\nsecrets.env\n"
+MAX_FLAT_WAVES = 3  # dispatch waves a node may run before its work must be split into subtasks
+WAVE_GAP_MIN = 10  # dispatches further apart than this start a new wave
+DISPATCH_MAX_BYTES = 20_000_000  # big data belongs in the project's data dir, not a dispatch dir
+HISTORY_MIN_RESULTS = 10  # dispatch results after which an empty memory / short AGENTS.md is a smell
+CLOSE_IDLE_HOURS = 2
+GITIGNORE = "conversation.md\ninbox.md\nsecrets.env\n"
 AGENTS_MAX_LINES = 200
+AGENTS_MIN_LINES = 100
+SPEC_HEADS = ("目标", "背景", "要求", "约束", "验收标准", "输入", "未定事项")
+SPEC_REQUIRED = ("目标", "验收标准")
+RAW_HEAD_RE = re.compile(r"^### (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) · ", re.M)  # an entry in task.md「原文记录」
+LOG_TIME_RE = re.compile(r"^- (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) \[(\w+)\]", re.M)
 ROOT_ALLOWED = {"AGENTS.md", ".agents", ".claude", ".claude.archived", ".git", ".gitignore", ".DS_Store", "README.md"}
 PLAN_HEADING_RE = re.compile(r"^#{1,6}\s.*(改进|建议|计划|TODO|切入点|下一步)", re.M)
 
@@ -49,9 +58,20 @@ ID_RE = re.compile(r"^T(\d+(?:\.\d+)*)(?:/S(\d+))?$")
 # Only the part from `.agents/` on is matched, so spaces earlier in an absolute path do not matter.
 DISPATCH_REF_RE = re.compile(r"\.agents/task/(?:[^\s/\"'`<>()]+/)+?subagent/\d{2,}-[^\s/\"'`<>()]+/task\.md")
 OLD_INBOX_HEAD_RE = re.compile(r"^## (p[0-9a-f]{8}) · ([0-9: -]+) · session (\S*)$", re.M)  # v4.0, for migrate
+# conversation.md: structural lines start at column 0, every content line is indented by INDENT,
+# so headings or rules inside a reply can never be mistaken for structure (and stay visually nested).
+INDENT = "  "
+RULE_WIDTH = 64
+MARK_WORDS = {"filed": "归档", "not-req": "非需求", "skip": "绕过派发"}
+MARK_KINDS = {v: k for k, v in MARK_WORDS.items()}
 CONV_RE = re.compile(
+    r"^(?:🙋 Q (?P<q>p[0-9a-f]{8}) · (?P<time>[0-9: -]+) · s:(?P<sess>\S*)"
+    r"|[─┈]{4} 🤖 A(?P<cont>（续）)? → (?P<a>p[0-9a-f]{8}(?:, p[0-9a-f]{8})*) · [0-9:]+ [─┈]+"
+    r"|▸ (?P<kind>归档|非需求|绕过派发) (?P<key>\S+)(?: (?P<rest>.*?))?)$", re.M)
+CONV_DECOR_RE = re.compile(r"^═+$", re.M)
+CONV41_RE = re.compile(  # v4.1 format, for migrate
     r"^(?:## Q (?P<q>p[0-9a-f]{8}) · (?P<time>[0-9: -]+) · s:(?P<sess>\S*)"
-    r"|### A(?P<cont>（续）)? → (?P<a>p[0-9a-f]{8}(?:, p[0-9a-f]{8})*) · [0-9: -]+"
+    r"|### A(?P<cont>（续）)? → (?P<a>p[0-9a-f]{8}(?:, p[0-9a-f]{8})*) · (?P<atime>[0-9: -]+)"
     r"|<!-- ws:(?P<kind>filed|not-req|skip) (?P<key>\S+)(?: (?P<rest>.*?))? -->)$", re.M)
 LINK_RE = re.compile(r"\]\(([^)\s#]+)(?:#[^)]*)?\)")
 SECRET_RE = re.compile(
@@ -153,6 +173,64 @@ def fill_sections(text: str, body: str) -> str:
     return text.rstrip("\n") + "\n"
 
 
+def indent(text: str) -> str:
+    return "\n".join(INDENT + l if l.strip() else "" for l in text.strip("\n").splitlines())
+
+
+def dedent(text: str) -> str:
+    return "\n".join(l[len(INDENT):] if l.startswith(INDENT) else l for l in text.splitlines()).strip()
+
+
+def fmt_q(eid, stamp, sess, text) -> str:
+    rule = "═" * RULE_WIDTH
+    return f"\n\n{rule}\n🙋 Q {eid} · {stamp} · s:{sess}\n{rule}\n\n{indent(text)}\n\n"
+
+
+def fmt_a(ids, time, text, cont=False) -> str:
+    ch = "┈" if cont else "─"
+    head = f"{ch * 4} 🤖 A{'（续）' if cont else ''} → {', '.join(ids)} · {time} "
+    return f"{head}{ch * max(4, RULE_WIDTH - len(head))}\n\n{indent(text)}\n\n"
+
+
+def fmt_mark(kind, key, rest="") -> str:
+    return f"▸ {MARK_WORDS[kind]} {key}{' ' + rest if rest else ''}\n\n"
+
+
+def fmt_inbox(eid, stamp, text) -> str:
+    head = f"━━━ {stamp} · {eid} "
+    return f"{head}{'━' * max(4, RULE_WIDTH - len(head))}\n\n{indent(text)}\n\n"
+
+
+def task_spec(text: str) -> str | None:
+    """The「任务说明」part of a node task.md, or None for the pre-v4.2 layout."""
+    m = re.search(r"^## 任务说明\s*$(.*?)(?=^## 原文记录\s*$|\Z)", text, re.M | re.S)
+    return m.group(1) if m else None
+
+
+def spec_missing(text: str) -> list[str]:
+    spec = task_spec(text)
+    if spec is None:
+        return ["任务说明"]
+    out = []
+    for h in SPEC_REQUIRED:
+        m = re.search(rf"^###\s+{h}\s*$(.*?)(?=^###?\s|\Z)", spec, re.M | re.S)
+        if not m or not meaningful(m.group(1)):
+            out.append(h)
+    return out
+
+
+def spec_stale(text: str) -> str | None:
+    """Time of the newest raw entry when it is newer than the spec's `updated`."""
+    times = RAW_HEAD_RE.findall(text.split("## 原文记录", 1)[1]) if "## 原文记录" in text else []
+    updated = str(read_fm(text)[0].get("updated", ""))
+    return max(times) if times and max(times) > updated else None
+
+
+def normalize_spec(body: str) -> str:
+    """stdin for the spec may use ## or ### headings; store them as ###."""
+    return re.sub(r"^#{2,3}\s+", "### ", body.strip(), flags=re.M) + "\n"
+
+
 def render(template: str, **ctx) -> str:
     text = (TEMPLATES / template).read_text()
     for k, v in ctx.items():
@@ -235,6 +313,7 @@ class Workspace:
         self.memory_dir = self.agents / "memory"
         self.skills_dir = self.agents / "skills"
         self.conv = self.agents / "conversation.md"
+        self.inbox = self.agents / "inbox.md"
         self.agents_md = self.root / "AGENTS.md"
 
     @classmethod
@@ -318,15 +397,20 @@ class Workspace:
         return p
 
     # --- tasks ---
-    def new_task(self, slug, title=None, parent=None, body="", source=None):
+    def new_task(self, slug, title=None, parent=None, body="", source=None, entry=None):
+        """body with spec headings (### 目标 …) becomes the「任务说明」; any other body is the first raw entry."""
         check_slug(slug)
         with self.lock():
             parent_dir = self.task_dir if parent is None else self.resolve_task(parent) / "task"
             d = self._alloc(parent_dir, slug)
         nid = self.node_id(d)
-        ctx = dict(id=nid, title=title or slug, date=today(), now=now(),
-                   source=source or ("user" if parent is None else self.node_id(parent_dir.parent)),
-                   body=body.strip() or "<!-- 上层的要求写在这里 -->")
+        source = source or ("user" if parent is None else self.node_id(parent_dir.parent))
+        body = body.strip()
+        is_spec = bool(re.search(rf"^#{{2,3}}\s+({'|'.join(SPEC_HEADS)})\s*$", body, re.M))
+        label = f"用户原文{' · ' + entry if entry else ''}" if source == "user" else f"上层说明 · {source}"
+        ctx = dict(id=nid, title=title or slug, date=today(), now=now(), source=source,
+                   spec=normalize_spec(body) if is_spec else render("node/task-spec.md"),
+                   raw=f"### {now()} · {label}\n\n{body}\n" if body and not is_spec else "<!-- ws req 追加在这里 -->\n")
         for name in NODE_FILES:
             (d / name).write_text(render(f"node/{name}", **ctx))
         return d, nid
@@ -349,6 +433,9 @@ class Workspace:
         nid = self.node_id(d)
         problems = []
         if status == "active":
+            miss = spec_missing((d / "task.md").read_text())
+            if miss:
+                problems.append(f"task.md「任务说明」缺 {'、'.join(miss)}：上层先写好（ws task spec {nid} --stdin）")
             for f in ("goal.md", "plan.md"):
                 if not meaningful((d / f).read_text()):
                     problems.append(f"{f} 还是空骨架：先写清目标和验收标准、方法和拆分")
@@ -382,10 +469,51 @@ class Workspace:
         with open(d / "progress.md", "a") as f:
             f.write(line)
 
+    def set_spec(self, ident, body):
+        """Replace the「任务说明」of a node task.md with the latest full version."""
+        if not body.strip():
+            raise WsError("任务说明为空：从 stdin 传入 ### 目标 / 背景 / 要求 / 约束 / 验收标准 / 输入 / 未定事项")
+        d = self.resolve_task(ident)
+        p = d / "task.md"
+        with self.lock():
+            text = p.read_text()
+            if task_spec(text) is None:
+                raise WsError(f"{self.rel(p)} 是旧格式（没有「任务说明」）：先运行 ws migrate")
+            text = re.sub(r"(^## 任务说明\s*\n).*?(?=^## 原文记录\s*$|\Z)",
+                          lambda m: m.group(1) + "\n" + normalize_spec(body) + "\n", text, count=1, flags=re.M | re.S)
+            p.write_text(set_fm(text, updated=now()))
+        self.log(self.node_id(d), "任务说明已更新", tag="req")
+        return d
+
+    def log_times(self, d: Path, tag=None) -> list[str]:
+        p = d / "progress.md"
+        text = p.read_text() if p.is_file() else ""
+        return [t for t, g in LOG_TIME_RE.findall(text) if tag is None or g == tag]
+
+    def dispatch_waves(self, d: Path) -> int:
+        """Dispatch bursts in a node: dispatches more than WAVE_GAP_MIN apart start a new wave."""
+        times = sorted(_dt.datetime.strptime(t, "%Y-%m-%d %H:%M") for t in self.log_times(d, "dispatch"))
+        gap = _dt.timedelta(minutes=WAVE_GAP_MIN)
+        return sum(1 for i, t in enumerate(times) if i == 0 or t - times[i - 1] > gap)
+
+    def opens_new_wave(self, d: Path) -> bool:
+        times = self.log_times(d, "dispatch")
+        if not times:
+            return True
+        last = _dt.datetime.strptime(max(times), "%Y-%m-%d %H:%M")
+        return _dt.datetime.now() - last > _dt.timedelta(minutes=WAVE_GAP_MIN)
+
     # --- dispatch ---
-    def dispatch(self, ident, slug, title=None, body=""):
+    def dispatch(self, ident, slug, title=None, body="", force=None):
         check_slug(slug)
         node = self.resolve_task(ident)
+        nid = self.node_id(node)
+        if (not numbered(node / "task") and self.opens_new_wave(node)
+                and self.dispatch_waves(node) >= MAX_FLAT_WAVES and not force):
+            raise WsError(f"{nid} 已经派发了 {self.dispatch_waves(node)} 波，又没有子任务：把下一波建成子任务"
+                          f"（ws task new <波次名> --parent {nid}）再在子任务下派发；确需在本节点继续，加 --force \"<原因>\"")
+        if force:
+            self.log(nid, f"派发波次超限仍在本节点派发：{force}", tag="decision")
         with self.lock():
             d = self._alloc(node / "subagent", slug)
         did = self.node_id(d)
@@ -402,8 +530,8 @@ class Workspace:
         return d, did
 
     # --- conversation (user Q + core A, append-only) ---
-    def _append_conv(self, text: str):
-        fd = os.open(self.conv, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+    def _append_conv(self, text: str, path: Path | None = None):
+        fd = os.open(path or self.conv, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
         try:
             os.write(fd, text.encode())
         finally:
@@ -412,7 +540,8 @@ class Workspace:
     def record_question(self, session_id, prompt_id, prompt) -> str:
         eid = "p" + (prompt_id or uuid.uuid4().hex).replace("-", "")[:8].lower()
         stamp = _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self._append_conv(f"## Q {eid} · {stamp} · s:{(session_id or '-')[:8]}\n\n{prompt.rstrip()}\n\n")
+        self._append_conv(fmt_q(eid, stamp, (session_id or "-")[:8], prompt))
+        self._append_conv(fmt_inbox(eid, stamp, prompt), self.inbox)
         return eid
 
     def record_answer(self, session_id, message) -> str | None:
@@ -422,19 +551,19 @@ class Workspace:
         if not mine or not (message or "").strip():
             return None
         open_ids = list(dict.fromkeys(q["id"] for q in mine if not q["answered"]))
-        head = f"### A → {', '.join(open_ids)}" if open_ids else f"### A（续）→ {mine[-1]['id']}"
         text = message.strip()
         if len(text) > ANSWER_MAX_CHARS:
             text = text[:ANSWER_MAX_CHARS] + f"\n\n…（超过 {ANSWER_MAX_CHARS} 字，已截断）"
-        self._append_conv(f"{head} · {_dt.datetime.now().strftime('%H:%M:%S')}\n\n{text}\n\n")
-        return head
+        block = fmt_a(open_ids or [mine[-1]["id"]], _dt.datetime.now().strftime("%H:%M:%S"), text, cont=not open_ids)
+        self._append_conv(block)
+        return block.splitlines()[0]
 
     def _conv_items(self):
         text = self.conv.read_text() if self.conv.is_file() else ""
         items = list(CONV_RE.finditer(text))
         for i, m in enumerate(items):
             end = items[i + 1].start() if i + 1 < len(items) else len(text)
-            yield m, text[m.end():end].strip()
+            yield m, dedent(CONV_DECOR_RE.sub("", text[m.end():end]))
 
     def questions(self) -> list[dict]:
         qs, answered, marks = [], set(), {}
@@ -443,15 +572,15 @@ class Workspace:
                 qs.append({"id": m.group("q"), "time": m.group("time"), "session": m.group("sess"), "text": body})
             elif m.group("a"):
                 answered.update(m.group("a").split(", "))
-            elif m.group("kind") in ("filed", "not-req"):
-                marks[m.group("key")] = m.group("kind")
+            elif MARK_KINDS.get(m.group("kind")) in ("filed", "not-req"):
+                marks[m.group("key")] = MARK_KINDS[m.group("kind")]
         for q in qs:
             q["answered"] = q["id"] in answered
             q["mark"] = marks.get(q["id"])
         return qs
 
     def _mark(self, eid, kind, target=""):
-        self._append_conv(f"<!-- ws:{kind} {eid}{' ' + target if target else ''} -->\n\n")
+        self._append_conv(fmt_mark(kind, eid, f"→ {target}" if kind == "filed" and target else target))
 
     def unfiled(self) -> list[dict]:
         return [q for q in self.questions() if not q["mark"] and len(q["text"]) >= INBOX_MIN_CHARS]
@@ -470,14 +599,14 @@ class Workspace:
         if SECRET_RE.search(content) and not allow_secret:
             raise WsError("内容里疑似有密钥或口令；确认无误后加 --allow-secret（task.md 可能被提交进 git）")
         if new_slug:
-            d, nid = self.new_task(new_slug, title=title, parent=parent, body=content, source="user")
+            d, nid = self.new_task(new_slug, title=title, parent=parent, body=content, source="user", entry=entry)
         else:
             if not target:
                 raise WsError("要指定节点 ID，或用 --new <slug> 开新任务")
             d = self.resolve_task(target)
             nid = self.node_id(d)
             with self.lock(), open(d / "task.md", "a") as f:
-                f.write(f"\n## 追加 {now()} · 用户原文{' · ' + entry if entry else ''}\n\n{content}\n")
+                f.write(f"\n### {now()} · 用户原文{' · ' + entry if entry else ''}\n\n{content}\n")
         self.log(nid, f"{entry or 'stdin'} 归档进 task.md", tag="req")
         if entry:
             self._mark(entry, "filed", nid)
@@ -695,9 +824,31 @@ class Workspace:
                 for f in ("goal.md", "plan.md"):
                     if (d / f).is_file() and not meaningful((d / f).read_text()):
                         add("warn", "skeleton", f"{nid} 已 active 但 {f} 还是空骨架")
+            if st in ("planned", "active", "blocked") and (d / "task.md").is_file():
+                ttext = (d / "task.md").read_text()
+                if task_spec(ttext) is None:
+                    add("warn", "task-spec", f"{nid} 的 task.md 是旧格式，没有「任务说明」：ws migrate")
+                elif st != "planned" and spec_missing(ttext):
+                    add("warn", "task-spec", f"{nid} 的「任务说明」缺 {'、'.join(spec_missing(ttext))}：ws task spec {nid} --stdin")
+                if task_spec(ttext) is not None and spec_stale(ttext):
+                    add("warn", "task-spec-stale", f"{nid} 在 {spec_stale(ttext)} 追加了原文，「任务说明」还没合进去：ws task spec {nid} --stdin")
             subs = numbered(d / "subagent")
-            if len(subs) > MAX_FLAT_DISPATCHES and not numbered(d / "task"):
-                add("warn", "split", f"{nid} 有 {len(subs)} 次派发却没有子任务：按波次拆成子任务")
+            waves = self.dispatch_waves(d)
+            if waves > MAX_FLAT_WAVES and not numbered(d / "task"):
+                add("warn", "split", f"{nid} 派发了 {waves} 波（{len(subs)} 次）却没有子任务：按波次拆成子任务")
+            kids = list(self.tasks(d / "task"))
+            if (st == "active" and subs and all((s / "result.md").is_file() for _, s in subs)
+                    and all(self.task_status(c) in ("done", "dropped") for c in kids)):
+                logs = self.log_times(d)
+                idle = logs and _dt.datetime.now() - _dt.datetime.strptime(max(logs), "%Y-%m-%d %H:%M") \
+                    > _dt.timedelta(hours=CLOSE_IDLE_HOURS)
+                if idle:
+                    add("warn", "close-ready", f"{nid} 的派发都已交结果、{CLOSE_IDLE_HOURS} 小时没有新进展：写 result.md 收尾，"
+                        "把可复用的结论转进 memory")
+            for _, s in subs:
+                size = sum(f.stat().st_size for f in s.rglob("*") if f.is_file())
+                if size > DISPATCH_MAX_BYTES:
+                    add("warn", "dispatch-size", f"{self.node_id(s)} 目录有 {size // 1_000_000}MB：大数据放项目的数据目录，结果里只写路径")
             for _, s in subs:
                 sid = self.node_id(s)
                 if not (s / "task.md").is_file():
@@ -715,6 +866,10 @@ class Workspace:
                     add("warn", "result-size", f"{self.rel(r)} 超过 {RESULT_MAX_BYTES} 字节：复核才看的内容移到附件并在「附件」节列出")
         # memory
         out += self.memory_issues()
+        n_results = sum(1 for d in self.tasks() for _, s in numbered(d / "subagent") if (s / "result.md").is_file())
+        if n_results >= HISTORY_MIN_RESULTS and not any(True for _ in self.memory_notes()):
+            add("warn", "memory-empty", f"已有 {n_results} 份派发结果，memory 还是空的：把可复用的事实、标准、方法、教训转进 memory，"
+                "派发说明改成引用路径")
         for rel, fm in self.memory_notes():
             if not fm.get("summary") or not fm.get("type"):
                 add("warn", "memory-fm", f"memory/{rel} 缺少 summary 或 type")
@@ -734,6 +889,9 @@ class Workspace:
             n = text.count("\n") + 1
             if cfg.get("profile", "task") == "task" and n > AGENTS_MAX_LINES:
                 add("warn", "agents-length", f"AGENTS.md 有 {n} 行，超过 {AGENTS_MAX_LINES}：细节移进 .agents/memory/ 并留一行指针")
+            if n < AGENTS_MIN_LINES and n_results >= HISTORY_MIN_RESULTS:
+                add("warn", "agents-length", f"AGENTS.md 只有 {n} 行（应 {AGENTS_MIN_LINES}–{AGENTS_MAX_LINES}）：补上定位、现状、关键决策、"
+                    "memory 指针，让新会话读完就能接手")
             try:
                 if replace_blocks(text, self.render_blocks()) != text:
                     add("info", "stale", "AGENTS.md 的生成区块过期：ws index")
@@ -790,7 +948,7 @@ class Workspace:
 
     def skip_count(self, days=7) -> int:
         cutoff = (_dt.datetime.now() - _dt.timedelta(days=days)).strftime("%Y-%m-%dT%H:%M")
-        return sum(1 for m, _ in self._conv_items() if m.group("kind") == "skip" and m.group("key") >= cutoff)
+        return sum(1 for m, _ in self._conv_items() if m.group("kind") == MARK_WORDS["skip"] and m.group("key") >= cutoff)
 
     def log_skip(self, session_id, desc):
         stamp = _dt.datetime.now().strftime("%Y-%m-%dT%H:%M")
@@ -798,32 +956,43 @@ class Workspace:
         self._mark(stamp, "skip", f"s:{(session_id or '-')[:8]} {desc}")
 
     def migrate(self) -> list[str]:
-        """v4.0 -> v4.1: inbox/ + .state/ become conversation.md + ws.json + .agents/secrets.env."""
+        """Bring an older v4 workspace up to v4.2 (idempotent):
+        v4.0 inbox/ + .state/ -> conversation.md + ws.json + .agents/secrets.env;
+        v4.1 conversation format -> column-0 structure with indented content; inbox.md; task.md「任务说明 + 原文记录」."""
         msgs, inbox, state = [], self.agents / "inbox", self.agents / ".state"
         with self.lock():
+            converted = self._convert_conv41()
+            if converted:
+                msgs.append(f"conversation.md 换成新格式（{converted} 条记录）")
             parts = []
             for f in sorted(inbox.glob("*.md")) if inbox.is_dir() else []:
                 text = f.read_text()
                 heads = list(OLD_INBOX_HEAD_RE.finditer(text))
                 for i, h in enumerate(heads):
                     end = heads[i + 1].start() if i + 1 < len(heads) else len(text)
-                    parts.append(f"## Q {h.group(1)} · {h.group(2)} · s:{h.group(3)}\n\n{text[h.end():end].strip()}\n\n")
+                    parts.append(("q", h.group(1), fmt_q(h.group(1), h.group(2), h.group(3), text[h.end():end])))
             log = state / "inbox-filed.log"
             for line in log.read_text().splitlines() if log.is_file() else []:
                 eid, kind, target = (line.split("\t") + ["", ""])[:3]
-                parts.append(f"<!-- ws:{kind} {eid}{' ' + target if target else ''} -->\n\n")
+                if kind in MARK_WORDS:
+                    parts.append(("m", eid, fmt_mark(kind, eid, f"→ {target}" if kind == "filed" and target else target)))
             skips = state / "skips.log"
             for line in skips.read_text().splitlines() if skips.is_file() else []:
                 stamp, sess, desc = (line.split("\t") + ["", ""])[:3]
-                parts.append(f"<!-- ws:skip {stamp.replace(' ', 'T')} s:{sess} {desc} -->\n\n")
-            migrated = list(dict.fromkeys(p.split(" ")[2] for p in parts if p.startswith("## Q")))
+                parts.append(("m", "", fmt_mark("skip", stamp.replace(" ", "T"), f"s:{sess} {desc}".strip())))
+            migrated = list(dict.fromkeys(eid for k, eid, _ in parts if k == "q"))
             if migrated:  # answers were not recorded in v4.0; close them so new answers do not attach to them
-                parts.append(f"### A → {', '.join(migrated)} · 00:00:00\n\n（v4.0 迁移：之前的回答未记录）\n\n")
+                parts.append(("a", "", fmt_a(migrated, "00:00:00", "（v4.0 迁移：之前的回答未记录）")))
             if parts:
                 old = self.conv.read_text() if self.conv.is_file() else ""
-                self.conv.write_text("".join(parts) + old)
+                self.conv.write_text("".join(t for _, _, t in parts) + old)
                 os.chmod(self.conv, 0o600)
-                msgs.append(f"inbox/ 与归档记录 -> conversation.md（{sum(p.startswith('## Q') for p in parts)} 条 Q）")
+                msgs.append(f"inbox/ 与归档记录 -> conversation.md（{len(migrated)} 条 Q）")
+            if not self.inbox.is_file() and self.conv.is_file():
+                qs = self.questions()
+                if qs:
+                    self._append_conv("".join(fmt_inbox(q["id"], q["time"], q["text"]) for q in qs), self.inbox)
+                    msgs.append(f"生成 inbox.md（{len(qs)} 条用户消息）")
             secrets = state / "secrets.env"
             if secrets.is_file():
                 target = self.agents / "secrets.env"
@@ -849,7 +1018,57 @@ class Workspace:
             if not gi.is_file() or gi.read_text() != GITIGNORE:
                 gi.write_text(GITIGNORE)
                 msgs.append("更新 .agents/.gitignore")
+            for d in self.tasks():
+                if self._convert_task_md(d / "task.md"):
+                    msgs.append(f"task.md 分成「任务说明 + 原文记录」：{self.node_id(d)}（任务说明待补写）")
         return msgs
+
+    def _convert_conv41(self) -> int:
+        text = self.conv.read_text() if self.conv.is_file() else ""
+        items = list(CONV41_RE.finditer(text))
+        if not items:
+            return 0
+        out = [text[: items[0].start()].strip()]
+        for i, m in enumerate(items):
+            end = items[i + 1].start() if i + 1 < len(items) else len(text)
+            body = text[m.end():end].strip()
+            if m.group("q"):
+                out.append(fmt_q(m.group("q"), m.group("time"), m.group("sess"), body))
+            elif m.group("a"):
+                out.append(fmt_a(m.group("a").split(", "), m.group("atime"), body, cont=bool(m.group("cont"))))
+            else:
+                rest = m.group("rest") or ""
+                out.append(fmt_mark(m.group("kind"), m.group("key"),
+                                    f"→ {rest}" if m.group("kind") == "filed" and rest else rest))
+        self.conv.write_text("".join(out).lstrip("\n"))
+        os.chmod(self.conv, 0o600)
+        return len(items)
+
+    def _convert_task_md(self, p: Path) -> bool:
+        """Pre-v4.2 task.md (append-only text) -> empty「任务说明」+ the old text under「原文记录」.
+        `updated` is set to the creation date so ws check flags the spec until someone writes it."""
+        if not p.is_file():
+            return False
+        text = p.read_text()
+        if task_spec(text) is not None:
+            return False
+        fm, body = read_fm(text)
+        h1 = re.search(r"^# .*$", body, re.M)
+        title_line = h1.group(0) if h1 else f"# {fm.get('id', '')} {fm.get('title', '')}"
+        rest = body[h1.end():] if h1 else body
+        rest = re.sub(r"<!--.*?-->", "", rest, flags=re.S).strip()
+        # old headings inside the text must not end the「原文记录」section: append markers -> ###, the rest -> ####
+        rest = re.sub(r"^#{1,3}\s(?!追加 )", "#### ", rest, flags=re.M)
+        first, sep, appended = ("\n" + rest).partition("\n## 追加 ")
+        raw = f"### {fm.get('created', '')} 00:00 · 初始说明\n\n{first.strip()}\n" if first.strip() else ""
+        if sep:
+            raw += "\n" + re.sub(r"^## 追加 ", "### ", "## 追加 " + appended, flags=re.M)
+        tpl = render("node/task.md", id=fm.get("id", ""), title=fm.get("title", ""), source=fm.get("from", ""),
+                     date=fm.get("created", ""), now=f"{fm.get('created', '')} 00:00",
+                     spec=render("node/task-spec.md"), raw=raw.strip() + "\n")
+        tpl = re.sub(r"^# .*$", lambda _: title_line, tpl, count=1, flags=re.M)
+        p.write_text(tpl)
+        return True
 
 
 def replace_blocks(text: str, blocks: dict) -> str:
@@ -944,11 +1163,16 @@ def main(argv=None) -> int:
     p.add_argument("id")
     p.add_argument("status", choices=TASK_STATUSES)
     p.add_argument("--force", metavar="REASON", help="跳过检查（原因记进 progress）")
+    p = tsub.add_parser("spec", help="改写 task.md 的「任务说明」（stdin，### 目标 / 背景 / 要求 / 约束 / 验收标准 / 输入 / 未定事项）")
+    p.add_argument("id")
+    p.add_argument("--stdin", action="store_true", default=True)
+    p.add_argument("--file")
 
     p = sub.add_parser("dispatch", help="新建派发目录和 task.md")
     p.add_argument("id")
     p.add_argument("slug")
     p.add_argument("--title")
+    p.add_argument("--force", metavar="REASON", help="波次超限仍在本节点派发（原因记进 progress）")
     p.add_argument("--stdin", action="store_true")
     p.add_argument("--file")
 
@@ -968,7 +1192,7 @@ def main(argv=None) -> int:
     p.add_argument("text")
     p.add_argument("--tag", default="note", choices=LOG_TAGS)
     sub.add_parser("index", help="重新生成 memory/INDEX.md 和 AGENTS.md 的生成区块")
-    sub.add_parser("migrate", help="v4.0 -> v4.1：inbox/ 和 .state/ 迁到 conversation.md")
+    sub.add_parser("migrate", help="旧版 v4 工作区升级到 v4.2（对话格式、inbox.md、task.md 结构）")
     p = sub.add_parser("check", help="检查工作区")
     p.add_argument("--json", action="store_true")
     p = sub.add_parser("status", help="现状摘要")
@@ -984,12 +1208,21 @@ def main(argv=None) -> int:
         ws = Workspace(args.root) if args.root else Workspace.locate()
         if args.cmd == "task" and args.tcmd == "new":
             body = ws.entry(args.entry)["text"] if args.entry else _read_body(args)
-            d, nid = ws.new_task(args.slug, title=args.title, parent=args.parent, body=body)
+            d, nid = ws.new_task(args.slug, title=args.title, parent=args.parent, body=body,
+                                 source="user" if args.entry else None, entry=args.entry)
             if args.entry:
                 ws._mark(args.entry, "filed", nid)
             ws.index()
             print(f"{nid}  {ws.rel(d)}")
-            print(f"下一步：写好 goal.md 和 plan.md，然后 ws task status {nid} active")
+            if spec_missing((d / "task.md").read_text()):
+                print(f"下一步：上层写好「任务说明」（ws task spec {nid} --stdin），执行者写好 goal.md 和 plan.md，"
+                      f"然后 ws task status {nid} active")
+            else:
+                print(f"下一步：写好 goal.md 和 plan.md，然后 ws task status {nid} active")
+        elif args.cmd == "task" and args.tcmd == "spec":
+            ws.set_spec(args.id, Path(args.file).read_text() if args.file else sys.stdin.read())
+            ws.index()
+            print(f"{args.id} 的任务说明已更新")
         elif args.cmd == "task" and args.tcmd == "status":
             ws.set_status(args.id, args.status, force=args.force)
             if args.status == "done":
@@ -999,7 +1232,7 @@ def main(argv=None) -> int:
             ws.index()
             print(f"{args.id} -> {args.status}")
         elif args.cmd == "dispatch":
-            d, did = ws.dispatch(args.id, args.slug, title=args.title, body=_read_body(args))
+            d, did = ws.dispatch(args.id, args.slug, title=args.title, body=_read_body(args), force=args.force)
             ws.index()
             print(f"{did}  {d / 'task.md'}")
             if brief_missing(d / "task.md"):
@@ -1016,6 +1249,7 @@ def main(argv=None) -> int:
                                      allow_secret=args.allow_secret)
                 ws.index()
                 print(f"已归档进 {nid}  {ws.rel(d / 'task.md')}")
+                print(f"下一步：把这条原文的变化合进「任务说明」，整段改写后 ws task spec {nid} --stdin")
         elif args.cmd == "inbox":
             unf = ws.unfiled()
             if not unf:
@@ -1027,7 +1261,7 @@ def main(argv=None) -> int:
         elif args.cmd == "migrate":
             msgs = ws.migrate()
             ws.index()
-            print("\n".join(msgs) if msgs else "已是 v4.1，无需迁移")
+            print("\n".join(msgs) if msgs else "已是 v4.2，无需迁移")
         elif args.cmd == "index":
             changed = ws.index()
             print("已更新：" + "、".join(changed) if changed else "已是最新")

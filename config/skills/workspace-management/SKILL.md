@@ -15,11 +15,12 @@ description: "Agent 工作区 v4 的唯一规范：结构、ws 命令行、派�
 └── .agents/
     ├── ws.json               激活标记：有它才是 v4 工作区（也是锁；"hooks": "off" 关 hook）
     ├── conversation.md       hook 记下的 Q&A：用户原文 + 每轮最终回答 + 归档标记（只追加，不进 git）
+    ├── inbox.md              只有用户消息：日期时间 + 编号 + 原文（只追加，不进 git）
     ├── secrets.env           密钥（600，不进 git）
     ├── memory/               知识库：按主题分目录；大文件拆成目录 + README.md；INDEX.md 自动生成
     ├── skills/<名>/SKILL.md  工作区专属 skill，AGENTS.md 的 Skills 表自动列出
     └── task/NN-<名>/         任务节点，结构到哪一层都一样：
-        ├── task.md           上层写，只追加（人的原文或父节点的说明）
+        ├── task.md           上层写：「任务说明」（结构化、随需求改写）+「原文记录」（只追加）
         ├── goal.md · plan.md 自己写，开工前
         ├── progress.md       frontmatter status + 只追加的日志
         ├── result.md         自己写，收尾时交给上层：核心 ≤6KB + 附件索引
@@ -35,9 +36,9 @@ ID 由路径推出：`T01.02` 是任务 01 的子任务 02，`T01.02/S03` 是它
 
 1. **是不是工作区只看 `.agents/ws.json`。** 家目录下的 `~/.agents/skills` 是 lark-cli 托管的 skill 副本，与工作区无关；`ws` 和 hook 都不会越过 `$HOME` 往上找。
 2. **结构只由 `ws` 创建。** 任务、派发、编号、索引都用命令生成；不手建 `NN-` 目录，不手改 `<!-- ws:… -->` 区块。
-3. **需求原文不丢。** 用户消息和每轮回答由 hook 自动记进 conversation.md；凡是需求或方向变化，当轮用 `ws req` 归档进对应节点的 task.md。task.md 只追加，执行者不改写。
-4. **节点有门槛。** goal 和 plan 写好才能 active；result.md 合格、派发都有结果、子任务收尾、本节点的 draft 转正、inbox 清空，才能 done。
-5. **派发走文件。** 先 `ws dispatch` 生成 task.md，再原样使用它打印的 prompt；子智能体自己写 result.md，聊天回复不算结果。协议见 `references/subagent-protocol.md`。
+3. **需求原文不丢。** 用户消息和每轮回答由 hook 自动记进 conversation.md；凡是需求或方向变化，当轮用 `ws req` 把原文追加进对应节点 task.md 的「原文记录」，再把变化合进「任务说明」（`ws task spec`）。执行者不改 task.md。
+4. **节点有门槛。** 任务说明（目标、验收标准）、goal、plan 写好才能 active；result.md 合格、派发都有结果、子任务收尾、本节点的 draft 转正、inbox 清空，才能 done。
+5. **派发走文件。** 先 `ws dispatch` 生成 task.md，再原样使用它打印的 prompt；子智能体自己写 result.md，聊天回复不算结果。一个节点最多派发 3 波，之后的波次建成子任务。协议见 `references/subagent-protocol.md`。
 6. **memory 只放跨任务有用的事实、做法、教训、资料、长期决策。** 按主题分目录；超过 8KB 拆成目录 + README.md（读完 README 就能干活）；代码类笔记写 basis/covers 以便查过期；计划和建议留在任务节点，用户裁决只写 AGENTS.md「规则」节；子智能体写的标 draft。
 7. **AGENTS.md 是地图。** 控制在 100–200 行，细节放进 memory 留指针；「规则」一节只记用户的裁决，自己想出的规则走 harness-management。
 8. **v3 工作区原样保留。** 有 `.agent/MEMORY.md` 或 `.agent/memory/` 的目录按 `references/v3-legacy.md` 办，不自动转换。
@@ -51,11 +52,12 @@ ID 由路径推出：`T01.02` 是任务 01 的子任务 02，`T01.02/S03` 是它
 | `ws init [DIR] [--profile task\|repo] [--title] [--yes]` | 新建工作区；repo 类型只在 AGENTS.md 末尾追加一个区块，需用户同意后加 `--yes` |
 | `ws req --new <slug> --entry <id>` · `ws req <ID> --entry <id>` · `ws req --not-req <id>` | 把 inbox 原文开成新任务、追加进已有节点，或标成"不是需求"；`--stdin` 用于没有 hook 的环境 |
 | `ws task new <slug> [--parent ID] [--title] [--stdin]` | 新建任务节点（上层的说明从 stdin 进 task.md） |
+| `ws task spec <ID> --stdin` | 用最新的完整版本改写 task.md「任务说明」（### 目标 / 背景 / 要求 / 约束 / 验收标准 / 输入 / 未定事项） |
 | `ws task status <ID> <planned\|active\|blocked\|done\|dropped>` | 改状态，带门槛检查；`--force "<原因>"` 跳过检查，原因记进 progress |
-| `ws dispatch <ID> <slug> --stdin` | 新建派发目录和 task.md，打印派发用的那行 prompt |
+| `ws dispatch <ID> <slug> --stdin [--force 原因]` | 新建派发目录和 task.md，打印派发用的那行 prompt；第 4 波起拦下 |
 | `ws log <ID> "…" [--tag decision\|surprise\|note]` | 在 progress.md 追加一行 |
 | `ws inbox` · `ws status` · `ws check` · `ws index` | 未归档原文 · 现状摘要 · 全面检查 · 刷新生成区块 |
-| `ws migrate` | v4.0 工作区（inbox/、.state/）迁到 v4.1 |
+| `ws migrate` | 旧版 v4 工作区升级到 v4.2：对话新格式、inbox.md、task.md 分成任务说明 + 原文记录 |
 
 ## 例程与参考
 

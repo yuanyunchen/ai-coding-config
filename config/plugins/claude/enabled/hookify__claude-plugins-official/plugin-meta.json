@@ -1,8 +1,8 @@
 {
   "pluginId": "hookify@claude-plugins-official",
   "platform": "claude",
-  "installPath": "/Users/yuanyunchen/.claude/plugins/cache/claude-plugins-official/hookify/ea10b213686c",
-  "version": "ea10b213686c",
+  "installPath": "/Users/yuanyunchen/.claude/plugins/cache/claude-plugins-official/hookify/0.1.1",
+  "version": "0.1.1",
   "hasHooks": true,
-  "copiedAt": "2026-11-02T03:10:07Z"
+  "copiedAt": "2026-11-04T23:23:03Z"
 }

@@ -72,7 +72,7 @@ git add -A && git commit && git push
 ## 当前安装一览
 
 <!-- installed:start -->
-_Updated: 2026-11-02 03:10 UTC_
+_Updated: 2026-11-04 23:23 UTC_
 
 ## claude
 
@@ -81,15 +81,15 @@ _Updated: 2026-11-02 03:10 UTC_
 | pluginId | kind | version | snapshot |
 |----------|------|---------|----------|
 | `claude-md-management@claude-plugins-official` | portable (off) | 1.0.0 | `claude/disabled/claude-md-management__claude-plugins-official/` |
-| `code-review@claude-plugins-official` | portable (off) | ea10b213686c | `claude/disabled/code-review__claude-plugins-official/` |
+| `code-review@claude-plugins-official` | portable (off) | 1.0.1 | `claude/disabled/code-review__claude-plugins-official/` |
 | `code-simplifier@claude-plugins-official` | portable (off) | 1.0.0 | `claude/disabled/code-simplifier__claude-plugins-official/` |
 | `codex@openai-codex` | hook (off) | 1.0.5 | `claude/disabled/codex__openai-codex/` |
-| `feature-dev@claude-plugins-official` | portable (off) | ea10b213686c | `claude/disabled/feature-dev__claude-plugins-official/` |
-| `hookify@claude-plugins-official` | hook | ea10b213686c | `claude/enabled/hookify__claude-plugins-official/` |
-| `learning-output-style@claude-plugins-official` | hook | 1.0.0 | `claude/enabled/learning-output-style__claude-plugins-official/` |
-| `ralph-loop@claude-plugins-official` | hook | 1.0.0 | `claude/enabled/ralph-loop__claude-plugins-official/` |
-| `session-report@claude-plugins-official` | portable (off) | ea10b213686c | `claude/disabled/session-report__claude-plugins-official/` |
-| `skill-creator@claude-plugins-official` | portable (off) | ea10b213686c | `claude/disabled/skill-creator__claude-plugins-official/` |
+| `feature-dev@claude-plugins-official` | portable (off) | 1.0.1 | `claude/disabled/feature-dev__claude-plugins-official/` |
+| `hookify@claude-plugins-official` | hook | 0.1.1 | `claude/enabled/hookify__claude-plugins-official/` |
+| `learning-output-style@claude-plugins-official` | hook | 1.0.1 | `claude/enabled/learning-output-style__claude-plugins-official/` |
+| `ralph-loop@claude-plugins-official` | hook | 1.0.1 | `claude/enabled/ralph-loop__claude-plugins-official/` |
+| `session-report@claude-plugins-official` | portable (off) | a7ba5b93db0c | `claude/disabled/session-report__claude-plugins-official/` |
+| `skill-creator@claude-plugins-official` | portable (off) | a7ba5b93db0c | `claude/disabled/skill-creator__claude-plugins-official/` |
 | `superpowers@claude-plugins-official` | hook | 7.0.0 | `claude/enabled/superpowers__claude-plugins-official/` |
 
 ## cursor

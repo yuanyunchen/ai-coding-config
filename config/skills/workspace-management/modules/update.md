@@ -5,7 +5,7 @@
 **边界**：只更新工作区内部；仅在已有明确飞书目标时，包括它的飞书任务夹。不碰全局枢纽、时间线、全局 AI 索引、mira-sync——全局层归 memory-management。
 
 1. **回看本会话**：新需求、决策、进展、意外发现、踩坑、新文件、新外部资源。
-2. **清 inbox**：`ws inbox`，逐条 `ws req … --entry` 归档或 `ws req --not-req`。
+2. **清 inbox**：`ws inbox`，逐条 `ws req … --entry` 归档或 `ws req --not-req`；归档后把变化合进该节点的「任务说明」（`ws task spec <ID> --stdin`），`ws check` 不再报 task-spec-stale。
 3. **更新节点**：决策和意外用 `ws log <ID> --tag decision|surprise "…"` 记下；做完的节点写 result.md（结论、产物、验证、偏差、写入 memory），再 `ws task status <ID> done`；被门槛拦下就按提示补齐，不要随手 `--force`。
 4. **整理 memory**：跨任务有用的事实、做法、教训写进 `.agents/memory/<主题>/`，超过 8KB 按分层规则拆成目录 + README；计划和建议留在节点；审阅草稿，转正、合并或删除；本次改过代码或数据的，核对 `ws check` 提示过期的笔记并更新 basis。
 5. **更新 AGENTS.md 手写节**：偏好、规则（用户裁决）、关键决策、风险、外部资源。超过 200 行时把细节移进 memory 留指针。

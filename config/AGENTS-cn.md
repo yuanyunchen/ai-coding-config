@@ -119,8 +119,9 @@
 2. **直观优先于文字**——结构进图或表;正文复述图上已有信息的一律删。
 3. **控制文字密度**——第一屏 + 可展开的其余。压缩序:删重复 → 搬进图 → 折叠 → 降精度(会影响判断的数字不许降)→ 最后才删内容。
 4. **语言自然**——句式要变化,同一模板套在多个小节上,即使每句都通顺也读得出机器味;限定词(「未验证」「未发现反例」)哪怕读着别扭也不许删。
+5. **重点突出,不散乱**——每屏一个焦点;每个视觉元素都要答得出「删掉它,读者少知道什么」。答不出(装饰、所有对象都一样的标签片、默认就粗亮的连线、只为显眼加的徽章)就删。
 
-细则就近放:`frontend-pipeline/skills/starmap` 的 `references/content.md`(第零原则)· `frontend-pipeline` 的 `references/content-for-readers.md` · `lark-doc-writer` §0.3 / §0.5。
+细则就近放:`design-principles`(总纲 + references)· `frontend-pipeline/skills/starmap` 的 `references/content.md`(第零原则)· `lark-doc-writer` §0.3 / §0.5。
 
 **分界线。** 写给 **agent 消费**的内容——skill 正文、知识叶子、机器读的规范——标准相反:技术、全面、限定词一个不减。人类读者靠**投影层**服务,不靠降级源头。
 ---

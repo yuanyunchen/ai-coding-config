@@ -1,6 +1,6 @@
 ---
 name: frontend-pipeline
-description: "从头创作有设计感前端产物的统一入口:网页/落地页(web)、设计型 PDF——报告/海报/信息图(通用 PDF 读取/合并/填表用 pdf skill)、交互应用/dashboard(interactive)、幻灯片(slides)、生成/算法艺术(p5.js)与视觉艺术海报、实体关系图探索器(数据地图/血缘图/依赖拓扑/知识图谱/星图 starmap)。先识别类型,再按 effort 档位路由到底层设计能力并管理验证。Entry point for creating designed frontend artifacts from scratch (web, design PDFs, interactive apps, slides, generative art, starmap relationship explorers)."
+description: "从头创作有设计感前端产物的统一入口:网页/落地页(web)、设计型 PDF——报告/海报/信息图(通用 PDF 读取/合并/填表用 pdf skill)、交互应用/dashboard(interactive)、幻灯片(slides)、生成/算法艺术(p5.js)与视觉艺术海报、实体关系图探索器(数据地图/血缘图/依赖拓扑/知识图谱/星图 starmap)、GitHub 仓库主页(README 展示)。先识别类型,再按 effort 档位路由到底层设计能力并管理验证。Entry point for creating designed frontend artifacts from scratch (web, design PDFs, interactive apps, slides, generative art, starmap relationship explorers)."
 ---
 
 # frontend-pipeline
@@ -42,18 +42,19 @@ description: "从头创作有设计感前端产物的统一入口:网页/落地�
 | **简单 + 验证(默认)** | 默认走这档 | 普通验证 |
 | 复杂 + 验证 | 出现高质量信号:`production`/客户用/投资人/打磨/`premium`/senior-level,或结构复杂 | 高质量验证 |
 
-### Step 2.5 · 定读者（四类通用，动手前一句话）
+### Step 2.5 · 定读者 + 读设计总纲（四类通用，必做）
 
-设计与构建之外还有一层:**内容读给谁**。四类产物都适用,读
-[`references/content-for-readers.md`](references/content-for-readers.md)——
-两条互相制衡的判据(念给非目标读者听会不会被打断 / 删到这程度真要用的人还拿不拿得到)、
-首屏与展开区两层、首屏禁用与必留清单、降字数的五级优先级、
-以及「对象的自我介绍不许依赖它在流程里的位置」。
+设计与构建之外还有一层:**内容读给谁**。动手前一句话写下读者,然后读
+`~/.claude/skills/design-principles/SKILL.md`——开头「总纲」五条(直观 · 控制文字比例 · 不重复 ·
+不用机器腔 · 重点突出不散乱)**所有给人看的产物必读**,交付前按 `references/verification.md`
+「总纲五查」打勾;要展开时按它的路由读 references。只有纯内部调试页可略过。
+(2026-11-04 起从「给团队外的人看才读」改为必读:有条件的必读在实际派发中被跳过,几轮返工都是已写明的规则。)
 
-**什么时候必读**:产物要给团队外的人看、或用户提到「可读性 / 太技术 / 看不懂 / 用户导向」。
-纯内部工具页可略过。
+- **多个页面一起交付**(dashboard + 关系图 + 说明页 + README):另读 [`references/content-for-readers.md`](references/content-for-readers.md)「多页交付物」。
+- **GitHub 仓库主页 / README 展示、静态站发布到 GitHub Pages**:读 [`references/github-repo-page.md`](references/github-repo-page.md)。
+- 版面审美仍按本 skill 子 skill;说明型单页(代码库导览、工作汇报)改走 `explainer`。
 
-**信息类元素按用户设计规范**:图表、关系图、状态标记、数字与正文按 `~/.claude/skills/design-principles/SKILL.md` 执行(版面审美仍按本 skill 子 skill);说明型单页(代码库导览、工作汇报)改走 `explainer`。
+**派发子 agent 做前端产物时**,prompt 里写明读 design-principles 总纲与本 skill,子 agent 不会自己加载。
 
 ### Step 3 · 声明路由
 
@@ -76,6 +77,8 @@ description: "从头创作有设计感前端产物的统一入口:网页/落地�
 - `references/interactive.md` — interactive 三档(含 web-artifacts-builder 触发条件、`algorithmic-art` 生成艺术分支)
 - `references/slides.md` — slides 三档(theme-factory 主导)
 - `references/verification.md` — 普通 / 高质量两档验证清单 + 验证循环
+- `references/content-for-readers.md` — 多页交付物(写作与可读性细则已并入 design-principles)
+- `references/github-repo-page.md` — GitHub 仓库主页(README)组织与 GitHub Pages 发布
 
 ## 验证
 

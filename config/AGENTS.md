@@ -118,8 +118,9 @@ Serialising is legitimate only when the work genuinely contends — the same que
 2. **Visual before verbal** — structure goes into a diagram or table; prose restating a diagram is deleted.
 3. **Control text density** — first screen plus an expandable rest. Shrink in this order: remove duplication → move into diagrams → collapse → reduce precision (never on numbers that change a decision) → and only then cut content.
 4. **Natural language** — vary sentence shape; one template repeated across sections reads as machine-written even when every sentence is fine. Keep qualifiers ("not verified", "no counterexample found") even when they read awkwardly.
+5. **Emphasis, not clutter** — one focal point per screen; every visual element must answer "what would the reader lose without it?" If nothing (decoration, a chip identical across all items, heavy default lines, a badge added only to look important), delete it.
 
-Detail lives where it is used: `frontend-pipeline/skills/starmap` → `references/content.md` (第零原则) · `frontend-pipeline` → `references/content-for-readers.md` · `lark-doc-writer` §0.3 / §0.5.
+Detail lives where it is used: `design-principles` (总纲 + references) · `frontend-pipeline/skills/starmap` → `references/content.md` (第零原则) · `lark-doc-writer` §0.3 / §0.5.
 
 **The dividing line.** Content written for an agent to consume — skill bodies, knowledge leaves, machine-read specs — takes the opposite standard: technical, exhaustive, every qualifier intact. Serve human readers with a projection layer, never by degrading the source.
 

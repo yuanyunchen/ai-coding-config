@@ -9,6 +9,18 @@ description: "用户自有的通用设计规范:信息类元素的视觉编码�
 
 **本文件 = 核心规则摘要**,低成本场景读完本文件即可动手;要展开细节、范例或检查表时按路由表一跳读 references。每条规则的飞书出处见 [`references/provenance.md`](references/provenance.md)。
 
+## 总纲(五条,交付前逐条打勾;下方 25 条是它们的展开)
+
+> 2026-11-04 用户裁决(posthog-dashboard 复盘:几轮返工犯的都是下方已写明的规则,缺的是置顶与可查的检查)。
+
+| 原则 | 交付前怎么查 | 展开 |
+|---|---|---|
+| **直观** | 5 秒测试:看一眼说得出重点与结论 | 规则 23 |
+| **控制文字比例,只说要点** | 每节先图 / 表 / 卡片,后文字;正文 ≤3 个要点或 ≤6 行 | 规则 5–7 |
+| **不重复** | 同一事实全页只出现一次;所有对象取值都一样的元素删掉 | 规则 7 · writing.md §三 |
+| **不用机器腔** | 连读三条,句式不雷同;无元说明 | 规则 8 · writing.md §六 |
+| **重点突出、不散乱** | 每屏一个焦点;每个视觉元素答得出「删掉它,读者少知道什么」,答不出就删 | 规则 12 · visual-encoding.md §五 |
+
 ## 适用范围与优先级
 
 - **管什么**:承载信息的元素——正文、标题、数字、图表、关系图、状态标记、图例、折叠区。
@@ -21,6 +33,7 @@ description: "用户自有的通用设计规范:信息类元素的视觉编码�
 |---|---|
 | 写正文 / 标题 / 首屏、压字数、去 AI 味 | [`references/writing.md`](references/writing.md) |
 | 定配色、字号、图例、状态色、控件克制度 | [`references/visual-encoding.md`](references/visual-encoding.md)(克制度校准参照 [`assets/demo-recall-metrics.html`](assets/demo-recall-metrics.html)) |
+| 做人物 / 实体卡片、dashboard 总览页、详情抽屉 | [`references/visual-encoding.md`](references/visual-encoding.md) §八 |
 | 画统计图、写数字、讲数据结论 | [`references/data-honesty.md`](references/data-honesty.md) |
 | 画关系图 / 流程图 / 架构图 / hero 图,选图型 | [`references/diagrams.md`](references/diagrams.md) |
 | 交付前检查、对抗审查派单 | [`references/verification.md`](references/verification.md) |

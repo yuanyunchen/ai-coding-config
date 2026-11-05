@@ -201,9 +201,9 @@ def fmt_mark(kind, key, rest="") -> str:
     return f"▸ {MARK_WORDS[kind]} {key}{' ' + rest if rest else ''}\n\n"
 
 
-def fmt_inbox(eid, stamp, text) -> str:
-    head = f"━━━ {stamp} · {eid} "
-    return f"{head}{'━' * max(4, RULE_WIDTH - len(head))}\n\n{indent(text)}\n\n"
+def fmt_inbox(eid, stamp, sess, text) -> str:
+    """inbox.md holds only user messages, so plain `##` headings stay unambiguous (the v4.0 inbox layout)."""
+    return f"## {eid} · {stamp} · session {sess}\n\n{text.strip()}\n\n"
 
 
 def task_spec(text: str) -> str | None:
@@ -684,7 +684,7 @@ class Workspace:
         eid = "p" + (prompt_id or uuid.uuid4().hex).replace("-", "")[:8].lower()
         stamp = _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self._append_conv(fmt_q(eid, stamp, (session_id or "-")[:8], prompt))
-        self._append_conv(fmt_inbox(eid, stamp, prompt), self.inbox)
+        self._append_conv(fmt_inbox(eid, stamp, (session_id or "-")[:8], prompt), self.inbox)
         return eid
 
     def record_answer(self, session_id, message) -> str | None:
@@ -1139,11 +1139,14 @@ class Workspace:
                 self.conv.write_text("".join(t for _, _, t in parts) + old)
                 os.chmod(self.conv, 0o600)
                 msgs.append(f"inbox/ 与归档记录 -> conversation.md（{len(migrated)} 条 Q）")
-            if not self.inbox.is_file() and self.conv.is_file():
+            ruled = self.inbox.is_file() and "\n━━━ " in "\n" + self.inbox.read_text()  # v4.2 pre-release layout
+            if (ruled or not self.inbox.is_file()) and self.conv.is_file():
                 qs = self.questions()
                 if qs:
-                    self._append_conv("".join(fmt_inbox(q["id"], q["time"], q["text"]) for q in qs), self.inbox)
-                    msgs.append(f"生成 inbox.md（{len(qs)} 条用户消息）")
+                    self.inbox.unlink(missing_ok=True)
+                    self._append_conv("".join(fmt_inbox(q["id"], q["time"], q["session"], q["text"]) for q in qs),
+                                      self.inbox)
+                    msgs.append(f"{'重写' if ruled else '生成'} inbox.md（{len(qs)} 条用户消息）")
             secrets = state / "secrets.env"
             if secrets.is_file():
                 target = self.agents / "secrets.env"

@@ -241,7 +241,8 @@ class TestInboxAndReq(WsTestCase):
         self.assertEqual(self.ws.unfiled(), [])
         self.assertEqual(self.ws.conv.stat().st_mode & 0o777, 0o600)
         inbox = self.ws.inbox.read_text()
-        self.assertIn(INDENT_TEXT(long_text), inbox)
+        self.assertIn(f"## {e1} · ", inbox)
+        self.assertIn(f"· session sess-1\n\n{long_text}\n", inbox)
         self.assertIn("继续", inbox)
         self.assertNotIn("🤖", inbox)
         self.assertEqual(self.ws.inbox.stat().st_mode & 0o777, 0o600)
@@ -505,7 +506,10 @@ class TestConversationFormat(WsTestCase):
         self.assertFalse(qs["p22222222"]["answered"])
         self.assertEqual(qs["p22222222"]["text"], "第二条老需求，也超过二十个字符的长度呢")
         self.assertIn("  ## 回答里的标题", self.ws.conv.read_text())
-        self.assertIn("p22222222", (a / "inbox.md").read_text())
+        self.assertIn("## p22222222 · 2026-11-03 17:10:00 · session aaaa\n\n第二条老需求", (a / "inbox.md").read_text())
+        (a / "inbox.md").write_text("━━━ 2026-11-03 17:00:00 · p11111111 ━━━━\n\n  老\n\n")  # v4.2 pre-release layout
+        self.assertTrue(any("重写 inbox.md" in m for m in self.ws.migrate()))
+        self.assertTrue((a / "inbox.md").read_text().startswith("## p11111111 · "))
         t = (d / "task.md").read_text()
         self.assertIsNotNone(wslib.task_spec(t))
         raw = t.split("## 原文记录", 1)[1]

@@ -73,6 +73,8 @@ Dispatch with the **`Agent` tool**: `Agent(description, prompt, subagent_type, m
 
    Plan structure: **task analysis** (goal, key challenges, deliverables) → **modules** → **dependency graph**.
 
+   **Before execution (default, user ruling 2026-11-04):** a multi-module plan gets one independent cross-model review (Codex, per `codex-delegation`) before any module starts; take blockers and majors into the plan. A new pipeline runs on a small sample first and reports cost and latency before the full run. User-facing deliverables get an adversarial review of the rendered output in Step 5 (per `design-principles` verification).
+
    Each module declares **Requirements** (deliverables, constraints, dependencies), **Check** (what "correct" looks like — key outputs, metrics, downstream-required intermediates), and a **Pipeline** of agent steps. Each step states agent type, scope, and execution mode (`sequential` / `parallel` / `loop` until pass with max N).
 
    The dependency graph (short ASCII is fine) drives Step 3 scheduling — independent branches run as a parallel batch or as a background task alongside the current bottleneck; the bottleneck is the longest unfinished chain.
@@ -141,6 +143,7 @@ Dispatch with the **`Agent` tool**: `Agent(description, prompt, subagent_type, m
 3. **Right-size each dispatch.** Balance subagent overhead (communication + context transfer) against task complexity. Too fine → tiny subagents re-read the same files and pile on overhead. Too coarse → context bloat, quality drops on later steps, failures hard to isolate, partial retry impossible.
 
 4. **Quality-first — don't stop at "no blockers".** Act on HIGH/MEDIUM enhancement suggestions from `verifier` / `qa-specialist` by default; decline only with explicit rationale in `plan.md` (out of scope, conflicts with brief, disproportionate cost). For visual deliverables, also fix small defects and reasonable LOW refinements. Passing QA = no blockers AND no unaddressed reasonable enhancements. Catch problems at reflect gates.
+   **Depth by audience (user ruling 2026-11-04):** the bar above applies to user-facing deliverables and to Step 4. Intermediate modules (internal pipeline stages, scripts, data prep) fix blockers and major issues only; log other suggestions in `plan.md` and move on — review depth there costs speed without reaching the user.
 
 5. **Full context per dispatch — see `<task_format>`.** Subagents have zero memory; every dispatch must carry every path, spec, and acceptance criterion it needs. Prefer paths over inline content.
 

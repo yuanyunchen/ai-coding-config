@@ -1,6 +1,6 @@
 ---
 name: harness-management
-description: "Harness 层(skill/command/agent/hook/全局规则/settings)一切新增与修改的唯一入口;二模式(none 缺省/auto),recall·update 两例程,内部 subskills 承载写作与三源同步。触发:记下来、以后都这样、下次直接用、别再、保存为规则/模版/skill、改 skill、加规则、调 AGENTS.md、建 command/hook/subagent、沉淀、迭代 skill;同步三源、sync skills、deploy harness、agent-config;或长对话/压缩后重读核心规则防漂移。边界:记忆桶转 memory-management。"
+description: "Harness 层(skill/command/agent/hook/全局规则/settings)一切新增与修改的唯一入口;二模式(none/auto,缺省 auto),recall·update 两例程,内部 subskills 承载写作与三源同步。触发:记下来、以后都这样、下次直接用、别再、保存为规则/模版/skill、改 skill、加规则、调 AGENTS.md、建 command/hook/subagent、沉淀、迭代 skill;同步三源、sync skills、deploy harness、agent-config;或长对话/压缩后重读核心规则防漂移。边界:记忆桶转 memory-management。"
 ---
 
 # harness-management — Harness 层管理(规范权威 + 模式 + 子模块)
@@ -9,14 +9,14 @@ Harness 层 = 约束 agent 行为的持久配置:skill(含 subskill/伪 skill)�
 
 2026-07-03 起替代 continue-learning(已归档/移除;sole successor = 本 skill);原「过 continue-learning 门」语义 = 走本 skill update 流程、按当前模式定审批。上层编排 = `project-management`(/project-init·recall·update,三系统一次走齐)。
 
-## 模式(二模式,缺省 none;模式行就在本节,改模式 = 用户说一声、改此行)
+## 模式(二模式,缺省 auto;模式行就在本节,改模式 = 用户说一声、改此行)
 
-**模式:none**
+**模式:auto**(2026-11-04 用户裁决由 none 改为 auto:目标是把用户反复提的要求自动变成默认行为,不靠用户提醒;全局级仍需批准)
 
 | 模式 | 纪律 |
 |---|---|
-| **none(缺省)** | 对话中零主动沉淀、零修改。只在人调 update 例程(对话指令或 /project-update)时反思本会话:找需求与现有 skill 的出入、可抽象复用的过程 → 给方案(哪层/改什么/为什么)→ 提问 → 审批后执行 |
-| **auto** | 实时关注两类信号:① 需求与现有 skill/规则有出入;② 对话中出现可留存的可复用过程。**项目级**(项目 agent 配置目录、项目 AGENTS/CLAUDE 指导文件、工作区 .agents/skills 与工作区 AGENTS.md「规则」节)直接改,回复中一行报备;**全局级**(当前工具 home 下 skill/规则/command/agent,如 `~/.claude`/`~/.codex`/`~/.cursor`)向用户提简短建议——什么问题、如何改——批准后才改 |
+| **none** | 对话中零主动沉淀、零修改。只在人调 update 例程(对话指令或 /project-update)时反思本会话:找需求与现有 skill 的出入、可抽象复用的过程 → 给方案(哪层/改什么/为什么)→ 提问 → 审批后执行 |
+| **auto(缺省)** | 实时关注两类信号:① 需求与现有 skill/规则有出入;② 对话中出现可留存的可复用过程。**项目级**(项目 agent 配置目录、项目 AGENTS/CLAUDE 指导文件、工作区 .agents/skills 与工作区 AGENTS.md「规则」节)直接改,回复中一行报备;**全局级**(当前工具 home 下 skill/规则/command/agent,如 `~/.claude`/`~/.codex`/`~/.cursor`)向用户提简短建议——什么问题、如何改——批准后才改 |
 
 项目内可覆写:工作区 AGENTS.md 头部(repo 类型在 ws 区块头部)的 `harness=` 字段(project-init 设定)在该工作区内优先于本节全局模式行。模式无关恒成立:**hook 任何层级一律给用户过目**;记忆桶内容(事实/状态/偏好取值)不归本 skill,转 memory-management(其模式独立,缺省 auto 无痕写三库不受本 skill 模式影响)。
 

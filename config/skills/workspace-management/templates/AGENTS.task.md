@@ -1,6 +1,6 @@
 # {title}
 
-> 工作区 v4 · 类型 task · harness=none · 创建于 {date}
+> 工作区 v4 · 类型 task · harness=auto · 创建于 {date}
 > 本文件是 agent 的入口和地图，由 agent 维护，控制在 100–200 行。细节写进 `.agents/memory/`，这里只留一行指针。
 
 ## 1. 定位

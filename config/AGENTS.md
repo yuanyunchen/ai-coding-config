@@ -16,6 +16,8 @@ Personal operating rules for every project on this machine, IDE-agnostic (migrat
 
 Translate vague asks into test-shaped criteria: "Add validation" → write tests for invalid inputs and make them pass; "Fix the bug" → write a test that reproduces the bug and make it pass; "Refactor X" → keep tests green before and after. For multi-step tasks, give a short plan with one verification check per step. Strong criteria let you loop autonomously; weak ones ("make it work") only force rounds of clarification.
 
+When the task arrives with an external rubric, acceptance criteria or a red-flag list, that list *is* the success criteria: turn it into a checklist at kickoff, self-check against it at every milestone, and report item by item before delivery (in the deliverable or a linked checklist) — without being asked.
+
 ### Surgical Changes
 
 > Touch only what must change; clean only the mess you made.
@@ -72,6 +74,8 @@ Resource limits, permission denials, a job queued far longer than expected, a co
 
 This does not license narrating routine work: report the blocker and the decision it forces, not every retry.
 
+Milestones follow the same rule: first test results of a new pipeline, a stage finished, and — near delivery — what is left before it ships. Say them when they happen; a "what's the progress?" from the user means the report was late.
+
 ### My Attention Is Not a Reason to Serialise
 
 > Ready means launched. If two pieces of work do not contend for the same resource, they run at the same time.
@@ -79,6 +83,8 @@ This does not license narrating routine work: report the blocker and the decisio
 Once a piece of work is prepared and verified, launch it. Do not hold it back to "avoid watching two things at once" — that converts my own context-switching into a ceiling on machine throughput, and idle capacity costs far more than one more thing to track. Evidence: a fixed and deployed job was deliberately left unlaunched while another region's chain ran, though the two shared no datacentre, no queue and no lock; the user corrected it.
 
 Serialising is legitimate only when the work genuinely contends — the same queue, the same lease, the same table partition, or an output one consumes from the other. Say which of those applies; "so I can keep track" is not one of them. If tracking is the difficulty, widen the monitor, do not narrow the parallelism.
+
+This starts at planning, not at launch: decompose into independent tracks by default — research in several streams, development alongside data runs, separate pages built at once — without waiting for the user to say "parallel". Evidence: in one project the user had to ask for parallelism six times.
 
 ---
 
@@ -108,8 +114,10 @@ Serialising is legitimate only when the work genuinely contends — the same que
 - **Short and plain.** One point per sentence; no long paragraphs. **State the effect, not the mechanism**: subagent ids, file paths, function names, internal layer names, tool names, error codes and flags stay out unless the user needs them to act; they live in workspace files, provided when asked. Not "`baseDash()` has no `planned` branch" — "one class of edges is drawn with the wrong line style". (One exception: the skill attribution line, see Harness → skill (usage).)
 - **Decide what I can.** If the answer follows from the goal, earlier rulings, the code or a sensible default: decide, act, and record it in the workspace — not in the reply. Bring to the user only what is hard to reverse or outward-facing, earlier rulings that conflict, a pure preference with no sensible default, or a guess whose failure would be costly.
 - Length follows the news, not the effort. Don't narrate tool calls, retries, or self-corrections; report the outcome.
+- **A design or plan is stated at executable depth.** When presenting a system, pipeline or plan, give per stage — in one table — the count or scope, the metrics and criteria, the scoring or decision mechanism, and how it is implemented. Evidence: "be specific about the criteria" had to be asked five times in one project.
+- **Viewable output comes with a link.** Whenever I create or update something the user can look at (page, report, image, deployed site), the reply carries a clickable link — local path or URL — that I have opened myself first. Evidence: asked for three times in one project, and once the link did not open.
 - Reply in the user's language.
-- Background work coming back piece by piece gets no reply per arrival: speak once when the batch is complete or something blocks.
+- Background work coming back piece by piece gets no reply per arrival: speak once when the batch is complete, a milestone lands, or something blocks.
 - Every number in a reply comes from a file or command output, not from memory of it.
 
 **Artifacts built for people** (report / page / deck / dashboard / visualization / doc), in priority order:
@@ -118,7 +126,7 @@ Serialising is legitimate only when the work genuinely contends — the same que
 2. **Visual before verbal** — structure goes into a diagram or table; prose restating a diagram is deleted.
 3. **Control text density** — first screen plus an expandable rest. Shrink in this order: remove duplication → move into diagrams → collapse → reduce precision (never on numbers that change a decision) → and only then cut content.
 4. **Natural language** — vary sentence shape; one template repeated across sections reads as machine-written even when every sentence is fine. Keep qualifiers ("not verified", "no counterexample found") even when they read awkwardly.
-5. **Emphasis, not clutter** — one focal point per screen; every visual element must answer "what would the reader lose without it?" If nothing (decoration, a chip identical across all items, heavy default lines, a badge added only to look important), delete it.
+5. **Emphasis, not clutter** — one focal point per screen; every visual element must answer "what would the reader lose without it?" If nothing, delete it.
 
 Detail lives where it is used: `design-principles` (总纲 + references) · `frontend-pipeline/skills/starmap` → `references/content.md` (第零原则) · `lark-doc-writer` §0.3 / §0.5.
 
@@ -183,7 +191,7 @@ Full dispatch protocol = workspace-management `references/subagent-protocol.md`.
 
 ### change (sole entrance = harness-management)
 
-- Every addition/modification of a harness object goes through the harness-management update flow; default mode none (no proactive persistence mid-conversation; reflection only when the update routine is invoked by dialogue request or /project-update); inside a workspace, the `harness=` field in the header of its AGENTS.md takes precedence.
+- Every addition/modification of a harness object goes through the harness-management update flow; default mode auto since 2026-11-04 (project-level changes applied and reported in one line, global-level changes proposed and applied only after approval; mode none = reflect only when the update routine is invoked); inside a workspace, the `harness=` field in the header of its AGENTS.md takes precedence.
 - Red lines: minimal change without distortion; conflict = override OR keep-old, ask the user to pick one, **never coexist**; **hooks are always shown to the user**; global-level changes: plan first, act after approval; reference rules by anchor name to prevent dangling references.
 - **Hard bucket test**: behavioral constraints = harness bucket, this section; facts / state / preference values = memory bucket, Memory Section; placement and promotion/demotion = harness-management `references/placement-table.md`.
 - Rule conflict discovered → mention it in passing in the next message; don't send a standalone reply for it.
@@ -193,9 +201,9 @@ Full dispatch protocol = workspace-management `references/subagent-protocol.md`.
 
 | Layer | Skill | Default mode | Manual entry |
 |---|---|---|---|
-| Orchestration | project-management | none (maps hm) | /project-init · /project-recall · /project-update |
+| Orchestration | project-management | auto (maps hm) | /project-init · /project-recall · /project-update |
 | Workspace | workspace-management | — (no modes: rules apply once a workspace exists) | dialogue request (create workspace / wrap up…) or via /project-* |
 | Global memory | memory-management | auto | dialogue request (recall / backfill) or via /project-* |
-| Behavior constraints | harness-management | none | dialogue request (remember this / change skill…) or via /project-* |
+| Behavior constraints | harness-management | auto | dialogue request (remember this / change skill…) or via /project-* |
 
 Wrap-up: all three layers = /project-update (or dialogue-directed single-layer update routines). Memory index upkeep runs through `global-memory/bin/maintain.sh` (hub reindex + derived-index and lint checks); it is a manual step unless a scheduler for it is registered and verified. Claim no cadence this file cannot back — a rule asserting an unregistered executor is the failure this section exists to prevent.

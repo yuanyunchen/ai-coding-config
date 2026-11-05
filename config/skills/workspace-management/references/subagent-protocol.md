@@ -7,7 +7,7 @@
 你被派来完成一个任务，输入是一个 `task.md`，它所在的目录就是你的工作目录。
 
 1. **先读完再动手。** 读 task.md 全文（包括末尾的「追加」）和「必读」里的每个路径。你不继承主会话的上下文，也不会自动加载 skill；task.md 点名的规范和 skill 逐个读。
-2. **只在授权范围内写。** 可写的只有你的工作目录和「可写范围」里列出的路径。工作目录里可以随意放草稿、中间结果、你自己的 plan.md 和 progress.md。不改 AGENTS.md、上层节点的任何文件、其他派发目录；没有授权不跑 git 写操作。
+2. **只在授权范围内写。** 可写的只有你的工作目录和「可写范围」里列出的路径。工作目录里可以随意放草稿、中间结果、你自己的 plan.md 和 progress.md。不改 AGENTS.md、上层节点的任何文件、其他派发目录；没有授权不跑 git 写操作。**不制造审批弹窗、不碰别人的进程**：删除用固定路径（变量加 `${D:?}` 守卫），不用通配；只结束自己启动的进程（按 PID），不按名字 `pkill`。原因：posthog-dashboard 里通配删除反复弹窗要用户批准，宽匹配 `pkill` 三次误杀主会话的预览服务。
 3. **新知识写进 memory 时标草稿。** 只有「可写范围」允许时，才在 `.agents/memory/<主题>/` 新建文件；frontmatter 写 `status: draft`、`source: <你的派发 ID>`、summary、type。改已有的 memory 文件也要得到授权。
 4. **结果写进 result.md，自己写；核心进正文，复核材料进附件。** 路径是工作目录下的 `result.md`，结构参照模板 `templates/node/result.md`：
    - frontmatter `status` 只能是 `DONE`、`DONE_WITH_CONCERNS`、`NEEDS_CONTEXT`、`BLOCKED` 之一；

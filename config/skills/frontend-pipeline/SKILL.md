@@ -52,6 +52,7 @@ description: "从头创作有设计感前端产物的统一入口:网页/落地�
 
 - **多个页面一起交付**(dashboard + 关系图 + 说明页 + README):另读 [`references/content-for-readers.md`](references/content-for-readers.md)「多页交付物」。
 - **GitHub 仓库主页 / README 展示、静态站发布到 GitHub Pages**:读 [`references/github-repo-page.md`](references/github-repo-page.md)。
+- **说明型、文档型产物先定内容**:先用用户的语言给一份要点大纲 + 图清单,用户认可后再做页面;派子 agent 做页面时,由编排者先拿到认可再派发(2026-11-04 用户裁决)。
 - 版面审美仍按本 skill 子 skill;说明型单页(代码库导览、工作汇报)改走 `explainer`。
 
 **派发子 agent 做前端产物时**,prompt 里写明读 design-principles 总纲与本 skill,子 agent 不会自己加载。

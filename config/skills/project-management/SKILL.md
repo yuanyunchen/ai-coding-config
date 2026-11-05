@@ -7,14 +7,14 @@ description: "三系统编排层:一条命令把 workspace + memory + harness �
 
 站在三件套之上:workspace-management(任务状态)· memory-management(长期记忆)· harness-management(行为约束)。本层不定义新机制——**统一流程 + 模式映射**,执行落到三系统的 modules;单层操作用对话指令直接走对应系统例程,手动命令只有 /project-* 三个。
 
-## 模式映射(/project-init --mode 设定;缺省 none)
+## 模式映射(/project-init --mode 设定;缺省 auto)
 
 工作区 v4 没有模式(建了工作区,规则即全部生效),--mode 只映射 harness:
 
 | project 模式 | harness | memory(全局,不随项目) |
 |---|---|---|
-| **--none(缺省)** | none | 保持全局模式(缺省 auto) |
-| **--auto** | auto | 同上 |
+| **--none** | none | 保持全局模式(缺省 auto) |
+| **--auto(缺省)** | auto | 同上 |
 
 落点:工作区 AGENTS.md 头部的 `harness=<m>`(repo 类型在 ws 区块头部),在该工作区内覆写 harness-management 的全局缺省。
 

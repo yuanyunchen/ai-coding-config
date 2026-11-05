@@ -1,7 +1,7 @@
 <!-- ws:begin -->
 ## Agent 工作区（v4）
 
-> 本区块由 agent 维护（`ws init` 写入）；区块外的内容由人维护，agent 不改。harness=none
+> 本区块由 agent 维护（`ws init` 写入）；区块外的内容由人维护，agent 不改。harness=auto
 
 ### 规则
 <!-- 用户裁决（唯一位置）：必须 / 禁止 / 先问再做，一行一条并注明日期和出处 -->

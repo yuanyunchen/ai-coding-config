@@ -38,7 +38,7 @@ RESULT_MAX_BYTES = 6000  # result.md core; more goes to attachments (subagent-pr
 NOTE_MAX_BYTES = 8000  # a memory file; above this it becomes a directory with README.md
 README_MAX_BYTES = 3000
 MAX_FLAT_WAVES = 3  # dispatch waves a node may run before its work must be split into subtasks
-WAVE_GAP_MIN = 10  # dispatches further apart than this start a new wave
+WAVE_GAP_MIN = 10  # a dispatch this long after its wave's first dispatch starts a new wave
 DISPATCH_MAX_BYTES = 20_000_000  # big data belongs in the project's data dir, not a dispatch dir
 HISTORY_MIN_RESULTS = 10  # dispatch results after which an empty memory / short AGENTS.md is a smell
 CLOSE_IDLE_HOURS = 2
@@ -57,6 +57,11 @@ SLUG_RE = re.compile(r"^[\w][\w-]*$")
 ID_RE = re.compile(r"^T(\d+(?:\.\d+)*)(?:/S(\d+))?$")
 # Only the part from `.agents/` on is matched, so spaces earlier in an absolute path do not matter.
 DISPATCH_REF_RE = re.compile(r"\.agents/task/(?:[^\s/\"'`<>()]+/)+?subagent/\d{2,}-[^\s/\"'`<>()]+/task\.md")
+RESULT_REF_RE = re.compile(r"\.agents/task/(?:[^\s/\"'`<>()]+/)+?subagent/\d{2,}-[^\s/\"'`<>()]+/result\.md")
+# progress.md dispatch lines; follow-ups, external runs and hook notes do not open a wave
+LOG_DISPATCH_RE = re.compile(r"^- (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) \[dispatch\] (T[\d.]+/S\d+) (.*)$", re.M)
+NON_WAVE_PREFIXES = ("续派：", "（外部）", "没有自己写 result.md")
+DUP_MIN_CHARS = 120  # a paragraph this long repeated across dispatch briefs belongs in memory or brief.md
 OLD_INBOX_HEAD_RE = re.compile(r"^## (p[0-9a-f]{8}) · ([0-9: -]+) · session (\S*)$", re.M)  # v4.0, for migrate
 # conversation.md: structural lines start at column 0, every content line is indented by INDENT,
 # so headings or rules inside a reply can never be mistaken for structure (and stay visually nested).
@@ -231,6 +236,29 @@ def normalize_spec(body: str) -> str:
     return re.sub(r"^#{2,3}\s+", "### ", body.strip(), flags=re.M) + "\n"
 
 
+def concern_items(result_text: str) -> list[str]:
+    """Top-level items under a result.md「需要上层处理」; 「无」 means none."""
+    body = section(result_text, "需要上层处理")
+    # "无" / "暂无" / "无需上层处理" / "无。备注…" / "none" all mean nothing to handle
+    none = re.compile(r"^(?:[-*+]\s+|\d+[.、)]\s*)?[（(]?(?:暂无|无需|无|没有|none\b|n/?a\b)", re.I)
+    if not body:
+        return []
+    items = [l for l in body.splitlines() if re.match(r"^(?:[-*+]\s+|\d+[.、)]\s*)\S", l)]
+    real = [l for l in items if not none.match(l)]
+    if real or (not items and not none.match(body)):
+        return real or [body]
+    return []
+
+
+def open_requirements(task_text: str) -> int:
+    m = re.search(r"^###\s+要求\s*$(.*?)(?=^###?\s|\Z)", task_spec(task_text) or "", re.M | re.S)
+    return len(re.findall(r"^\s*- \[ \]", m.group(1), re.M)) if m else 0
+
+
+def _norm(text: str) -> str:
+    return " ".join(text.split())
+
+
 def render(template: str, **ctx) -> str:
     text = (TEMPLATES / template).read_text()
     for k, v in ctx.items():
@@ -279,6 +307,23 @@ def find_dispatch_ref(text: str, root: Path) -> Path | None:
         if p.is_file():
             return p.parent
     return None
+
+
+def find_result_ref(text: str, root: Path) -> Path | None:
+    """The dispatch directory whose result.md a message (e.g. a subagent's final line) points at."""
+    for m in RESULT_REF_RE.finditer(text or ""):
+        p = root / m.group(0)
+        if p.parent.is_dir():
+            return p.parent
+    return None
+
+
+def followup_prompt(dispatch_dir: Path, moved: str | None) -> str:
+    # nothing to rename yet means the agent is still on its first round: it must keep that round itself
+    prev = (f"上一轮结果已存为 {moved}，" if moved else
+            "如果你在读到这条追加之前已经写出 result.md，先把它改名为 result-rN.md（N 取下一个编号）保留，")
+    return (f"先读 {dispatch_dir / 'task.md'} 末尾「追加」里的新要求并照做；{prev}本轮结果写进新的 "
+            f"{dispatch_dir / 'result.md'}，最后一行回 `<STATUS> {dispatch_dir / 'result.md'}`。")
 
 
 def dispatch_prompt(dispatch_dir: Path) -> str:
@@ -490,29 +535,124 @@ class Workspace:
         text = p.read_text() if p.is_file() else ""
         return [t for t, g in LOG_TIME_RE.findall(text) if tag is None or g == tag]
 
+    def waves(self, d: Path) -> list[list[tuple[_dt.datetime, str]]]:
+        """New dispatches grouped into bursts: one more than WAVE_GAP_MIN after the wave's first dispatch starts a new
+        wave (anchored, so a steady trickle of dispatches cannot chain into one endless wave)."""
+        p = d / "progress.md"
+        entries = sorted((_dt.datetime.strptime(t, "%Y-%m-%d %H:%M"), did)
+                         for t, did, rest in LOG_DISPATCH_RE.findall(p.read_text() if p.is_file() else "")
+                         if not rest.startswith(NON_WAVE_PREFIXES))
+        out = []
+        for t, did in entries:
+            if not out or t - out[-1][0][0] > _dt.timedelta(minutes=WAVE_GAP_MIN):
+                out.append([])
+            out[-1].append((t, did))
+        return out
+
     def dispatch_waves(self, d: Path) -> int:
-        """Dispatch bursts in a node: dispatches more than WAVE_GAP_MIN apart start a new wave."""
-        times = sorted(_dt.datetime.strptime(t, "%Y-%m-%d %H:%M") for t in self.log_times(d, "dispatch"))
-        gap = _dt.timedelta(minutes=WAVE_GAP_MIN)
-        return sum(1 for i, t in enumerate(times) if i == 0 or t - times[i - 1] > gap)
+        return len(self.waves(d))
 
     def opens_new_wave(self, d: Path) -> bool:
-        times = self.log_times(d, "dispatch")
-        if not times:
-            return True
-        last = _dt.datetime.strptime(max(times), "%Y-%m-%d %H:%M")
-        return _dt.datetime.now() - last > _dt.timedelta(minutes=WAVE_GAP_MIN)
+        w = self.waves(d)
+        return not w or _dt.datetime.now() - w[-1][0][0] > _dt.timedelta(minutes=WAVE_GAP_MIN)
+
+    def decided(self, node: Path, sid: str) -> bool:
+        """Whether progress.md has a [decision] line naming this dispatch (its full id, or a bare Snn not preceded by
+        another node's path) written no earlier than the minute its current result.md was written."""
+        short = sid.split("/")[-1]
+        pat = re.compile(rf"(?<![\w.]){re.escape(sid)}(?!\d)|(?<![A-Za-z0-9/.]){short}(?!\d)")
+        res = self.resolve(sid) / "result.md"
+        since = _dt.datetime.fromtimestamp(res.stat().st_mtime).strftime("%Y-%m-%d %H:%M") if res.is_file() else ""
+        p = node / "progress.md"
+        for t, tag, rest in re.findall(r"^- (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) \[(\w+)\] (.*)$",
+                                       p.read_text() if p.is_file() else "", re.M):
+            if tag == "decision" and t >= since and pat.search(rest):
+                return True
+        return False
+
+    def return_note(self, ref: Path) -> str:
+        """One line for the main agent at the moment a dispatch reports back."""
+        node, sid = ref.parent.parent, self.node_id(ref)
+        nid, short = self.node_id(node), sid.split("/")[-1]
+        res = ref / "result.md"
+        parts = []
+        if res.is_file():
+            text = res.read_text()
+            parts.append(f"（ws）{sid} 回来了：{read_fm(text)[0].get('status', '?')}，结果以 {self.rel(res)} 为准")
+            items = concern_items(text)
+            if items:
+                parts.append(f"「需要上层处理」{len(items)} 条：逐条定修 / 豁免（写理由）/ 报用户，各记一行 "
+                             f"ws log {nid} --tag decision \"{short} …\"；推迟到汇总时再看不算处理")
+        else:
+            parts.append(f"（ws）{sid} 回来了，但还没有 result.md")
+        mine = [w for w in self.waves(node) if any(did == sid for _, did in w)]
+        if mine:  # the wave this dispatch belongs to; a follow-up or external run falls back to the whole node
+            ids, scope = [did for _, did in mine[0]], "本波"
+        else:
+            ids, scope = [self.node_id(o) for _, o in numbered(node / "subagent")], "本节点"
+        dirs = dict(numbered(node / "subagent"))  # ids whose directory is gone are ignored, not counted as out
+        pending = [did for did in ids
+                   if (o := dirs.get(int(did.split("/S")[-1]))) is not None and not (o / "result.md").is_file()]
+        parts.append(f"{scope}还有 {len(pending)} 路没回（{'、'.join(p.split('/')[-1] for p in pending[:6])}）"
+                     if pending else f"{scope}已全部回齐")
+        p = node / "progress.md"
+        act = re.findall(r"^- (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) \[status\] active", p.read_text() if p.is_file() else "", re.M)
+        if act:
+            mins = int((_dt.datetime.now() - _dt.datetime.strptime(act[0], "%Y-%m-%d %H:%M")).total_seconds() // 60)
+            parts.append(f"{nid} 已进行 {mins // 60}h{mins % 60:02d}m")
+        reqs = open_requirements((node / "task.md").read_text()) if (node / "task.md").is_file() else 0
+        if reqs:
+            parts.append(f"任务说明里还有 {reqs} 条要求未完成")
+        return "；".join(parts) + "。"
+
+    def followup(self, ident, body):
+        """New requirements for a dispatch whose agent is continued: append to its task.md, keep the old result."""
+        s = self.resolve(ident)
+        if s.parent.name != "subagent":
+            raise WsError(f"{ident} 不是派发：用 T01/S03 这样的派发 ID")
+        if not body.strip():
+            raise WsError("续派要求为空：从 stdin 传入新要求（范围或可写范围有变化也写明）")
+        sid, moved = self.node_id(s), None
+        with self.lock():
+            with open(s / "task.md", "a") as f:
+                f.write(f"\n## 追加 {now()} · 上层续派\n\n{body.strip()}\n")
+            if (s / "result.md").is_file():
+                n = 1 + max((int(m.group(1)) for p in s.glob("result-r*.md")
+                             if (m := re.match(r"result-r(\d+)\.md$", p.name))), default=0)
+                moved = f"result-r{n}.md"
+                (s / "result.md").rename(s / moved)
+        self.log(self.node_id(s.parent.parent), f"{sid} 续派：{_norm(body)[:60]}", tag="dispatch")
+        return s, moved
+
+    def repeated_paragraphs(self, d: Path, body: str) -> list[tuple[str, list[str]]]:
+        """Long paragraphs of a new dispatch brief that already appear in earlier briefs (path lists excluded)."""
+        paras = []
+        for p in re.split(r"\n\s*\n", body):
+            lines = [l for l in p.strip().splitlines() if not l.lstrip().startswith("#")]
+            if all(l.lstrip().startswith(("- ", "* ")) and "/" in l for l in lines):
+                continue
+            if len(_norm("\n".join(lines))) >= DUP_MIN_CHARS:
+                paras.append(_norm("\n".join(lines)))
+        if not paras:
+            return []
+        others = [(self.node_id(o), _norm((o / "task.md").read_text()))
+                  for n in self.tasks() for _, o in numbered(n / "subagent")
+                  if o != d and (o / "task.md").is_file()]
+        hits = [(p, [sid for sid, text in others if p in text]) for p in paras]
+        return [(p[:40], ids) for p, ids in hits if ids]
 
     # --- dispatch ---
-    def dispatch(self, ident, slug, title=None, body="", force=None):
+    def dispatch(self, ident, slug, title=None, body="", force=None, external=False):
+        """external: run by codex exec / claude -p instead of the Agent tool; like follow-ups it opens no wave."""
         check_slug(slug)
         node = self.resolve_task(ident)
         nid = self.node_id(node)
-        if (not numbered(node / "task") and self.opens_new_wave(node)
-                and self.dispatch_waves(node) >= MAX_FLAT_WAVES and not force):
+        over = (not external and not numbered(node / "task") and self.opens_new_wave(node)
+                and self.dispatch_waves(node) >= MAX_FLAT_WAVES)
+        if over and not force:
             raise WsError(f"{nid} 已经派发了 {self.dispatch_waves(node)} 波，又没有子任务：把下一波建成子任务"
                           f"（ws task new <波次名> --parent {nid}）再在子任务下派发；确需在本节点继续，加 --force \"<原因>\"")
-        if force:
+        if over:
             self.log(nid, f"派发波次超限仍在本节点派发：{force}", tag="decision")
         with self.lock():
             d = self._alloc(node / "subagent", slug)
@@ -525,8 +665,11 @@ class Workspace:
         if (node / "brief.md").is_file():
             brief = re.sub(r"(^##\s+必读\s*\n)", lambda m: f"{m.group(1)}- {node / 'brief.md'}（本任务各派发共用说明，先读）\n",
                            brief, count=1, flags=re.M)
+        if external:
+            brief = brief.replace("\n## 任务与背景", f"\n> 外部执行（codex exec / claude -p）：命令行里让执行器先读本文件，"
+                                  f"结果写回 {d / 'result.md'}。\n\n## 任务与背景", 1)
         (d / "task.md").write_text(brief)
-        self.log(self.node_id(node), f"{did} {title or slug}", tag="dispatch")
+        self.log(nid, f"{did} {'（外部）' if external else ''}{title or slug}", tag="dispatch")
         return d, did
 
     # --- conversation (user Q + core A, append-only) ---
@@ -861,6 +1004,14 @@ class Workspace:
                         add("warn", "unverified", f"{sid} 的 result.md 是 hook 代存的 UNVERIFIED：核对后改成正式状态")
                 else:
                     add("error" if st == "done" else "info", "dispatch-open", f"{sid} 还没有 result.md")
+            for _, s in subs:
+                r = s / "result.md"
+                if r.is_file() and concern_items(r.read_text()) and not self.decided(d, self.node_id(s)):
+                    add("info", "concern-open", f"{self.node_id(s)} 的「需要上层处理」还没有处理记录："
+                        f"ws log {nid} --tag decision \"{self.node_id(s).split('/')[-1]} 修 / 豁免 / 报用户 …\"")
+            if st == "done" and (d / "task.md").is_file() and open_requirements((d / "task.md").read_text()):
+                add("warn", "req-open", f"{nid} 已 done，任务说明里还有 {open_requirements((d / 'task.md').read_text())} "
+                    "条要求是 [ ]：标成 [x] 完成，或 [-] 取消并写理由、告知用户")
             for r in [d / "result.md"] + [s / "result.md" for _, s in subs]:
                 if r.is_file() and len(r.read_bytes()) > RESULT_MAX_BYTES:
                     add("warn", "result-size", f"{self.rel(r)} 超过 {RESULT_MAX_BYTES} 字节：复核才看的内容移到附件并在「附件」节列出")
@@ -1173,7 +1324,13 @@ def main(argv=None) -> int:
     p.add_argument("slug")
     p.add_argument("--title")
     p.add_argument("--force", metavar="REASON", help="波次超限仍在本节点派发（原因记进 progress）")
+    p.add_argument("--external", action="store_true", help="由 codex exec / claude -p 执行；不计波次")
     p.add_argument("--stdin", action="store_true")
+    p.add_argument("--file")
+
+    p = sub.add_parser("followup", help="续派：新要求追加进原派发 task.md，旧 result.md 改名保留，打印续接消息")
+    p.add_argument("id", help="派发 ID，如 T01/S03")
+    p.add_argument("--stdin", action="store_true", default=True)
     p.add_argument("--file")
 
     p = sub.add_parser("req", help="把用户原文归档进 task.md")
@@ -1220,9 +1377,13 @@ def main(argv=None) -> int:
             else:
                 print(f"下一步：写好 goal.md 和 plan.md，然后 ws task status {nid} active")
         elif args.cmd == "task" and args.tcmd == "spec":
-            ws.set_spec(args.id, Path(args.file).read_text() if args.file else sys.stdin.read())
+            d = ws.set_spec(args.id, Path(args.file).read_text() if args.file else sys.stdin.read())
             ws.index()
             print(f"{args.id} 的任务说明已更新")
+            ages = [f"{f} 最后修改于 {_dt.datetime.fromtimestamp((d / f).stat().st_mtime):%m-%d %H:%M}"
+                    for f in ("goal.md", "plan.md") if (d / f).is_file()]
+            if ages:
+                print(f"{'；'.join(ages)}：任务说明变了，执行者核对二者是否要跟着改。")
         elif args.cmd == "task" and args.tcmd == "status":
             ws.set_status(args.id, args.status, force=args.force)
             if args.status == "done":
@@ -1232,13 +1393,27 @@ def main(argv=None) -> int:
             ws.index()
             print(f"{args.id} -> {args.status}")
         elif args.cmd == "dispatch":
-            d, did = ws.dispatch(args.id, args.slug, title=args.title, body=_read_body(args), force=args.force)
+            body = _read_body(args)
+            d, did = ws.dispatch(args.id, args.slug, title=args.title, body=body, force=args.force,
+                                 external=args.external)
             ws.index()
             print(f"{did}  {d / 'task.md'}")
             if brief_missing(d / "task.md"):
                 print(f"先补全 task.md 的「{'」「'.join(brief_missing(d / 'task.md'))}」，否则派发会被拦截。")
-            print("派发 prompt（原样使用）：")
-            print(dispatch_prompt(d))
+            for excerpt, ids in ws.repeated_paragraphs(d, body):
+                print(f"提醒：「{excerpt}…」这段已出现在 {'、'.join(ids[:5])} 的派发说明里。可复用的口径、标准、做法"
+                      "写进 .agents/memory/（跨节点）或节点 brief.md（本节点所有派发都适用），派发说明只引用路径。")
+            if args.external:
+                print("外部执行：命令行里让执行器先读上面的 task.md，结果写回同目录 result.md。")
+            else:
+                print("派发 prompt（原样使用）：")
+                print(dispatch_prompt(d))
+        elif args.cmd == "followup":
+            s, moved = ws.followup(args.id, Path(args.file).read_text() if args.file else sys.stdin.read())
+            ws.index()
+            print(f"{args.id} 的 task.md 已追加新要求" + (f"；旧结果改名为 {moved}" if moved else ""))
+            print("续接消息（SendMessage 原样发出；原执行者已结束时改用 Agent 派发同一句）：")
+            print(followup_prompt(s, moved))
         elif args.cmd == "req":
             if args.not_req:
                 ws.not_req(args.not_req)

@@ -59,7 +59,7 @@
   - active：task.md「任务说明」的目标和验收标准有内容；goal.md 和 plan.md 去掉标题和注释后必须有内容；
   - done：result.md 的 status 为 DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED 之一且有内容；所有派发都有 result.md；所有子任务 done 或 dropped；`source` 指向本节点的 draft memory 已转正；conversation.md 没有未归档的用户原文；
   - `--force "<原因>"` 可跳过，原因记进 progress，`ws check` 不会替你掩盖遗留问题。
-- **拆分**：一步能做完的直接做；需要独立验收、跨多步或跨会话的建子任务；交给子智能体执行的走派发。同一波次可并行的派发，各自负责的文件不能重叠（写进 plan.md「拆分」表）。一个节点最多派发 3 波（相隔 10 分钟以上的派发算新一波；同一波并行多少路不限），之后的波次建成子任务：`ws dispatch` 在第 4 波拦下，`--force "<原因>"` 放行并记进 progress。层级建议不超过 3 层。计划只保留一份 plan.md。
+- **拆分**：一步能做完的直接做；需要独立验收、跨多步或跨会话的建子任务；交给子智能体执行的走派发。同一波次可并行的派发，各自负责的文件不能重叠（写进 plan.md「拆分」表）。一个节点最多派发 3 波（距本波第一次派发 10 分钟以上的派发算新一波，所以陆续发出的派发不会连成一波；同一波并行多少路不限），之后的波次建成子任务：`ws dispatch` 在第 4 波拦下，`--force "<原因>"` 放行并记进 progress。层级建议不超过 3 层。计划只保留一份 plan.md。
 - **不挪目录**：完成的节点原地标 done；AGENTS.md 任务树只展开含 active 节点的子树，其余折叠成一行。
 - **task.md 结构**（模板 `templates/node/task.md` 与 `templates/node/task-spec.md`）：
   - 上半部「任务说明」：目标、背景、要求（编号，注明来源的原文 id 或上层节点）、约束、验收标准、输入、未定事项。它是当前有效的完整任务，读完就知道要做什么，不必翻原文。需求一变就整段改写成最新版本（不是追加修订），用 `ws task spec <ID> --stdin` 写回，frontmatter `updated` 随之更新。顶层任务由主 agent 根据用户原文整理；子任务由父节点写。
@@ -105,7 +105,13 @@
 - 其余派发，prompt 必须引用一个真实存在、还没有 result.md、且「任务与背景」「成功标准」已填写的 `.agents/task/…/subagent/NN-*/task.md`，否则拒绝，拒绝原因里给出 `ws dispatch` 的用法。
 - SubagentStop 时，若对应派发没有合格的 result.md：第一次拦下并要求补写；第二次仍没有，hook 把它最后一条消息存为 `status: UNVERIFIED` 的 result.md，并在父节点 progress 记一笔。主 agent 核对后改成正式状态。
 
-已知绕过途径（hook 管不到，靠规则约束）：Bash 里直接跑 `claude -p` / `codex exec`、Workflow 工具、用 SendMessage 续接已有子智能体。续接时把新要求追加进原派发的 task.md，或新建派发。
+hook 还在两个时刻给主 agent 提示（只提示，不拦截）：
+- 子智能体回报（`<task-notification>`）时注入一行：派发 ID、status、「需要上层处理」条数、本波还有几路没回、节点已进行多久、任务说明里还有几条要求未完成。派发由回报里的 output-file（子智能体会话记录的第一条消息）或 result.md 路径识别；不是 ws 派发的回报不提示。
+- SendMessage 前：消息不少于 40 字、又没引用任何派发 task.md 时，提醒"带新要求先 `ws followup`"。
+
+续派：`ws followup <派发ID> --stdin` 把新要求追加进原派发 task.md 的「## 追加 <时间> · 上层续派」，旧 result.md 改名为 `result-rN.md`，打印续接消息（引用 task.md 路径，SubagentStop 的追收照常生效）。续派、外部执行（`ws dispatch --external`）和 hook 的代存记录都不计波次。
+
+已知绕过途径（hook 管不到，靠规则约束）：Bash 里直接跑 `claude -p` / `codex exec` 而不先 `ws dispatch --external`、Workflow 工具。
 
 ## 7. memory
 
@@ -133,8 +139,9 @@
 | 事件 | 行为 |
 |---|---|
 | SessionStart | v4：注入 `ws status`（active 节点、目标首句、最近进度、未归档原文、检查摘要、绕过次数）；v3：注入一句"按 v3 办，不要转换" |
-| UserPromptSubmit | 把用户亲手输入的消息记成 Q（见 §5） |
+| UserPromptSubmit | 把用户亲手输入的消息记成 Q（见 §5）；子智能体回报时注入一行回传提示（见 §6） |
 | PreToolUse(Agent) | 派发把关（见 §6） |
+| PreToolUse(SendMessage) | 续接带新要求时提醒先 `ws followup`（见 §6），不拦截 |
 | SubagentStop | 追收 result.md（见 §6） |
 | Stop | 把本轮最终回答记成 A（见 §5），再静默运行 `ws index` |
 
@@ -158,6 +165,8 @@
 | memory-fm / memory-draft / memory-size / memory-plan / memory-stale | warn | 缺 summary/type；来源已收尾的草稿；文件超 8KB 或 README 超 3KB；计划类标题；basis 之后覆盖目录有改动 |
 | result-size / split | warn | result.md 超 6KB；节点派发超过 3 波且没有子任务 |
 | task-spec / task-spec-stale | warn | active 节点的任务说明缺目标或验收标准；原文记录有比 `updated` 更新的条目 |
+| req-open | warn | 节点已 done，任务说明「要求」里还有 `- [ ]` |
+| concern-open | info | 派发结果的「需要上层处理」不为空，节点 progress 里还没有提到该派发的 decision 行 |
 | close-ready | warn | active 节点的派发都已交结果、子任务都已收尾、2 小时没有新进展 |
 | memory-empty / dispatch-size | warn | 已有 10 份以上派发结果而 memory 为空；派发目录超过 20MB（大数据放项目数据目录） |
 | agents-length / dead-link / root-file / legacy | warn | AGENTS.md 超 200 行，或已有 10 份以上派发结果而不足 100 行；失效链接；根目录有多余文件；同时存在 `.agent/` |

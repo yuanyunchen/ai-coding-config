@@ -1,0 +1,25 @@
+{
+ "session_id": "b91a31b5-0dbe-48ae-bff3-a2d7a44e06ff",
+ "transcript_path": "/Users/yuanyunchen/.claude/projects/-private-tmp-claude-501--Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun-3c281167-6d20-4a74-ad91-50b524af5719-scratchpad-send-probe/b91a31b5-0dbe-48ae-bff3-a2d7a44e06ff.jsonl",
+ "cwd": "/private/tmp/claude-501/-Users-yuanyunchen-Desktop-AI-Programing-Play-for-Fun/3c281167-6d20-4a74-ad91-50b524af5719/scratchpad/send-probe",
+ "prompt_id": "9a57f4b1-1831-4aaa-8b4b-fe5b3129d840",
+ "permission_mode": "bypassPermissions",
+ "effort": {
+  "level": "medium"
+ },
+ "hook_event_name": "PreToolUse",
+ "tool_name": "SendMessage",
+ "tool_input": {
+  "to": "a9eb14f8fa1d9b04d",
+  "summary": "Send APPLE word to background agent",
+  "message": "The word is APPLE, please reply with it and also count to three.",
+  "type": "message",
+  "recipient": "a9eb14f8fa1d9b04d",
+  "recipient_kind": "agent",
+  "content": "The word is APPLE, please reply with it and also …"
+ },
+ "tool_use_id": "toolu_01RXLtqeRNUa32fkxthUq3JC",
+ "_env": {
+  "note": "Claude Code SendMessage PreToolUse payload, captured 2026-11-04"
+ }
+}

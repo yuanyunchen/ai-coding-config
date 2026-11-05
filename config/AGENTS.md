@@ -108,6 +108,9 @@ Serialising is legitimate only when the work genuinely contends — the same que
 - **Short and plain.** One point per sentence; no long paragraphs. **State the effect, not the mechanism**: subagent ids, file paths, function names, internal layer names, tool names, error codes and flags stay out unless the user needs them to act; they live in workspace files, provided when asked. Not "`baseDash()` has no `planned` branch" — "one class of edges is drawn with the wrong line style". (One exception: the skill attribution line, see Harness → skill (usage).)
 - **Decide what I can.** If the answer follows from the goal, earlier rulings, the code or a sensible default: decide, act, and record it in the workspace — not in the reply. Bring to the user only what is hard to reverse or outward-facing, earlier rulings that conflict, a pure preference with no sensible default, or a guess whose failure would be costly.
 - Length follows the news, not the effort. Don't narrate tool calls, retries, or self-corrections; report the outcome.
+- Reply in the user's language.
+- Background work coming back piece by piece gets no reply per arrival: speak once when the batch is complete or something blocks.
+- Every number in a reply comes from a file or command output, not from memory of it.
 
 **Artifacts built for people** (report / page / deck / dashboard / visualization / doc), in priority order:
 

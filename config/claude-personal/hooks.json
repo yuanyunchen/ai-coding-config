@@ -11,7 +11,7 @@
       ]
     },
     {
-      "matcher": "Agent|Task",
+      "matcher": "Agent|Task|SendMessage",
       "hooks": [
         {
           "type": "command",

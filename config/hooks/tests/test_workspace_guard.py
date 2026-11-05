@@ -2,6 +2,7 @@
 Run: python3 -m unittest discover -s ~/.claude/hooks/tests"""
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -188,6 +189,58 @@ class TestAnswers(GuardTest):
         self.run_hook(fixture("Stop", cwd=str(self.root), session_id=q["session_id"], stop_hook_active=True,
                               last_assistant_message="b"))
         self.assertFalse(any(x["answered"] for x in self.ws.questions()))
+
+
+class TestReturnsAndSend(GuardTest):
+    def notification(self, s, via_transcript=True):
+        tp = self.home / "sub.jsonl"
+        tp.write_text(json.dumps({"type": "user", "message": {"role": "user", "content": wslib.dispatch_prompt(s)}}) + "\n")
+        d = fixture("UserPromptSubmit-notification", cwd=str(self.root))
+        text = d["prompt"]
+        if via_transcript:
+            text = re.sub(r"<output-file>.*?</output-file>", f"<output-file>{tp}</output-file>", text)
+        else:
+            text = re.sub(r"<output-file>.*?</output-file>", "<output-file>/nope</output-file>", text)
+            text = text.replace("<result>", f"<result>DONE {s / 'result.md'}\n")
+        d["prompt"] = text
+        return d
+
+    def test_notification_gives_return_note_and_records_nothing(self):
+        s = self.filled_dispatch()
+        (s / "result.md").write_text("---\nstatus: DONE\n---\n# r\n\n## 需要上层处理\n- 口径不一致\n")
+        for via in (True, False):
+            out = self.run_hook(self.notification(s, via_transcript=via))
+            text = out["hookSpecificOutput"]["additionalContext"]
+            self.assertIn("T01/S01 回来了：DONE", text)
+            self.assertIn("1 条", text)
+        self.assertEqual(self.ws.questions(), [])
+        unrelated = fixture("UserPromptSubmit-notification", cwd=str(self.root))
+        self.assertIsNone(self.run_hook(unrelated))
+
+    def test_notification_with_non_transcript_output_falls_back(self):
+        s = self.filled_dispatch()
+        (s / "result.md").write_text("---\nstatus: DONE\n---\n# r\n\n## 需要上层处理\n无\n")
+        bash_out = self.home / "bash.output"
+        bash_out.write_text("plain text from a background command\n")
+        d = self.notification(s, via_transcript=False)
+        d["prompt"] = d["prompt"].replace("<output-file>/nope</output-file>", f"<output-file>{bash_out}</output-file>")
+        out = self.run_hook(d)
+        self.assertIn("T01/S01 回来了", out["hookSpecificOutput"]["additionalContext"])
+
+    def send(self, message):
+        d = fixture("PreToolUse-SendMessage", cwd=str(self.root))
+        d["tool_input"] = {**d["tool_input"], "message": message}
+        return d
+
+    def test_send_message_reminder(self):
+        out = self.run_hook(self.send("请把看板改成中英两版，另外把方法说明页也写进 site/method/ 目录，并且补上三张对比图和数据来源说明，越详细越好。"))
+        self.assertIn("ws followup", out["hookSpecificOutput"]["additionalContext"])
+        self.assertNotIn("permissionDecision", out["hookSpecificOutput"])
+        self.assertIsNone(self.run_hook(self.send("继续")))
+        long = "请把看板改成中英两版，另外把方法说明页也写进 site/method/ 目录，并且补上三张对比图和数据来源说明。"
+        self.assertIsNone(self.run_hook({**self.send(long), "agent_id": "sub-1"}))
+        s = self.filled_dispatch()
+        self.assertIsNone(self.run_hook(self.send(wslib.followup_prompt(s, "result-r1.md"))))
 
 
 class TestStopAndLatency(GuardTest):

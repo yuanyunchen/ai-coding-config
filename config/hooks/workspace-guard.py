@@ -5,6 +5,10 @@ Self-activates only inside a v4 workspace (nearest `.agents/ws.json`, never $HOM
 - SessionStart: inject `ws status` (v3 workspaces get a one-line "follow v3, don't convert" note).
 - UserPromptSubmit: record typed user prompts verbatim as Q entries in `.agents/conversation.md` (and in `.agents/inbox.md`, user messages only); long ones
   get a one-line hint with the entry id. Background reports, cross-session messages and `-p` runs are skipped.
+- UserPromptSubmit carrying a `<task-notification>` for a ws dispatch: inject one line (status, open items under
+  「需要上层处理」, how many of the wave are still out, elapsed time, open requirements). Nothing is recorded.
+- PreToolUse(SendMessage): a long message that cites no dispatch task.md gets a reminder to `ws followup` first.
+  Never denies.
 - PreToolUse(Agent): deny a dispatch whose prompt does not reference an existing, unanswered,
   filled-in `subagent/NN-*/task.md` created by `ws dispatch`. Read-only agent types and `[ws:skip]` pass.
 - SubagentStop: if the dispatch has no valid result.md, block once; on the second stop save the
@@ -18,12 +22,14 @@ Spec: ~/.claude/skills/workspace-management/references/spec.md
 """
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
 WM_SCRIPTS = Path(__file__).resolve().parent.parent / "skills" / "workspace-management" / "scripts"
 EXEMPT_TYPES = {"Explore", "Plan", "claude-code-guide", "web-fetch", "statusline-setup"}
 SKIP_MARK = "[ws:skip]"
+FOLLOWUP_MIN_CHARS = 40  # shorter SendMessage texts are nudges ("继续"), not new requirements
 NON_TYPED_PREFIXES = ("<task-notification>", "<cross-session-message", "<local-command", "<command-name>",
                       "<command-message>", "<system-reminder>", "<bash-input>", "<bash-stdout>")
 V3_NOTE = ("本目录是 v3 工作区（.agent/）：按 ~/.claude/skills/workspace-management/references/v3-legacy.md 的规则工作，"
@@ -70,10 +76,27 @@ def interactive(data):
     return (not sdk or os.environ.get("WS_HOOKS") == "force") and not data.get("agent_id")
 
 
+def on_notification(ws, wslib, prompt):
+    """A subagent reported back: say where it stands, at the moment the main agent reads it."""
+    m = re.search(r"<output-file>(.*?)</output-file>", prompt)
+    ref = None
+    if m and os.path.isfile(m.group(1)):
+        try:  # background Bash tasks also notify; their output file is not a transcript
+            ref = wslib.find_dispatch_ref(first_user_text(m.group(1)), ws.root)
+        except (OSError, ValueError, AttributeError):
+            ref = None
+    ref = ref or wslib.find_result_ref(prompt, ws.root)
+    if ref is not None:
+        context("UserPromptSubmit", ws.return_note(ref))
+
+
 def on_prompt(ws, wslib, data):
     if not interactive(data):
         return
     prompt = data.get("prompt") or ""
+    if prompt.lstrip().startswith("<task-notification>"):
+        on_notification(ws, wslib, prompt)
+        return
     if not prompt.strip() or prompt.lstrip().startswith(NON_TYPED_PREFIXES):
         return
     eid = ws.record_question(data.get("session_id"), data.get("prompt_id"), prompt)
@@ -103,6 +126,16 @@ def on_pre_agent(ws, wslib, data):
         missing = wslib.brief_missing(ref / "task.md")
         if missing:
             deny(f"{ws.rel(ref / 'task.md')} 的「{'」「'.join(missing)}」还是空的：补全后再派发。")
+
+
+def on_pre_send(ws, wslib, data):
+    if not interactive(data):  # subagents messaging each other are not the main agent continuing an executor
+        return
+    msg = (data.get("tool_input") or {}).get("message")
+    if not isinstance(msg, str) or len(msg.strip()) < FOLLOWUP_MIN_CHARS or wslib.find_dispatch_ref(msg, ws.root):
+        return
+    context("PreToolUse", "（ws）续接子智能体时如果带了新要求或范围变化：先 ws followup <派发ID> --stdin 把要求记进原派发"
+            "（旧结果自动改名保留），再发它打印的续接消息。只是催促或简单答疑可以忽略本提醒。")
 
 
 def on_subagent_stop(ws, wslib, data):
@@ -160,6 +193,8 @@ def main():
         return
     if event == "PreToolUse" and data.get("tool_name") in ("Agent", "Task"):
         on_pre_agent(ws, wslib, data)
+    elif event == "PreToolUse" and data.get("tool_name") == "SendMessage":
+        on_pre_send(ws, wslib, data)
     elif event in HANDLERS:
         HANDLERS[event](ws, wslib, data)
 

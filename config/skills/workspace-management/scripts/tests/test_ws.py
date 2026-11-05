@@ -3,6 +3,7 @@ import io
 import json
 import os
 import re
+import shutil
 import sys
 import tempfile
 import threading
@@ -555,6 +556,129 @@ class TestHistoryChecks(WsTestCase):
             self.assertIn(c, codes)
 
 
+class TestReturnsAndFollowups(WsTestCase):
+    RESULT = ("---\nstatus: DONE\n---\n# r\n\n## 结论\n完成\n\n## 需要上层处理\n- 自我回退没计入\n"
+              "  - 子项不单独算\n- 仅 AI 批准的评审不可比\n\n## 验证\n- 跑了 → 通过\n")
+
+    def test_concern_items(self):
+        self.assertEqual(len(wslib.concern_items(self.RESULT)), 2)
+        for none in ("无", "- 无", "无。", "none"):
+            self.assertEqual(wslib.concern_items(f"## 需要上层处理\n{none}\n"), [], none)
+        self.assertEqual(len(wslib.concern_items("## 需要上层处理\n一段没有列表的说明\n")), 1)
+
+    def test_return_note_and_concern_check(self):
+        d, nid = self.ws.new_task("x", body="### 目标\n做\n### 要求\n- [ ] R1 甲\n- [x] R2 乙\n### 验收标准\n过\n")
+        self.fill(d, goal=True, plan=True)
+        self.ws.set_spec(nid, "### 目标\n做\n### 要求\n- [ ] R1 甲\n- [x] R2 乙\n### 验收标准\n过\n")
+        self.ws.set_status(nid, "active")
+        s1, sid1 = self.ws.dispatch(nid, "a")
+        self.ws.dispatch(nid, "b")
+        (s1 / "result.md").write_text(self.RESULT)
+        note = self.ws.return_note(s1)
+        for part in (sid1, "DONE", "2 条", "本波还有 1 路没回（S02）", "已进行 0h", "1 条要求未完成"):
+            self.assertIn(part, note)
+        self.assertIn("concern-open", {i.code for i in self.ws.check()})
+        self.ws.log(nid, "S01 问题1 修（新派发），问题2 豁免：只作解释", tag="decision")
+        self.assertNotIn("concern-open", {i.code for i in self.ws.check()})
+
+    def test_followup_keeps_old_results_and_opens_no_wave(self):
+        _, nid = self.ws.new_task("x")
+        s, sid = self.ws.dispatch(nid, "w")
+        self.write_result(s)
+        _, moved = self.ws.followup(sid, "改成中英两版，可写范围加上 site/method/")
+        self.assertEqual(moved, "result-r1.md")
+        self.assertFalse((s / "result.md").exists())
+        self.assertIn("## 追加", (s / "task.md").read_text())
+        self.assertIn("site/method/", (s / "task.md").read_text())
+        prompt = wslib.followup_prompt(s, moved)
+        self.assertEqual(wslib.find_dispatch_ref(prompt, self.root), s)
+        self.write_result(s)
+        self.assertEqual(self.ws.followup(sid, "再补一点")[1], "result-r2.md")
+        self.assertEqual(self.ws.dispatch_waves(self.ws.resolve(nid)), 1)
+        with self.assertRaises(wslib.WsError):
+            self.ws.followup(nid, "x")  # a node, not a dispatch
+
+    def test_steady_trickle_does_not_chain_into_one_wave(self):
+        d, nid = self.ws.new_task("x")
+        p = d / "progress.md"
+        p.write_text(p.read_text() + "".join(f"- 2026-01-01 10:{m:02d} [dispatch] {nid}/S{i:02d} x\n"
+                                             for i, m in enumerate(range(0, 40, 5), 1)))
+        self.assertEqual([len(w) for w in self.ws.waves(d)], [3, 3, 2])  # anchors 10:00, 10:15, 10:30
+
+    def test_external_and_hook_notes_open_no_wave(self):
+        d, nid = self.ws.new_task("x")
+        p = d / "progress.md"
+        p.write_text(p.read_text() + "".join(f"- 2026-01-01 {h:02d}:00 [dispatch] {nid}/S0{h} x\n" for h in (1, 2, 3))
+                     + f"- 2026-01-01 05:00 [dispatch] {nid}/S01 没有自己写 result.md，hook 代存为 UNVERIFIED\n")
+        self.assertEqual(self.ws.dispatch_waves(d), 3)
+        e, _ = self.ws.dispatch(nid, "codex-audit", external=True)
+        self.assertIn("外部执行", (e / "task.md").read_text())
+        self.assertEqual(self.ws.dispatch_waves(d), 3)
+        with self.assertRaises(wslib.WsError):
+            self.ws.dispatch(nid, "fourth")
+
+    def test_repeated_paragraphs(self):
+        _, nid = self.ws.new_task("x")
+        para = "GitHub GraphQL 限流：二级限流时把并发降到 1，等待 90 秒后重试；别名批量每次不超过 25 个；" * 3
+        paths = "\n".join(f"- .agents/memory/topic/file{i}.md 这是一个很长的必读路径说明用来凑长度" for i in range(6))
+        s1, _ = self.ws.dispatch(nid, "a", body=f"背景\n\n{para}\n\n## 必读\n{paths}\n")
+        self.assertEqual(self.ws.repeated_paragraphs(s1, para), [])
+        s2, _ = self.ws.dispatch(nid, "b", body=f"另一段背景\n\n{para}\n\n## 必读\n{paths}\n")
+        hits = self.ws.repeated_paragraphs(s2, f"另一段背景\n\n{para}\n\n## 必读\n{paths}\n")
+        self.assertEqual(len(hits), 1)
+        self.assertEqual(hits[0][1], [f"{nid}/S01"])
+
+    def test_review_fixes(self):
+        # concern_items: none-variants, all-none bullets, "2、" without a space
+        for none in ("无。备注：已和上层确认", "暂无", "无需上层处理", "- 无\n- 无"):
+            self.assertEqual(wslib.concern_items(f"## 需要上层处理\n{none}\n"), [], none)
+        self.assertEqual(len(wslib.concern_items("## 需要上层处理\n1、口径不一\n2、数据缺一天\n")), 2)
+        # open_requirements only looks at「要求」
+        d, nid = self.ws.new_task("x")
+        self.ws.set_spec(nid, "### 目标\n做\n### 要求\n- [ ] R1 甲\n### 验收标准\n- [ ] 测试通过\n")
+        self.assertEqual(wslib.open_requirements((d / "task.md").read_text()), 1)
+        # return_note reports the returning dispatch's own wave
+        s1, _ = self.ws.dispatch(nid, "a")
+        s2, _ = self.ws.dispatch(nid, "b")
+        s3, _ = self.ws.dispatch(nid, "c")
+        p = d / "progress.md"
+        p.write_text(re.sub(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}(?= \[dispatch\] T01/S0[12])", "2026-01-01 10:00", p.read_text()))
+        p.write_text(re.sub(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}(?= \[dispatch\] T01/S03)", "2026-01-01 10:30", p.read_text()))
+        for s in (s1, s3):
+            self.write_result(s)
+        self.assertIn("本波已全部回齐", self.ws.return_note(s3))
+        self.assertIn("本波还有 1 路没回（S02）", self.ws.return_note(s1))
+        # decided: adjacent CJK, other node's path, decisions older than the result
+        self.write_result(s1, body="完成")
+        (s1 / "result.md").write_text((s1 / "result.md").read_text() + "\n## 需要上层处理\n- 口径\n")
+        with open(p, "a") as f:
+            f.write("- 2000-01-01 00:00 [decision] S01修复口径（这是旧一轮的决定）\n")
+            f.write(f"- {wslib.now()} [decision] T01.02/S01 修\n")
+        self.assertFalse(self.ws.decided(d, "T01/S01"))
+        self.ws.log(nid, "豁免S01：只作解释", tag="decision")
+        self.assertTrue(self.ws.decided(d, "T01/S01"))
+        # robustness: deleted dispatch dir, missing progress.md
+        shutil.rmtree(s2)
+        self.assertIn("本波已全部回齐", self.ws.return_note(s1))
+        p.unlink()
+        self.assertIn("回来了", self.ws.return_note(s1))
+
+    def test_followup_while_still_running(self):
+        _, nid = self.ws.new_task("x")
+        s, sid = self.ws.dispatch(nid, "w")
+        _, moved = self.ws.followup(sid, "顺便把英文版也做了")
+        self.assertIsNone(moved)
+        self.assertIn("先把它改名为 result-rN.md", wslib.followup_prompt(s, moved))
+        self.ws.dispatch(nid, "plain", title="续派分析")  # a title starting with 续派 is still a real dispatch
+        self.assertEqual(sum(len(w) for w in self.ws.waves(self.ws.resolve(nid))), 2)
+
+    def test_req_open_warns_on_done(self):
+        d, nid = self.ws.new_task("x")
+        self.ws.set_spec(nid, "### 目标\n做\n### 要求\n- [ ] R1 没做完的\n### 验收标准\n过\n")
+        self.ws.set_status(nid, "done", force="测试")
+        self.assertIn("req-open", {i.code for i in self.ws.check()})
+
+
 class TestCli(WsTestCase):
     def run_cli(self, *args, stdin=None):
         out = io.StringIO()
@@ -580,6 +704,17 @@ class TestCli(WsTestCase):
         code, out = self.run_cli("task", "status", "T01", "active")
         self.assertEqual(code, 1)  # goal/plan still skeletons
         self.assertIn("goal.md", out)
+        code, out = self.run_cli("task", "spec", "T01", stdin="### 目标\n演示\n### 验收标准\n能跑\n")
+        self.assertEqual(code, 0, out)
+        self.assertIn("goal.md 最后修改于", out)
+        self.write_result(self.ws.resolve("T01/S01"))
+        code, out = self.run_cli("followup", "T01/S01", stdin="补一个要求")
+        self.assertEqual(code, 0, out)
+        self.assertIn("result-r1.md", out)
+        self.assertIn("task.md", out.splitlines()[-1])
+        code, out = self.run_cli("dispatch", "T01", "ext", "--external", "--stdin", stdin="外部审查")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("派发 prompt", out)
 
 
 if __name__ == "__main__":

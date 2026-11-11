@@ -1,5 +1,5 @@
 ---
-name: yunchen-job-apply
+name: ethan-job-apply
 description: 为 Yunchen 继续、填写或提交具体职位申请，按个人投递偏好完成并核实结果。用户要求投递、申请职位或提供职位链接要求申请时使用；仅讨论求职建议或修改简历时不触发。
 ---
 

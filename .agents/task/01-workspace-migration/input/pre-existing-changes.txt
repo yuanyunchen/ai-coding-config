@@ -1,0 +1,22 @@
+ M config/plugins/README.md
+ M config/plugins/claude/disabled/claude-md-management__claude-plugins-official/plugin-meta.json
+ M config/plugins/claude/disabled/code-review__claude-plugins-official/plugin-meta.json
+ M config/plugins/claude/disabled/code-simplifier__claude-plugins-official/plugin-meta.json
+ M config/plugins/claude/disabled/codex__openai-codex/plugin-meta.json
+ M config/plugins/claude/disabled/feature-dev__claude-plugins-official/plugin-meta.json
+ M config/plugins/claude/disabled/session-report__claude-plugins-official/plugin-meta.json
+ M config/plugins/claude/disabled/skill-creator__claude-plugins-official/plugin-meta.json
+ M config/plugins/claude/enabled/hookify__claude-plugins-official/plugin-meta.json
+ M config/plugins/claude/enabled/learning-output-style__claude-plugins-official/plugin-meta.json
+ M config/plugins/claude/enabled/ralph-loop__claude-plugins-official/plugin-meta.json
+ M config/plugins/claude/enabled/superpowers__claude-plugins-official/plugin-meta.json
+ M config/plugins/codex/enabled/superpowers__openai-curated/plugin-meta.json
+ M config/plugins/cursor/disabled/parallel__cursor-public/plugin-meta.json
+ M config/plugins/cursor/enabled/browse__cursor-public/plugin-meta.json
+ M config/plugins/cursor/enabled/continual-learning__cursor-public/plugin-meta.json
+ M config/plugins/cursor/enabled/superpowers__cursor-public/plugin-meta.json
+ M config/skills/harness-management/SKILL.md
+ M config/skills/harness-management/subskills/multi-source-sync/SKILL.md
+ M scripts/pull.sh
+ M scripts/sync.sh
+?? tests/test_qa_loop_platform.py

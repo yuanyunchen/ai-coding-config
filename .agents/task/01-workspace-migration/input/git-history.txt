@@ -1,0 +1,448 @@
+6df5f0cadb345b12c13f8c5f6f84dc5d657e1546 2026-11-11T01:07:15-05:00 MikeYuanP
+Update job application workflow and bundle candidate background
+
+
+7dd8f79c94ffbbd51cf7d9956d613158dc304023 2026-11-11T00:32:24-05:00 MikeYuanP
+Prefer Chrome plugin for job applications
+
+
+2872af04e0da6c9ea99bc017335f735af061eef8 2026-11-11T00:31:25-05:00 MikeYuanP
+Default job applications to Columbia email
+
+
+874c540b4df4487b77625c48b4a44dd750c2eb75 2026-11-11T00:30:00-05:00 MikeYuanP
+Rename job application skill
+
+
+f7cdb3f64dc17079da4fc27c16fa8773b22ec8ab 2026-11-11T00:29:43-05:00 MikeYuanP
+Add Yunchen job application skill
+
+
+107914052f25d84f63a9d6ae3de0e1ac36ca64b1 2026-11-04T22:09:37-05:00 MikeYuanP
+harness: turn recurring user requests into default behavior; default mode auto
+- AGENTS.md (+cn): rubric becomes the checklist; milestones reported unasked;
+  parallel tracks from planning; plans stated per stage at executable depth;
+  viewable output always comes with a verified link
+- qa-loop: review depth by audience; cross-model plan review and small-sample
+  pilot before execution; adversarial review of rendered user-facing output
+- subagent-protocol: no approval-prompting deletes, no pkill by name
+- frontend-pipeline/explainer: outline first for explainer-type artifacts;
+  repo deliverables include README + AGENTS.md
+- harness default mode none -> auto across harness/project/workspace templates
+- fixes from adversarial review (milestone vs batch reply, stale defaults)
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+
+e7c50054776ec1371432fb1fe8f195e2aba21974 2026-11-04T21:58:33-05:00 MikeYuanP
+design: add top-level design charter and frontend lessons from dashboard project
+- design-principles: five-rule charter (intuitive, text ratio, no repetition,
+  no machine tone, emphasis without clutter) with checks; card/overview rules
+- frontend-pipeline: charter mandatory for all human-facing artifacts;
+  content-for-readers collapsed to pointer + multi-page deliverables;
+  verification adds charter checks; new github-repo-page reference
+- starmap: light default edges, on-canvas info, porting to other renderers
+- AGENTS.md (+cn): emphasis-not-clutter rule
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+
+90b008016b89fcdbf0008b17164db532d5e86501 2026-11-04T19:49:11-05:00 MikeYuanP
+workspace v4.3: inbox.md back to the v4.0 '## <id> · <time> · session' layout
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+
+82d4924bb276fda1cbdf8d9c9d9b9c7e3c6f1d0e 2026-11-04T19:45:15-05:00 MikeYuanP
+workspace v4.3: return notes, ws followup, external dispatches, anchored waves, reply rules
+- hook: one-line return note when a dispatch reports back (status, open items, wave still out, elapsed, open requirements); reminder before SendMessage with new requirements (verified PreToolUse fires for SendMessage)
+- ws followup: append new requirements to the original dispatch task.md and keep the previous result as result-rN.md
+- ws dispatch --external for codex exec / claude -p; follow-ups, external runs and hook notes open no wave
+- waves anchored at the wave's first dispatch so a steady trickle cannot chain into one wave
+- repeated-paragraph hint on dispatch; concern-open / req-open checks
+- protocol: per-item handling of upper-layer concerns, pilot before fan-out, continue vs new dispatch, why and when to write memory, batch single judgments
+- global reply rules: user's language, one report per completed batch, numbers from files
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+
+431db942db4700e3690f094d191ec37f317dfa7b 2026-11-04T18:23:13-05:00 MikeYuanP
+workspace v4.2: readable conversation format, inbox.md, structured task.md, dispatch wave gate
+- conversation.md: column-0 structure lines (Q in double rules, A / continuation rules, marker lines), content indented, so headings inside replies no longer blur Q/A boundaries
+- inbox.md: user messages only
+- task.md: structured 任务说明 rewritten by the upper layer (ws task spec) + append-only 原文记录; stale/skeleton checks and active gate
+- ws dispatch refuses a 4th dispatch wave on a node without subtasks (--force with reason)
+- new checks: close-ready, memory-empty, agents-length floor, dispatch-size
+- ws migrate upgrades v4.1 workspaces; plugin metadata refresh
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+
+8c8162b6038f6e1c382d7566db8b069e90ea45c8 2026-11-02T23:05:09-05:00 MikeYuanP
+workspace v4.1: conversation log, layered results and memory; reply rules
+- Workspace v4.1: inbox/ and .state/ replaced by .agents/conversation.md
+  (hook records each user Q and the turn's final A; filing and skip
+  marks are appended lines); lock on ws.json, hook switch in ws.json,
+  secrets in .agents/secrets.env; `ws migrate` upgrades v4.0 workspaces
+  and closes migrated questions so new answers do not attach to them.
+- result.md = core (<=6KB) + attachment index; dispatch auto-lists a
+  node's shared brief.md.
+- memory: files over 8KB become a directory with README.md (key points
+  + file table); subject directories; plans and user rulings kept out;
+  basis/covers frontmatter lets `ws check` flag stale code notes.
+- New checks: result size, memory README/size/plan headings/staleness,
+  too many flat dispatches. Repo-profile block gains a 规则 section.
+- Global rules: replies use 进度 / 问题 / 决策, short and plain; decide
+  what can be decided, ask only about hard-to-reverse or preference calls.
+- sync.sh no longer exits 1 after a successful non-dry run.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+
+d6cd1bede3707ed7809444d193ea72b8f8e94c76 2026-11-01T22:10:29-05:00 MikeYuanP
+sync: frontend skill restructure, qa-loop, ponytail, plugin updates, codex isolation
+Snapshot of the Claude live harness after propagating it to Cursor, Codex
+and Trae (incremental sync; Claude-side removals pruned in the targets
+with backups).
+
+- Frontend: starmap moves under frontend-pipeline/skills/; new explainer
+  and design-principles skills; frontend-pipeline references updated;
+  frontend-engineer, code-simplifier and debugger agents retired.
+- /agent renamed /qa-loop and made v4-workspace aware; executor,
+  qa-specialist and verifier agents updated.
+- New ponytail skill (default for coding tasks per AGENTS.md); global
+  rules carry the attribution and four-source sync wording.
+- skill-creator and write-agent-file now live only as harness-management
+  subskills; their global copies are gone.
+- Codex: codex-skill-isolation.py keeps Feishu internal skills from
+  auto-registering (wired into deploy and sync, with tests);
+  codex-personal and settings.personal refreshed.
+- Sync hygiene: skills/synced/ (claude.ai-managed copies) is excluded
+  from pull and from cross-tool sync.
+- Plugin snapshots refreshed (superpowers, codex, hookify and others).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+
+4f7a8627d66b57a2aadd0b25772a98fd463cf425 2026-11-01T22:01:11-05:00 MikeYuanP
+hooks: version own Claude Code hooks and their registration
+The repo used to skip hooks entirely because settings.json stores them
+with machine-absolute paths, so a new machine got neither
+discipline-reminders nor the workspace-guard enforcement.
+
+- pull: ~/.claude/hooks/ -> config/hooks/ (scripts + tests).
+- settings-personal.py: hook groups whose command runs a script under
+  ~/.claude/hooks/ are written to claude-personal/hooks.json with the
+  home directory as $HOME; deploy expands it and replaces local groups
+  that share a command, leaving other tools' hooks (pixel-agents) alone.
+- deploy: copies hooks/ before merging settings so registrations never
+  point at missing files.
+- tests/test_settings_hooks.py covers pull filtering, idempotent deploy
+  and the CLI round trip.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+
+956a725b3f1786e36bbe1f25cadc541c241f1ba5 2026-11-01T21:53:20-05:00 MikeYuanP
+workspace-management v4: ws CLI, hook-enforced protocol, task-node tree
+Replace the v3 workspace convention (root CLAUDE.md pointer + context/ +
+deliverables/ + .agent/MEMORY.md with none/auto/full modes) with v4:
+root AGENTS.md as the agent-maintained entry and map, and .agents/ holding
+a subject-organized memory/, skills/, inbox/ and a recursive task tree
+(task/NN-x/ with task.md, goal/plan/progress, result.md, subagent/NN-x/).
+
+- scripts/ws + wslib.py own all structural writes (numbering, dispatch
+  briefs, inbox filing, generated AGENTS.md blocks, checks); 26 tests.
+- Protocol text lives in each workspace AGENTS.md so main agents and
+  subagents always see it; the workspace-guard hook (in ~/.claude/hooks,
+  not synced by this repo) records user prompts, gates dispatches and
+  collects result.md.
+- v3 workspaces stay as they are: references/v3-legacy.md,
+  scripts/legacy/lint-v3.sh.
+- Dependents updated: global AGENTS.md (EN/CN, which also carries the
+  concurrent live edits made since the last sync), project-, harness- and
+  memory-management, feishu exec-workflow-internal, /project-init.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+
+6f336cc42c519ed5c21fe447138e02e3a27a0c7c 2026-08-06T19:09:48-07:00 Codex
+sync: pick up libra-ad-recall-metrics self-evolution round from codex live
+中间指标按指标族解释、拆事件的选取与截图要求、日报正文结构——codex 侧那个
+skill 的自进化循环在本次同步后又跑了一轮，写完已静止 45s 才取。
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+
+62d09a98576a9935ea8fffbb69f3cfba775af905 2026-08-06T18:59:01-07:00 Codex
+fix: move set_document_l2.py out of the vendor-managed lark-doc dir
+set_document_l2.py 是自建脚本，却放在 `subskills/lark-doc/scripts/` —— 该目录由
+lark-cli 托管（上游 `~/.agents/skills/lark-doc/scripts/` 只有 doc_word_stat.py），
+`bytedcli self skill install --all -g` 会重装整目录，可能静默删掉它；而
+lark-doc-writer 刚把"新建文档设 L2 并 fresh readback"定成必走步骤，脚本没了这一步
+会静默失败。
+
+移到自己的 `feishu-task-management/scripts/`，同笔改三处引用
+（lark-doc-writer SKILL.md、create-workflow.md、libra-ad-recall-metrics
+daily-report-management.md）。新位置下 test_set_document_l2.py 4 项全过。
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+
+e0f4c1fe777a11bfd2288fa44aa5920de39abb1d 2026-08-06T18:55:02-07:00 Codex
+sync: merge codex-side harness gains into claude, propagate to four homes
+单向增量合并（只增不减）：把 codex live 领先的部分并入 claude，再以 claude 为源
+增量同步到 codex / cursor / trae，四源现无实质内容差异（仅工具根路径改写）。
+
+从 codex 并入：
+- 新伪 skill libra-ad-recall-metrics（Libra 召回指标只读查看/归因/日报自进化）
+- 新伪 skill building-feishu-bots（飞书群机器人端到端构建与长期运行）
+- lark-doc/scripts/set_document_l2.py + 测试（新建文档默认设内网 L2 可读并回读校验）
+- feishu SKILL.md：路由表登记上述两个新 skill、文档写作链新增 L2 权限步、
+  权限审批催办的 IM 二次确认特例；memory.md 同笔登记该特例
+- lark-doc-writer：新建文档默认 L2 + create-workflow「第五波 权限与交付」
+- ad-recall-experiment-debugging：与 libra-ad-recall-metrics 划边界
+
+claude 侧领先的内容全部保留（production-validation / gotchas /
+spark-task-bodies-and-resources / subagent-protocol / AGENTS.md 三节新规则等），
+本次一并同步给另外三源。
+
+顺带修两处会让同类问题复发的地方：
+- sync.sh rewrite_paths 只改写 `~/.<tool>/`，绝对写法 `/Users/<user>/.codex/`
+  与 `$HOME/.claude/` 会绕过改写、把源工具的 home 原样带进目标工具。
+  chart-gen SKILL.md 的 render_chart.py 调用就是这样在四个 home 同时指向
+  ~/.codex；现改写规则先归一绝对写法，并修正该调用（同时去掉引号，
+  引号内的 ~ 不展开）。
+- codex-personal.py 直接 import tomllib，在系统 python3 3.9 下让 pull 半途
+  报错退出；改为找不到 tomllib 时自动 re-exec 到 python3.11+，都找不到才
+  给一句能照做的提示。
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+
+a76b70b7130ce249442ed5eab43be4f162fd7ee3 2026-07-31T15:22:11-07:00 Codex
+sync: drop config-links and pull latest Claude harness
+Keep a single config/ tree; align four live tools from Claude and snapshot AGENTS/skill updates into the repo.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+edc2780c1bcffcad8d006ec05d04a22fb97366a7 2026-07-30T17:24:16-07:00 Codex
+skill: promote ad-recall-experiment-debugging into the Feishu domain
+Move the ad recall experiment debugging skill from the workspace
+(tasks/travel-city-recall-experiment-params/.agent/skills/) to
+feishu-task-management/subskills-local/ and register a routing row in its
+section 2 table, with an explicit boundary against
+libra-experiment-weekly-report. Per the pinned domain rule it stays a
+pseudo skill and is not registered as a global skill; the workspace copy
+is removed so the rule has a single home.
+
+Also carries the accumulated live -> repo snapshot backlog: the starmap
+skill, the 2026-07-30 harness work (probe script, agent definitions,
+personal deny list), and a re-snapshot of the plugin state (enabled or
+disabled moves, not deletions).
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+
+ecf80d0a08449c6a7aeedf151838ed89486c4327 2026-07-27T19:09:56-07:00 Codex
+refine data probe example mapping contract
+
+
+9231b703a97b42304d00d71352d636f4611e8b7b 2026-07-27T18:42:17-07:00 Codex
+skill: require an entity example for every probe type
+
+
+7e2a1b1c2606022f27085e769ad611604c4d72c7 2026-07-27T18:08:56-07:00 Codex
+skill: require business-readable data probes
+
+
+938de4ff7cc7097c8cefebba5bb7251083e74446 2026-07-24T14:11:36-07:00 Codex
+feat(harness): add Trae as fourth sync target alongside Claude/Cursor/Codex
+Extend agent-config sync/pull/deploy so Trae IDE and traecli share ~/.trae
+with the same skills/commands/agents/AGENTS.md layout as the other tools.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+be9cff9f1d4dda20141965cec328c861cedf44f1 2026-07-23T15:04:41-07:00 Codex
+feat(feishu): add technical delivery document templates
+
+
+d910c62743b80e58d2c436089b74f18fd50add3d 2026-07-23T14:59:01-07:00 Codex
+fix(feishu): handle sandbox CLI authentication
+
+
+c6ab4e639cc68752dc4e6b3e852aa88e8387507c 2026-07-23T14:48:49-07:00 Codex
+feat(skills): add Dorado Hive production rollout guidance
+
+
+db7e5fc55dc2ba041240af61cb8b552a9ce1eff6 2026-07-19T17:43:37-07:00 Codex
+chore: disable Parallel skills across runtimes
+Move the shared Parallel search and research skills to the disabled
+bucket, remove active routing references, and turn off the Cursor
+Parallel plugin by default.
+
+
+e1de4fc2b471fc34e3d374b60a6c3cf608d940c1 2026-07-16T15:52:26-07:00 Codex
+skill(bytedance-internal-hosting): 扩为 Goofy + 飞书云盘双平台内网托管权威
+- SKILL.md 重写:决策树/能力边界/场景路由/覆盖·改名·大小限制跨平台速查
+- references/goofy.md:create/redeploy 保 link、React 表单填法、三大坑(50MB 死限、误判成功、大文件冻结)
+- references/feishu-drive.md:lark-cli+keychain、Upload New Version 保 link、Make-a-Copy 绕过、独立 Rename、大小限制、权限红线
+- references/shrink-oversized-site.md:>50MB 分层瘦身(无损→删非主图→缩主图→改 data.js 引用)+ 脚本
+- feishu-task-management 路由行同步更新
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+
+76094479cb8f9b5a8995c443f8c1528050bc5f52 2026-07-12T18:20:44-07:00 Codex
+refactor: replace ida-presto-query with sql-query
+
+
+a3f747c61a74ce5c3957db3bfb9daae30b3f5bfa 2026-07-12T18:09:04-07:00 Codex
+feat: add bytedcli skill bundle
+
+
+1e349f79df5e37308dad57c7804d33420d9650e4 2026-07-12T18:03:49-07:00 Codex
+Fix remaining chrome-only global-rule cite in feishu memory.md.
+
+
+33cdc6923df7312e5946ac2a5e079c944549f585 2026-07-12T18:03:11-07:00 Codex
+Resolve harness/memory conflicts from cross-layer audit.
+Align browser policy with Try What Works, portable hub paths, harness-management gates, and unified BM timeline paths across skills.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+577687b14fbde314d35fe5dd706ebb4ea2dc80b7 2026-07-12T17:57:38-07:00 Codex
+Note GitHub in harness multi-source-sync route.
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+fadab4e7690ac1cadecf33073e4a035361735dd4 2026-07-12T17:57:22-07:00 Codex
+Add browser-backend autonomy rule and multi-source-sync with GitHub.
+Agents pick a working browser backend without asking; escalate only when all are blocked. Harness sync now defaults to three live homes plus commit/push to GitHub.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+ed8af39306a80781bab547a98807bde0a59a4bbf 2026-07-12T17:47:17-07:00 MikeYuanP
+Align memory skills with unified global-memory BM layout.
+Point hub/bytedance projects, portable bin/setup sync, and feishu domain search at the single-repo basic-memory toolchain.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+16be8b3638c9d40f288794390544734387775e75 2026-07-06T12:57:49-07:00 Codex
+Document multi-source harness sync protocol
+
+
+71c9fb3ef9f0d7ba97380f9573ae9d17eac85663 2026-07-06T12:52:32-07:00 Codex
+Sync feishu workspace subskills for Codex
+
+
+ac8a065da5e3ae017fce0eed0549b6648b76a28e 2026-07-06T12:44:11-07:00 MikeYuanP
+Sync harness: feishu subskills-workspace 内迁 + plugin pull.
+飞书写文档/作图子技能从远程 workspace 迁入 feishu-task-management/subskills-workspace/;路由表与 exec-workflow 路径同步更新。
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+d2a42fd61a2fce2203a4196cd87952ae93b0a1e6 2026-07-04T19:22:39-07:00 MikeYuanP
+Sync harness snapshot and document global-memory setup.
+- SETUP.md + CLAUDE.md: global-memory clone/symlink onboarding
+- pull: plugin-meta timestamps, plugins README, minor skill tweaks
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+2deabc67b5fd7e173e1ba740bc0946214c93e33f 2026-07-04T19:01:21-07:00 MikeYuanP
+Rename memory repo references claude-memory → global-memory.
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+f80d1818d0f99b47dc5e5548c8169bd418dd3298 2026-07-04T19:00:35-07:00 MikeYuanP
+Fix memory sync for claude-memory/memory/ layout.
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+1afe0b9b205f61495025c9b7ac9ba93f7fc7380b 2026-07-04T18:56:37-07:00 MikeYuanP
+Point memory sync at claude-memory/ directly (no global-memory wrapper).
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+0fd8c5c077952ab2240bdec3bd50d4de3fe781ae 2026-07-04T18:54:26-07:00 MikeYuanP
+Sync harness: superpowers三平台、记忆工作区外置、skills/plugins更新。
+- Enable superpowers snapshots for cursor-public and openai-curated; fix codex plugin pull
+- Move memory management out of config/ to Agent Development/global-memory; memory.sh reads sibling manifest
+- Add project-management, memory-management, harness-management, workspace-management skills
+- Plugin manifest/hookPlugins refresh; codex-delegation replaces use-codex/codex-cli
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+7b38521bfd1e0565850ad5f12ef2f1febcd21f2b 2026-05-27T17:43:31-07:00 MikeYuanP
+sync: unify Claude/Codex personalization + flatten skills layout
+- Add codex-personal.py mirroring settings-personal.py (pull/deploy,
+  managed-key subset + deep-merge); snapshots in config/{claude,codex}-personal/
+- Flatten skills: skills/enabled/* -> skills/*, skills/disabled/* -> skills-disabled/*
+- CLAUDE.md: document Claude+Codex personalization as one unified design;
+  drop stale "Codex 暂不纳管" footnote
+- .gitignore: match config-links symlink (drop trailing slash)
+- Update deploy/pull/sync/links/migrate scripts and SETUP.md for new layout
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+
+f519400b9bc6bdd74c1f78ac32bc2ab805869a4e 2026-05-25T21:45:18-07:00 MikeYuanP
+Add SETUP.md for first-time human onboarding and sync CLAUDE.md.
+Separate human setup checklist from agent docs; document Parallel plugin-before-CLI order and Cursor browse npm install.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+ca90150ec5451fe2423c0d2a029f24226aa0a846 2026-05-25T21:12:59-07:00 MikeYuanP
+Remove repo-root AGENTS.md; keep config/AGENTS.md for deploy.
+Drop @AGENTS.md import from repo CLAUDE.md and update layout docs accordingly.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+c8628753f833678d8b1b36dd2ec1dd0c83629eef 2026-05-25T21:12:23-07:00 MikeYuanP
+Reorganize plugins and skills layout with cross-platform sync.
+Add plugins sync/apply (enabled/disabled trees, manifest mirroring), move skills into enabled/disabled, unify config-links as a single symlink, remove sqlite plugin, and update deploy/docs scripts.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+770d7dc0b9fba24a4b7c9b34d60136202d09b250 2026-05-25T20:12:04-07:00 MikeYuanP
+Consolidate scripts under scripts/ with unified agent-config CLI.
+Move five shell scripts into scripts/, add root entry point, rewrite CLAUDE.md with setup guide.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+097789cde83e13ae8b3d759d201e7090a1d765b6 2026-05-25T20:10:45-07:00 MikeYuanP
+Restore root AGENTS.md required by CLAUDE.md @import
+
+
+03669fb863c7f93470b09c371ff214f19f9a9299 2026-05-25T20:10:40-07:00 MikeYuanP
+Consolidate five scripts into single agent-config.sh entry point.
+Rewrite CLAUDE.md with clear config layout and workflows; slim README to point there.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+8fe9d4f181fcb1cb7dff2b649980d3093ed672c1 2026-05-25T20:09:26-07:00 MikeYuanP
+Add config-links setup and pull-config for local sync workflow.
+config/ stays as real files for git migration; config-links/ provides local symlinks to ~/.claude.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+
+5675c1df234b7a671f116854c7a2971d174c3eba 2026-05-25T20:07:43-07:00 MikeYuanP
+Initial commit: AI coding agent config backup for cross-device migration.
+Snapshot canonical ~/.claude config (agents, commands, skills) plus sync/deploy scripts.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+

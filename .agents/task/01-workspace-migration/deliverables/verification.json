@@ -1,0 +1,18 @@
+{
+  "original_commit": "6df5f0cadb345b12c13f8c5f6f84dc5d657e1546",
+  "original_commits_preserved": 52,
+  "original_paths_checked": 3098,
+  "unchanged_original_paths": 3096,
+  "expected_document_updates": [
+    "CLAUDE.md",
+    "README.md"
+  ],
+  "unexpected_file_changes": [],
+  "pre_existing_changes_preserved": 22,
+  "missing_pre_existing_changes": [],
+  "old_path_compatible": true,
+  "global_memory_sibling_compatible": true,
+  "cli_checks_passed": true,
+  "existing_tests_passed": 12,
+  "runtime_protected_files_unchanged": true
+}

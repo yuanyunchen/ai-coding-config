@@ -1,0 +1,7 @@
+[
+ {
+  "level": "warn",
+  "code": "memory-stale",
+  "msg": "memory/harness-baseline.md 依据 6df5f0cadb345b12c13f8c5f6f84dc5d657e1546，之后 scripts/, config/ 有改动：核对后更新 basis"
+ }
+]

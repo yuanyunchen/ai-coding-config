@@ -1,0 +1,20 @@
+  抽取 1 个个性化 key -> settings.personal.json
+  抽取 1 组自有 hook -> hooks.json
+  深合并 1 个个性化 key、1 组自有 hook -> new-machine.json
+test_dry_run_does_not_write (test_codex_skill_isolation.IsolationTests.test_dry_run_does_not_write) ... ok
+test_idempotence (test_codex_skill_isolation.IsolationTests.test_idempotence) ... ok
+test_isolation_and_preservation (test_codex_skill_isolation.IsolationTests.test_isolation_and_preservation) ... ok
+test_new_child_on_next_sync (test_codex_skill_isolation.IsolationTests.test_new_child_on_next_sync) ... ok
+test_personal_deploy_preserves_skill_rules (test_codex_skill_isolation.IsolationTests.test_personal_deploy_preserves_skill_rules) ... ok
+test_reenabled_child_is_disabled_again (test_codex_skill_isolation.IsolationTests.test_reenabled_child_is_disabled_again) ... ok
+test_mirror_preserves_native_skill_while_pruning_shared_skills (test_qa_loop_platform.QaLoopPlatformTests.test_mirror_preserves_native_skill_while_pruning_shared_skills) ... ok
+test_native_skill_is_not_shared_in_either_sync_mode (test_qa_loop_platform.QaLoopPlatformTests.test_native_skill_is_not_shared_in_either_sync_mode) ... ok
+test_pull_keeps_native_skill_out_of_common_snapshot (test_qa_loop_platform.QaLoopPlatformTests.test_pull_keeps_native_skill_out_of_common_snapshot) ... ok
+test_cli_round_trip_uses_sibling_hooks_file (test_settings_hooks.OwnHooksTest.test_cli_round_trip_uses_sibling_hooks_file) ... ok
+test_deploy_replaces_own_groups_keeps_others_and_is_idempotent (test_settings_hooks.OwnHooksTest.test_deploy_replaces_own_groups_keeps_others_and_is_idempotent) ... ok
+test_pull_keeps_only_own_hooks_with_portable_home (test_settings_hooks.OwnHooksTest.test_pull_keeps_only_own_hooks_with_portable_home) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.970s
+
+OK

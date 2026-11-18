@@ -1,30 +1,38 @@
 ---
 name: slack-bot
-description: Use when the local owner asks to link the current Codex or Claude Code session to Slack or report from it into a bound Slack discussion. Triggers include “把这个会话接入 Slack” and “汇报到绑定的 Slack 话题”. Applies to local sessions on the bridge host.
+description: Connect the current local coding session to a Slack channel as Ethan’s Bot, or report to a bound Slack thread. Use for “加入 Slack #频道”, “把这个会话接入 Slack”, “join Slack #channel”, or “汇报到绑定的 Slack 话题”. Supports Codex and channel-enabled Claude Code on the bridge host.
 ---
 
-# Link or report from this session
+# Join Slack from this session
 
-Use the destination the local owner explicitly named. Ask when they haven't supplied one. Quote the destination and report text as separate shell arguments.
+The local owner's request “加入 Slack #test” selects the current session and that channel. Run the command in this session. A channel name or a Slack thread link is sufficient. Ask for a destination only when none was supplied. Quote the exact destination as one shell argument.
 
-- **Link the current session.** A channel creates a thread, while a thread link selects its existing root. After success, return the Slack link and the reply instructions.
+Before linking, briefly tell the owner which session will handle messages, that internal channel members can ask questions, and that replies are visible in the Slack thread. On a Codex takeover, the new session supersedes the previous binding for that discussion. A request from the local owner to join the named channel authorizes the link. Keep private desktop output, credentials and unrelated conversation history out of Slack.
 
-  ```sh
-  "$HOME/.local/bin/slack-bot" '#random' --backend codex
-  ```
+## Codex
 
-- **Report to an existing binding.** Send only the summary the user authorized. Use the exact Slack thread link when the channel has several bindings for this session. On success, return the confirmed Slack link.
+For “加入 Slack #test”, run:
 
-  ```sh
-  "$HOME/.local/bin/slack-bot" '#random' --backend codex --report='The build and tests passed.'
-  ```
+```sh
+"$HOME/.local/bin/slack-bot" '#test' --backend codex --channel-can-message-this-session
+```
 
-## Identify the source session
+Replace `#test` with the requested destination. The helper reads `CODEX_THREAD_ID`. Desktop sessions can join while their window is open. The configured Slack owner's text can steer that window. Other members and attachment requests use the authorized team-project path.
 
-Codex uses `CODEX_THREAD_ID`. In Claude Code, use `--backend claude`. When Claude Code expands this skill's `${CLAUDE_SESSION_ID}` to a UUID, pass that UUID as `--session <uuid>`. Otherwise the helper reads `CLAUDE_CODE_SESSION_ID` from the Claude shell, with `CLAUDE_BRIDGE_THREAD_ID` for bridge-launched sessions. Linking Claude requires a live Claude Channel. If the channel is unavailable, resume the exact session with the bridge launcher before linking. [Claude Code skill substitutions](https://code.claude.com/docs/en/skills#available-string-substitutions)
+## Claude Code
 
-The bridge uses an owner-only local socket. If the sandbox denies the connection, use the session's authorized shell approval flow when available. The bridge owner can also run the command from their local terminal with the exact source `--session <uuid>`. For linking a Claude Channel that uses a nondefault socket, include its known `--claude-socket <absolute-path>`. If delivery is uncertain, check Slack before retrying. Pass only the authorized report text and keep credentials and older session history out of the command.
+In a session started with the team-slack Channel, run:
 
-## Binding the actual source session
+```sh
+"$HOME/.local/bin/slack-bot" '#test' --backend claude
+```
 
-Before linking, say who can send messages, who can see the Slack replies, and whether the exact local conversation or a new team session will handle them. An explicit request for the current session must never be described as satisfied by an isolated runner. When the local owner has explicitly approved all internal members sending messages into the current Codex session, use the existing thread link and `--channel-can-message-this-session`. Reuse earlier authorization. This native inbox appends attributed user messages to the actual Codex history. The bridge samples a text response directly from that same native thread, without running local functions or disclosing unrelated desktop output. It records the reply in the native thread and returns it to the requesting Slack thread. If the user needs automatic coding, describe this difference before suggesting a team runner.
+The launcher supplies the session ID and Channel socket. If Claude Code expanded `${CLAUDE_SESSION_ID}` to a UUID and the helper cannot read a session ID, pass that expanded UUID with `--session`. Use the current session's known `--claude-socket` for a custom endpoint.
+
+For a new Slack-enabled Claude session, start `"$HOME/.local/bin/slack-claude"` in the team's project repository. For an existing session that needs the Channel enabled, exit that Claude session normally and run the same launcher there with `--resume <its exact UUID>`. Preserve the original session. If the bridge reports an isolated team runner, describe the actual binding accurately.
+
+## Confirm the result
+
+Return the Slack link and the state the helper reported. A pending takeover is still pending. When active, the first channel question mentions Ethan’s Bot and a participant can follow up in the same thread. Use the question’s language. If the app cannot access the named channel, ask for the exact Slack link or have a member invite Ethan’s Bot once. If access to the local socket is denied, use the session's normal shell approval flow. After an uncertain Slack delivery, inspect the destination before retrying.
+
+To report a user-authorized update, use the same helper with the selected `--backend`, the bound Slack thread link and `--report=<quoted text>`. Wait for the delivery receipt and return its link.

@@ -1,0 +1,184 @@
+(node:52943) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ diagram examples survive as literal code and only exact standalone declarations upload (206.44475ms)
+✖ unsupported graph JSON stays hidden without masking the receipt for successful text and images (149.843625ms)
+✖ a missing upload receipt fences the uncertain image while another image reaches the thread (446.18075ms)
+✖ first-line skill attribution variants stay out of public post and code samples stay intact (12.219292ms)
+✖ a long fenced code example preserves exact literal content across public chunks (8.668792ms)
+✖ native generated-media examples stay literal inside an outer code fence (1.780292ms)
+✖ native crash recovery replays pending prose without publishing pending upload titles (3.299083ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 0
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1174.966041
+
+✖ failing tests:
+
+test at regression.test.mjs:43:1
+✖ diagram examples survive as literal code and only exact standalone declarations upload (206.44475ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   imageFailed: true,
+  +   ts: '2.000002'
+  -   imageFailed: false,
+  -   ts: '2.000001'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/ai-coding-config/.agents/task/04-slack-agent-setup/task/01-many-session/subagent/07-round2_media/regression.test.mjs:48:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { ts: '2.000002', imageFailed: true },
+    expected: { ts: '2.000001', imageFailed: false },
+    operator: 'deepStrictEqual'
+  }
+
+test at regression.test.mjs:61:1
+✖ unsupported graph JSON stays hidden without masking the receipt for successful text and images (149.843625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      imageFailed: true,
+  +   ts: '2.000002'
+  -   ts: '2.000001'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/ai-coding-config/.agents/task/04-slack-agent-setup/task/01-many-session/subagent/07-round2_media/regression.test.mjs:72:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { ts: '2.000002', imageFailed: true },
+    expected: { ts: '2.000001', imageFailed: true },
+    operator: 'deepStrictEqual'
+  }
+
+test at regression.test.mjs:76:1
+✖ a missing upload receipt fences the uncertain image while another image reaches the thread (446.18075ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      imageFailed: true,
+  +   ts: '2.000002'
+  -   ts: '2.000001'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/ai-coding-config/.agents/task/04-slack-agent-setup/task/01-many-session/subagent/07-round2_media/regression.test.mjs:93:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { ts: '2.000002', imageFailed: true },
+    expected: { ts: '2.000001', imageFailed: true },
+    operator: 'deepStrictEqual'
+  }
+
+test at regression.test.mjs:97:1
+✖ first-line skill attribution variants stay out of public post and code samples stay intact (12.219292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   '**Skills used**: private\r\n\r\n```text\n使用 skill：keep this example\n```',
+  +   '__Used skills:__ private\r\n\r\n```text\n使用 skill：keep this example\n```',
+  +   '   **使用 skills** ： private\r\n\r\n```text\n使用 skill：keep this example\n```',
+  +   '   *Skills used:* private\r\n\r\n```text\n使用 skill：keep this example\n```',
+  +   '　使用 skill：private\r\n\r\n```text\n使用 skill：keep this example\n```',
+  +   '﻿Skills used: private\r\n\r\n```text\n使用 skill：keep this example\n```'
+  -   '```text\n使用 skill：keep this example\n```',
+  -   '```text\n使用 skill：keep this example\n```',
+  -   '```text\n使用 skill：keep this example\n```',
+  -   '```text\n使用 skill：keep this example\n```',
+  -   '```text\n使用 skill：keep this example\n```',
+  -   '```text\n使用 skill：keep this example\n```'
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/ai-coding-config/.agents/task/04-slack-agent-setup/task/01-many-session/subagent/07-round2_media/regression.test.mjs:110:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ '**Skills used**: private\r\n\r\n```text\n使用 skill：keep this example\n```', '__Used skills:__ private\r\n\r\n```text\n使用 skill：keep this example\n```', '   **使用 skills** ： private\r\n\r\n```text\n使用 skill：keep this example\n```', '   *Skills used:* private\r\n\r\n```text\n使用 skill：keep this example\n```', '　使用 skill：private\r\n\r\n```text\n使用 skill：keep this example\n```', '﻿Skills used: private\r\n\r\n```text\n使用 skill：keep this example\n```' ],
+    expected: [ '```text\n使用 skill：keep this example\n```', '```text\n使用 skill：keep this example\n```', '```text\n使用 skill：keep this example\n```', '```text\n使用 skill：keep this example\n```', '```text\n使用 skill：keep this example\n```', '```text\n使用 skill：keep this example\n```' ],
+    operator: 'deepStrictEqual'
+  }
+
+test at regression.test.mjs:117:1
+✖ a long fenced code example preserves exact literal content across public chunks (8.668792ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(elements.every(({ type }) => type === 'rich_text_preformatted'))
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/ai-coding-config/.agents/task/04-slack-agent-setup/task/01-many-session/subagent/07-round2_media/regression.test.mjs:125:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '=='
+  }
+
+test at regression.test.mjs:129:1
+✖ native generated-media examples stay literal inside an outer code fence (1.780292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   body: '````md\n\n````',
+  +   files: [
+  +     {
+  +       path: 'sample.png'
+  +     }
+  +   ],
+  -   body: '````md\n```bridge-media\n{"files":[{"path":"sample.png"}]}\n```\n````',
+  -   files: [],
+      invalid: false
+    }
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/ai-coding-config/.agents/task/04-slack-agent-setup/task/01-many-session/subagent/07-round2_media/regression.test.mjs:132:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { body: '````md\n\n````', files: [ [Object] ], invalid: false },
+    expected: { body: '````md\n```bridge-media\n{"files":[{"path":"sample.png"}]}\n```\n````', files: [], invalid: false },
+    operator: 'deepStrictEqual'
+  }
+
+test at regression.test.mjs:135:1
+✖ native crash recovery replays pending prose without publishing pending upload titles (3.299083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      'The text answer.',
+  +   'Second diagram title',
+  +   'Generated image title'
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/ai-coding-config/.agents/task/04-slack-agent-setup/task/01-many-session/subagent/07-round2_media/regression.test.mjs:146:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'The text answer.', 'Second diagram title', 'Generated image title' ],
+    expected: [ 'The text answer.' ],
+    operator: 'deepStrictEqual'
+  }

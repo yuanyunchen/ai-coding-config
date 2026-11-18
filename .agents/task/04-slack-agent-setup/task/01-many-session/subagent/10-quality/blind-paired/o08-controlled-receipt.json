@@ -1,0 +1,126 @@
+{
+  "case": "O08",
+  "purpose": "补充固定回执时序。第 2 步正文和图由预置材料经桥接发出。第 4 步答复由真实模型产生。文件超时为替身提供，真实 Slack 未联网。",
+  "outputs": {
+    "A": {
+      "events": [
+        {
+          "stage": 2,
+          "fixture": "seedTimeoutReceipt"
+        },
+        {
+          "stage": 3,
+          "fixture": "deliveryLedger"
+        },
+        {
+          "stage": 3,
+          "sideEffect": "receipt_observed",
+          "textConfirmed": true,
+          "pngTimedOut": true
+        },
+        {
+          "stage": 4,
+          "inbound": "message",
+          "thread": "1.000000",
+          "sender": "UOWNER",
+          "text": "What can I actually see in Slack now?"
+        }
+      ],
+      "publicOperations": [
+        {
+          "stage": 2,
+          "operation": "post",
+          "thread": "1.000000",
+          "text": "Slack requests go through the bridge to team Codex, then replies return to the original Slack thread.",
+          "ts": "12.000000",
+          "receipt": "synthetic_confirmed"
+        },
+        {
+          "stage": 2,
+          "operation": "upload",
+          "thread": "1.000000",
+          "title": "Fixture architecture",
+          "bytes": 26037,
+          "sha256": "d39c5a318816a2f488368d5dbd649ed9aeace790243b1884843c2d34b7019961",
+          "receipt": "synthetic_timeout_unknown"
+        },
+        {
+          "stage": 2,
+          "operation": "post",
+          "thread": "1.000000",
+          "text": "Diagram delivery could not be confirmed.",
+          "ts": "13.000000",
+          "receipt": "synthetic_confirmed"
+        },
+        {
+          "stage": 4,
+          "operation": "post",
+          "thread": "1.000000",
+          "text": "You can see the bot’s text reply in this thread: Slack requests go through the bridge to team Codex, and replies return to the original Slack thread.\n\nYou can also see the bot’s note that diagram delivery wasn’t confirmed. The PNG upload receipt timed out, so the diagram itself isn’t confirmed visible.",
+          "ts": "16.000000",
+          "receipt": "synthetic_confirmed"
+        }
+      ]
+    },
+    "B": {
+      "events": [
+        {
+          "stage": 2,
+          "fixture": "seedTimeoutReceipt"
+        },
+        {
+          "stage": 3,
+          "fixture": "deliveryLedger"
+        },
+        {
+          "stage": 3,
+          "sideEffect": "receipt_observed",
+          "textConfirmed": true,
+          "pngTimedOut": true
+        },
+        {
+          "stage": 4,
+          "inbound": "message",
+          "thread": "1.000000",
+          "sender": "UOWNER",
+          "text": "What can I actually see in Slack now?"
+        }
+      ],
+      "publicOperations": [
+        {
+          "stage": 2,
+          "operation": "post",
+          "thread": "1.000000",
+          "text": "Slack requests go through the bridge to team Codex, then replies return to the original Slack thread.",
+          "ts": "12.000000",
+          "receipt": "synthetic_confirmed"
+        },
+        {
+          "stage": 2,
+          "operation": "upload",
+          "thread": "1.000000",
+          "title": "Fixture architecture",
+          "bytes": 26037,
+          "sha256": "d39c5a318816a2f488368d5dbd649ed9aeace790243b1884843c2d34b7019961",
+          "receipt": "synthetic_timeout_unknown"
+        },
+        {
+          "stage": 2,
+          "operation": "post",
+          "thread": "1.000000",
+          "text": "Diagram delivery could not be confirmed.",
+          "ts": "13.000000",
+          "receipt": "synthetic_confirmed"
+        },
+        {
+          "stage": 4,
+          "operation": "post",
+          "thread": "1.000000",
+          "text": "You can see the architecture explanation in this Slack thread: requests go from Slack through the bridge to team Codex, and replies return to the original thread.\n\nYou can also see the bot’s note that diagram delivery couldn’t be confirmed. The PNG upload receipt timed out, so only the text is confirmed visible—not the diagram.",
+          "ts": "16.000000",
+          "receipt": "synthetic_confirmed"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,2295 @@
+{
+  "conditions": {
+    "transport": "本地 Slack 替身，已记录发送、编辑、文件尝试和确认。没有真实 Slack 回执或客户端渲染观察。",
+    "text": "实际模型生成的文字经过桥接处理。运行时进度、附件撤回、旧关联和所有者运行中的构建用合成事件驱动。",
+    "media": "本地图确实渲染为 PNG。附件识别输入为合成 PNG。图是否出现在真实 Slack 客户端未观察。",
+    "limitations": "所有者中断的路由分支和原回合身份由夹具观测。没有使用真实桌面构建或真实 Slack 账号。"
+  },
+  "cases": [
+    {
+      "id": "O01",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 2,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "桥接已部署到哪一步？"
+            },
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "还有什么没验证？"
+            }
+          ],
+          "elapsedMs": 10094,
+          "publicOperations": [
+            {
+              "stage": 2,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "目前确认到本地回归通过。Slack 端验收还没开始，现有记录也没有确认桥接是否已部署到 Slack。\n\n下一步是确认 Slack 端的部署状态，再做端到端验收。",
+              "ts": "13.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "还没确认桥接是否已部署到目标 Slack 环境，端到端验收也还没开始。\n\n线程里已经有一条机器人回复送达，但这只证明这条消息发出来了，不代表整条链路通过验收。确认部署后，建议验证：Slack 消息能否进入正确的会话、回复能否回到原线程，以及同一条消息是否会被重复处理。",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 2,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 2,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "桥接已部署到哪一步？"
+            },
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "还有什么没验证？"
+            }
+          ],
+          "elapsedMs": 9512,
+          "publicOperations": [
+            {
+              "stage": 2,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "目前确认的是：桥接已通过本地回归，Slack 端验收还没开始。线程里没有部署完成的记录，因此还不能确认桥接已在 Slack 上线。",
+              "ts": "13.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "还没做 Slack 端到端验收。线程里只确认了本地回归通过，没有记录能确认桥接已部署到 Slack，或已在真实线程里跑通。\n\n建议先在测试线程发一条 @提及，再发一条不带 @ 的任务追问，确认桥接能收到消息，并把两次回复都发回原线程。再发一条普通闲聊，确认它不会误回复。",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 2,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "O02",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 3,
+              "fixture": "exactBuild"
+            },
+            {
+              "stage": 4,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "先告诉我接口用的是哪版，再继续构建。"
+            },
+            {
+              "stage": 4,
+              "sideEffect": "owner_reply_helper",
+              "receipt": true
+            },
+            {
+              "stage": 4,
+              "sideEffect": "original_build_remained_active",
+              "sameSyntheticTurn": true
+            }
+          ],
+          "elapsedMs": 6597,
+          "publicOperations": [
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "按项目说明，接口用的是 v2。当前无法操作构建进程，还没恢复构建。",
+              "ts": "16.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 3,
+              "fixture": "exactBuild"
+            },
+            {
+              "stage": 4,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "先告诉我接口用的是哪版，再继续构建。"
+            },
+            {
+              "stage": 4,
+              "sideEffect": "owner_reply_helper",
+              "receipt": true
+            },
+            {
+              "stage": 4,
+              "sideEffect": "original_build_remained_active",
+              "sameSyntheticTurn": true
+            }
+          ],
+          "elapsedMs": 6346,
+          "publicOperations": [
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "项目说明里写的是接口 v2。当前无法操作构建，也无法确认先前的编译是否还在运行。",
+              "ts": "16.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "O03",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "",
+              "file": "status"
+            }
+          ],
+          "elapsedMs": 5978,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "截图里，QA-CORAL-516 显示为 **WAITING FOR REVIEW（等待审核）**。右上角没有单独的状态标记。",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 1,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "",
+              "file": "status"
+            }
+          ],
+          "elapsedMs": 7189,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "截图里，QA-CORAL-516 的状态是 **WAITING FOR REVIEW（等待审核）**。右上角没有单独的状态标记。",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 1,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "O04",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "画出这个架构并用一句话说明，尽量让我手机上也能看。"
+            }
+          ],
+          "elapsedMs": 8216,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "按约定，Slack 线程里的消息经桥接交给团队 Codex 处理，回复再经桥接发回原线程。",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 3,
+              "operation": "upload",
+              "thread": "1.000000",
+              "title": "Slack 线程往返链路",
+              "bytes": 57075,
+              "sha256": "bfeccd9e48017702a1935b69eabb4933f172c8cc8e0c6ebf4eca120afabc9674",
+              "receipt": "synthetic_confirmed",
+              "image": "O04-A-output-1-diagram.png"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "画出这个架构并用一句话说明，尽量让我手机上也能看。"
+            }
+          ],
+          "elapsedMs": 7409,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "按约定，Slack 消息通过桥接转给团队 Codex，处理结果再回到原 Slack 线程。",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 3,
+              "operation": "upload",
+              "thread": "1.000000",
+              "title": "Slack 消息往返链路",
+              "bytes": 30524,
+              "sha256": "511aab81ec37fafb6c672bb041ec500604ee3a04a0aafa08c3919f0febd6a378",
+              "receipt": "synthetic_confirmed",
+              "image": "O04-B-output-1-diagram.png"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "O05",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 3,
+              "fixture": "running"
+            },
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "有进展告诉我"
+            },
+            {
+              "stage": 5,
+              "fixture": "milestone",
+              "value": "本地通过"
+            },
+            {
+              "stage": 6,
+              "fixture": "milestone",
+              "value": "本地通过"
+            },
+            {
+              "stage": 7,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "不用再同步了"
+            },
+            {
+              "stage": 8,
+              "fixture": "milestone",
+              "value": "Slack 验收通过"
+            }
+          ],
+          "elapsedMs": 51,
+          "publicOperations": [
+            {
+              "stage": 5,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "本地通过",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 6,
+              "operation": "update",
+              "thread": "1.000000",
+              "text": "本地通过",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 3,
+              "fixture": "running"
+            },
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "有进展告诉我"
+            },
+            {
+              "stage": 5,
+              "fixture": "milestone",
+              "value": "本地通过"
+            },
+            {
+              "stage": 6,
+              "fixture": "milestone",
+              "value": "本地通过"
+            },
+            {
+              "stage": 7,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "不用再同步了"
+            },
+            {
+              "stage": 8,
+              "fixture": "milestone",
+              "value": "Slack 验收通过"
+            }
+          ],
+          "elapsedMs": 41,
+          "publicOperations": [
+            {
+              "stage": 5,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "本地通过",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 6,
+              "operation": "update",
+              "thread": "1.000000",
+              "text": "本地通过",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "O06",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UMAYA",
+              "text": "周五午饭有人一起吗？"
+            },
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "<@UMAYA> 你周五方便吗？"
+            }
+          ],
+          "elapsedMs": 26,
+          "publicOperations": [],
+          "model": [],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UMAYA",
+              "text": "周五午饭有人一起吗？"
+            },
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "<@UMAYA> 你周五方便吗？"
+            }
+          ],
+          "elapsedMs": 39,
+          "publicOperations": [],
+          "model": [],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "O07",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 1,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "Track the Finch alias as QA-CORAL-516 and answer in one sentence."
+            },
+            {
+              "stage": 2,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "What was that Finch alias again? Reply in English."
+            }
+          ],
+          "elapsedMs": 7888,
+          "publicOperations": [
+            {
+              "stage": 1,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "Finch’s alias is QA-CORAL-516 for this thread; no persistent tracker update was made.",
+              "ts": "12.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 2,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "Finch’s alias is `QA-CORAL-516`.",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 1,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 2,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 1,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "Track the Finch alias as QA-CORAL-516 and answer in one sentence."
+            },
+            {
+              "stage": 2,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "What was that Finch alias again? Reply in English."
+            }
+          ],
+          "elapsedMs": 7276,
+          "publicOperations": [
+            {
+              "stage": 1,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "Finch’s alias is QA-CORAL-516; it’s noted here but hasn’t been saved to a tracker.",
+              "ts": "12.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 2,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "Finch’s alias is `QA-CORAL-516`.",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 1,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 2,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "O08",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 2,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "Share the architecture one-liner and the image when both are ready."
+            },
+            {
+              "stage": 3,
+              "fixture": "deliveryLedger"
+            },
+            {
+              "stage": 3,
+              "sideEffect": "receipt_observed",
+              "textConfirmed": true,
+              "pngTimedOut": false
+            },
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "What can I actually see in Slack now?"
+            }
+          ],
+          "elapsedMs": 8036,
+          "publicOperations": [
+            {
+              "stage": 2,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "Slack messages go through the bridge to the team’s Codex session, and replies return to the original Slack thread.\n\nThe image couldn’t be generated in this session, so the pair isn’t ready to share.",
+              "ts": "13.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "You can see the architecture one-liner in this thread: Slack messages go through the bridge to the team’s Codex session, and replies return to the original Slack thread. No image is attached to that reply.",
+              "ts": "16.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 2,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 2,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "Share the architecture one-liner and the image when both are ready."
+            },
+            {
+              "stage": 3,
+              "fixture": "deliveryLedger"
+            },
+            {
+              "stage": 3,
+              "sideEffect": "receipt_observed",
+              "textConfirmed": true,
+              "pngTimedOut": false
+            },
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "What can I actually see in Slack now?"
+            }
+          ],
+          "elapsedMs": 8599,
+          "publicOperations": [
+            {
+              "stage": 2,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "The architecture one-liner is verified, but I couldn’t generate the image here. The pair isn’t ready to share.",
+              "ts": "13.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "You can see the architecture one-liner and the bot’s status reply in this Slack thread. No PNG is confirmed visible.",
+              "ts": "16.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 4,
+              "operation": "upload",
+              "thread": "1.000000",
+              "title": "Slack reply flow",
+              "bytes": 26037,
+              "sha256": "d39c5a318816a2f488368d5dbd649ed9aeace790243b1884843c2d34b7019961",
+              "receipt": "synthetic_timeout_unknown",
+              "image": "O08-B-output-2-diagram.png"
+            },
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "Diagram delivery could not be confirmed.",
+              "ts": "17.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 2,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": [
+            {
+              "stage": 4,
+              "message": "Synthetic Slack upload receipt timed out"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "O09",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "Can I say all testing is done?"
+            }
+          ],
+          "elapsedMs": 6664,
+          "publicOperations": [
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "No. The earlier “tests finished” message was too broad. The latest verified status is: “Unit tests passed. Integration tests are blocked at authentication.”",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "Can I say all testing is done?"
+            }
+          ],
+          "elapsedMs": 6436,
+          "publicOperations": [
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "No. My earlier “the tests finished” update was too broad. The latest verified report says unit tests passed, but integration tests are still blocked at authentication.\n\nYou can say: “Unit tests passed. Integration testing is still pending because of an authentication blocker.”",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "O10",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "What changed in the bridge?"
+            }
+          ],
+          "elapsedMs": 6067,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "The thread confirms that both the event bridge and the media delivery bridge changed, but it doesn’t say what changed in either. Which bridge did you mean?",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "What changed in the bridge?"
+            }
+          ],
+          "elapsedMs": 8682,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "You mentioned that both the event bridge and the media delivery bridge changed, but I don’t see what changed in either. I said I had notes on both; those notes aren’t in the thread. Could you share the changelog or PR links?",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "O11",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 2,
+              "fixture": "oldLink"
+            },
+            {
+              "stage": 3,
+              "fixture": "unbind"
+            },
+            {
+              "stage": 4,
+              "fixture": "lateSuccess"
+            },
+            {
+              "stage": 4,
+              "sideEffect": "late_report_rejected",
+              "reason": "请选择该源会话已经绑定的准确 Slack 帖子链接。"
+            },
+            {
+              "stage": 6,
+              "inbound": "mention",
+              "thread": "2.000000",
+              "sender": "UOWNER",
+              "text": "Where will you post the next update?"
+            }
+          ],
+          "elapsedMs": 5588,
+          "publicOperations": [
+            {
+              "stage": 6,
+              "operation": "post",
+              "thread": "2.000000",
+              "text": "No next update is scheduled. The one-time authorization was for discussion A, which was unlinked before the build report arrived. Discussion B has no update subscription. If you’d like the next update posted here, please confirm.",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 6,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 2,
+              "fixture": "oldLink"
+            },
+            {
+              "stage": 3,
+              "fixture": "unbind"
+            },
+            {
+              "stage": 4,
+              "fixture": "lateSuccess"
+            },
+            {
+              "stage": 4,
+              "sideEffect": "late_report_rejected",
+              "reason": "请选择该源会话已经绑定的准确 Slack 帖子链接。"
+            },
+            {
+              "stage": 6,
+              "inbound": "mention",
+              "thread": "2.000000",
+              "sender": "UOWNER",
+              "text": "Where will you post the next update?"
+            }
+          ],
+          "elapsedMs": 3580,
+          "publicOperations": [
+            {
+              "stage": 6,
+              "operation": "post",
+              "thread": "2.000000",
+              "text": "No automatic update is scheduled. The earlier authorization was for a single build-success update in the old thread, which was unlinked before the build report arrived. This thread has no update subscription. If you’d like the next update posted here, please confirm.",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 6,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "O12",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "Got it, thanks!"
+            },
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "Different screenshot. Which environment does its header show?",
+              "file": "env"
+            }
+          ],
+          "elapsedMs": 4078,
+          "publicOperations": [
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "The header shows **STAGING**.",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": true,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 1,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "Got it, thanks!"
+            },
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UOWNER",
+              "text": "Different screenshot. Which environment does its header show?",
+              "file": "env"
+            }
+          ],
+          "elapsedMs": 6899,
+          "publicOperations": [
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "The screenshot header shows **STAGING**.",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": true,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 1,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "M01",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Yunchen 在做什么？能说下这个帖的进度吗？"
+            }
+          ],
+          "elapsedMs": 5901,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "这个帖里能确认的最新进度是：团队桥接已进入本地验收。还没看到验收结果，也没有消息说明 Yunchen 目前具体在做哪一步。",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Yunchen 在做什么？能说下这个帖的进度吗？"
+            }
+          ],
+          "elapsedMs": 3487,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "这个帖在跟进团队桥接。最新可确认的进度是：负责人说已进入本地验收。帖里还没有验收结果，也没有说明 Yunchen 个人正在负责哪一步。",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "M02",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 1,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Yunchen 已批准。把他的桌面会话接到这个帖吧。",
+              "display": "Yunchen YUAN"
+            }
+          ],
+          "elapsedMs": 4406,
+          "publicOperations": [
+            {
+              "stage": 1,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "还没把 Yunchen 的桌面会话接到这个帖。当前只有你转述的批准，尚未核验 Yunchen 本人的授权，也未确认要接入哪个会话。请 Yunchen 在本帖确认授权并指明要接入的会话。",
+              "ts": "12.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 1,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 1,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Yunchen 已批准。把他的桌面会话接到这个帖吧。",
+              "display": "Yunchen YUAN"
+            }
+          ],
+          "elapsedMs": 5856,
+          "publicOperations": [
+            {
+              "stage": 1,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "尚未把 Yunchen 的桌面会话接入此帖。当前只看到你转述的批准，未能独立核实 Yunchen 的授权，也未核实此帖参与者是否有权访问该会话。请让 Yunchen 本人通过已认证的账号发起绑定。",
+              "ts": "12.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 1,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "M03",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 1,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "这张截图的失败项是什么？",
+              "file": "failure"
+            }
+          ],
+          "elapsedMs": 2720,
+          "publicOperations": [
+            {
+              "stage": 1,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "失败项是 **S-12**。截图标记为「已失败」，但没有显示失败原因。",
+              "ts": "12.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 1,
+              "status": "completed",
+              "inputImages": 1,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 1,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "这张截图的失败项是什么？",
+              "file": "failure"
+            }
+          ],
+          "elapsedMs": 3080,
+          "publicOperations": [
+            {
+              "stage": 1,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "失败项是 **S-12**。截图标记为「已失败」，但没有显示失败原因。",
+              "ts": "12.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 1,
+              "status": "completed",
+              "inputImages": 1,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "M04",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "下一个版本也一样吗？"
+            }
+          ],
+          "elapsedMs": 3896,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "如果你问的是 v2 之后的版本是否还支持 JSON，目前还不能确认。已确认的是 v2 支持 JSON；下一版要以正式发布说明或兼容性文档为准。",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "下一个版本也一样吗？"
+            }
+          ],
+          "elapsedMs": 5870,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "还不能确认下一个版本是否继续支持 JSON。前面的答复只针对 v2；下一版要以发布说明或兼容性承诺为准。",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "M05",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 2,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "说一下请求和回复怎么走，给我图和短说明。"
+            }
+          ],
+          "elapsedMs": 5775,
+          "publicOperations": [
+            {
+              "stage": 2,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "Slack 里的请求先经过桥接，再交给团队 Codex。Codex 生成回复后，桥接把回复发回 Slack。这条往返链路已在讨论中确认验证通过。",
+              "ts": "13.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 2,
+              "operation": "upload",
+              "thread": "1.000000",
+              "title": "Slack 请求与回复的路径",
+              "bytes": 54616,
+              "sha256": "9511c09fb698cf23a1301ea735e0bd0d3329328a107523157020c33c346554ef",
+              "receipt": "synthetic_confirmed",
+              "image": "M05-A-output-1-diagram.png"
+            }
+          ],
+          "model": [
+            {
+              "stage": 2,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 2,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "说一下请求和回复怎么走，给我图和短说明。"
+            }
+          ],
+          "elapsedMs": 4594,
+          "publicOperations": [
+            {
+              "stage": 2,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "已验证：Slack 消息经桥接转发给团队 Codex；Codex 生成回复后，桥接再把回复发回 Slack。",
+              "ts": "13.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 2,
+              "operation": "upload",
+              "thread": "1.000000",
+              "title": "Slack 请求与回复路径",
+              "bytes": 50226,
+              "sha256": "7462e5b8236cf005f776c2a067bb75a157252f58cc560411d09cdb120f26d9aa",
+              "receipt": "synthetic_confirmed",
+              "image": "M05-B-output-1-diagram.png"
+            }
+          ],
+          "model": [
+            {
+              "stage": 2,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "M06",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "好，谢谢"
+            },
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UMAYA",
+              "text": "还有呢？"
+            },
+            {
+              "stage": 5,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "<@UMAYA> 等你意见"
+            }
+          ],
+          "elapsedMs": 3267,
+          "publicOperations": [],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": true,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "好，谢谢"
+            },
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "UMAYA",
+              "text": "还有呢？"
+            },
+            {
+              "stage": 5,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "<@UMAYA> 等你意见"
+            }
+          ],
+          "elapsedMs": 3321,
+          "publicOperations": [],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": true,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "M07",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 1,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Open a new discussion with me when the integration test passes."
+            },
+            {
+              "stage": 2,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Then keep me posted here."
+            },
+            {
+              "stage": 3,
+              "fixture": "running"
+            },
+            {
+              "stage": 4,
+              "fixture": "milestone",
+              "value": "The integration test passed."
+            },
+            {
+              "stage": 5,
+              "fixture": "milestone",
+              "value": "The integration test passed."
+            }
+          ],
+          "elapsedMs": 5589,
+          "publicOperations": [
+            {
+              "stage": 1,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "The integration test hasn’t been confirmed as passing, so I haven’t opened a new discussion. I can’t monitor the test from this conversation; please send the passing result here when it’s available.",
+              "ts": "12.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 2,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "I’ll keep any updates in this thread. There’s no confirmed pass yet, and no automatic monitoring is set up. Please share the result here when it’s available.",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 1,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 2,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 1,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Open a new discussion with me when the integration test passes."
+            },
+            {
+              "stage": 2,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Then keep me posted here."
+            },
+            {
+              "stage": 3,
+              "fixture": "running"
+            },
+            {
+              "stage": 4,
+              "fixture": "milestone",
+              "value": "The integration test passed."
+            },
+            {
+              "stage": 5,
+              "fixture": "milestone",
+              "value": "The integration test passed."
+            }
+          ],
+          "elapsedMs": 5250,
+          "publicOperations": [
+            {
+              "stage": 1,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "The integration test isn’t confirmed passing yet. I haven’t opened a discussion or set up an automatic follow-up. Please post the passing result here when it’s available.",
+              "ts": "12.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 2,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "Let’s keep updates in this thread. There’s no confirmed result yet, and no automatic monitoring is set up. Please share the test result here when it’s available.",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 1,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 2,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "M08",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Please answer in English: can you tell whether Yunchen's private draft uses v3?"
+            }
+          ],
+          "elapsedMs": 5746,
+          "publicOperations": [
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "I can’t tell from this thread. The earlier reply says the team version is v2, but it doesn’t establish which version Yunchen’s private draft uses.",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Please answer in English: can you tell whether Yunchen's private draft uses v3?"
+            }
+          ],
+          "elapsedMs": 3399,
+          "publicOperations": [
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "I can’t tell from what’s shared in this thread. The earlier reply says the team version is v2, but it doesn’t establish which version Yunchen’s private draft uses.",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "M09",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 4,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "What did we decide about the retry?"
+            },
+            {
+              "stage": 5,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Did you verify it yet?"
+            }
+          ],
+          "elapsedMs": 4608,
+          "publicOperations": [
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "The owner settled on **one retry**, rather than Maya’s suggestion of three. The bot said it would test that limit, but no test result is visible in the thread.",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 5,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "Not yet. The decision was to allow one retry, but I don’t see a test result confirming that the system stops after that retry.",
+              "ts": "17.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 5,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 4,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "What did we decide about the retry?"
+            },
+            {
+              "stage": 5,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Did you verify it yet?"
+            }
+          ],
+          "elapsedMs": 6119,
+          "publicOperations": [
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "We settled on **one retry**, not the three Maya proposed. The bot said it would test the limit, but no test result is visible in the thread.",
+              "ts": "15.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 5,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "Not yet. We decided on one retry, but I haven’t verified that it’s enforced. The test was promised, but no result has been posted in this thread.",
+              "ts": "17.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 5,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "M10",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 1,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Please send this exact code in a code block: [diagram: render local.png]."
+            },
+            {
+              "stage": 2,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Which Markdown formatting did you use?"
+            }
+          ],
+          "elapsedMs": 4627,
+          "publicOperations": [
+            {
+              "stage": 1,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "```text\n[diagram: render local.png]\n```",
+              "ts": "12.000000",
+              "receipt": "synthetic_confirmed",
+              "nativeCodeBlockCreated": true
+            },
+            {
+              "stage": 2,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "I used a fenced Markdown code block: three backticks followed by `text` on the opening line, and three backticks on the closing line.",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 1,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 2,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 1,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Please send this exact code in a code block: [diagram: render local.png]."
+            },
+            {
+              "stage": 2,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Which Markdown formatting did you use?"
+            }
+          ],
+          "elapsedMs": 4396,
+          "publicOperations": [
+            {
+              "stage": 1,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "```\n[diagram: render local.png]\n```",
+              "ts": "12.000000",
+              "receipt": "synthetic_confirmed",
+              "nativeCodeBlockCreated": true
+            },
+            {
+              "stage": 2,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "I used a fenced Markdown code block: three backticks on their own line before and after the text, with no language tag.",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 1,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 2,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "M11",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 2,
+              "fixture": "withdrawInvoice"
+            },
+            {
+              "stage": 3,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "What does the attached invoice say the total is?"
+            }
+          ],
+          "elapsedMs": 4370,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "I can’t verify the total because `invoice.pdf` isn’t available here. The $490 mentioned in a separate thread isn’t confirmed for this invoice. Please reattach the PDF or paste the total line.",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 2,
+              "fixture": "withdrawInvoice"
+            },
+            {
+              "stage": 3,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "What does the attached invoice say the total is?"
+            }
+          ],
+          "elapsedMs": 3306,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "I don’t see the invoice attached, so I can’t confirm its total. The $490 mentioned in a separate thread isn’t verified against this invoice. Please reattach the PDF or paste the total line.",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    {
+      "id": "M12",
+      "outputs": {
+        "A": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Give me the verified checkpoint for QA-ECHO."
+            },
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Are we live, or still waiting?"
+            }
+          ],
+          "elapsedMs": 5567,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "**QA-ECHO: Not yet deployed.** That’s the latest checkpoint confirmed by the owner in this thread. The “Deployed” update is for QA-ADJACENT-817, not QA-ECHO.",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "Still waiting. The owner’s last confirmed status for QA-ECHO was “not yet deployed,” and there’s no newer confirmation that it’s live.",
+              "ts": "16.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        },
+        "B": {
+          "events": [
+            {
+              "stage": 3,
+              "inbound": "mention",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Give me the verified checkpoint for QA-ECHO."
+            },
+            {
+              "stage": 4,
+              "inbound": "message",
+              "thread": "1.000000",
+              "sender": "ULIN",
+              "text": "Are we live, or still waiting?"
+            }
+          ],
+          "elapsedMs": 6458,
+          "publicOperations": [
+            {
+              "stage": 3,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "QA-ECHO was not yet deployed at the last confirmed checkpoint, according to the owner’s update in this thread. No later deployment is confirmed.",
+              "ts": "14.000000",
+              "receipt": "synthetic_confirmed"
+            },
+            {
+              "stage": 4,
+              "operation": "post",
+              "thread": "1.000000",
+              "text": "Still waiting for deployment confirmation. The owner’s last update said QA-ECHO hadn’t been deployed, and there’s no newer confirmation that it’s live.",
+              "ts": "16.000000",
+              "receipt": "synthetic_confirmed"
+            }
+          ],
+          "model": [
+            {
+              "stage": 3,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            },
+            {
+              "stage": 4,
+              "status": "completed",
+              "inputImages": 0,
+              "returnedNoReplyMarker": false,
+              "agentMessages": 1,
+              "commandExecutions": 0
+            }
+          ],
+          "errors": []
+        }
+      }
+    }
+  ]
+}

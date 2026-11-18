@@ -1,0 +1,98 @@
+{
+  "O01": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "O02": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "O03": {
+    "A": "baseline",
+    "B": "candidate"
+  },
+  "O04": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "O05": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "O06": {
+    "A": "baseline",
+    "B": "candidate"
+  },
+  "O07": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "O08": {
+    "A": "baseline",
+    "B": "candidate"
+  },
+  "O09": {
+    "A": "baseline",
+    "B": "candidate"
+  },
+  "O10": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "O11": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "O12": {
+    "A": "baseline",
+    "B": "candidate"
+  },
+  "M01": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "M02": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "M03": {
+    "A": "baseline",
+    "B": "candidate"
+  },
+  "M04": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "M05": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "M06": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "M07": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "M08": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "M09": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "M10": {
+    "A": "candidate",
+    "B": "baseline"
+  },
+  "M11": {
+    "A": "baseline",
+    "B": "candidate"
+  },
+  "M12": {
+    "A": "baseline",
+    "B": "candidate"
+  }
+}

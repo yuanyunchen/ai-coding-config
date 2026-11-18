@@ -1,0 +1,98 @@
+{
+  "O01": {
+    "A": "candidate",
+    "B": "patched"
+  },
+  "O02": {
+    "A": "patched",
+    "B": "candidate"
+  },
+  "O03": {
+    "A": "patched",
+    "B": "candidate"
+  },
+  "O04": {
+    "A": "candidate",
+    "B": "patched"
+  },
+  "O05": {
+    "A": "candidate",
+    "B": "patched"
+  },
+  "O06": {
+    "A": "patched",
+    "B": "candidate"
+  },
+  "O07": {
+    "A": "candidate",
+    "B": "patched"
+  },
+  "O08": {
+    "A": "patched",
+    "B": "candidate"
+  },
+  "O09": {
+    "A": "patched",
+    "B": "candidate"
+  },
+  "O10": {
+    "A": "candidate",
+    "B": "patched"
+  },
+  "O11": {
+    "A": "patched",
+    "B": "candidate"
+  },
+  "O12": {
+    "A": "candidate",
+    "B": "patched"
+  },
+  "M01": {
+    "A": "patched",
+    "B": "candidate"
+  },
+  "M02": {
+    "A": "patched",
+    "B": "candidate"
+  },
+  "M03": {
+    "A": "candidate",
+    "B": "patched"
+  },
+  "M04": {
+    "A": "patched",
+    "B": "candidate"
+  },
+  "M05": {
+    "A": "patched",
+    "B": "candidate"
+  },
+  "M06": {
+    "A": "candidate",
+    "B": "patched"
+  },
+  "M07": {
+    "A": "patched",
+    "B": "candidate"
+  },
+  "M08": {
+    "A": "candidate",
+    "B": "patched"
+  },
+  "M09": {
+    "A": "candidate",
+    "B": "patched"
+  },
+  "M10": {
+    "A": "candidate",
+    "B": "patched"
+  },
+  "M11": {
+    "A": "patched",
+    "B": "candidate"
+  },
+  "M12": {
+    "A": "patched",
+    "B": "candidate"
+  }
+}

@@ -25,3 +25,7 @@ created: 2026-11-17
 <!-- 其他可写路径；可写的 memory 文件（新建一律标 status: draft） -->
 
 成功标准：以本地可重复回归验证任务描述的每个边界，复现的问题修复后变绿，并写入 result.md。
+
+## 追加 2026-11-17 23:50 · 上层续派
+
+实施已批准，明确追加可写范围：/Users/yuanyunchen/Desktop/AI Programing/Play for Fun/slack-codex-bridge/src/{slack-answer,slack-format,output-media,bridge,slack}.js，必要的新共享 fence 模块、对应 test/*.test.js 和派发目录。修复全部七个夹具及兼容性；operator 与 exact 返回值由主 agent 负责。不要发送外部消息/部署/提交。

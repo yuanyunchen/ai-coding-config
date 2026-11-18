@@ -2,33 +2,30 @@
 id: T04.01/S07
 status: DONE_WITH_CONCERNS
 ---
-# 结果 — T04.01/S07 出站媒体和格式审查
+# 结果 — T04.01/S07 出站媒体和格式修复
 
 ## 结论
 
-按用户最新要求先出计划。原有测试全绿，新增本地夹具复现七项差异。夹具直接调用桥接、SQLite、Slack 载荷构建和 Graphviz，Slack HTTP 层使用本地替身。仓库文件未改，未发 Slack 消息、部署或提交。
+- 上一轮七条复现均转绿，并新增五个边界测试。图文专用块使用同一围栏识别，普通示例和缩进保留原意。图失败或上传回执丢失时，回帖仍链接到成功交付的正文或标题。
+- 长代码按 Slack 字符预算续接围栏，保留代码全文。只过滤整条公开回答开头的署名，后续分段中的同形正文仍会送达。已按旧算法写入持久队列的正文分段保留原字节和回执。
+- 恢复时只把原生正文、标题和通知类型送入聊天接口，不再把待上传图片的记录当文字回帖。所有测试只使用本地 Slack 替身，没有发外部消息、部署或提交。
 
 ## 需要上层处理
 
-| 优先级 | 已复现或定位的问题 | 建议实现和验收 |
-|---|---|---|
-| P1 | 普通 Markdown 外层围栏中的 `bridge-diagram` 被当成执行指令，`bridge-diagram-example` 也会被匹配。原生回答的 `bridge-media` 独立解析器存在同类问题，夹具观察到普通示例被移除且返回上传声明。 | 共用围栏识别并精确匹配媒体标签。覆盖四反引号、波浪号、更长闭合、CRLF，以及未闭合或非法专用块原文不可外发。验证示例逐字保留、实际媒体只向目标线程上传一次。 |
-| P1 | 原生重启恢复只排除以 `/diagram` 结尾的记录。暂未发出的 `/diagram/1` 和 `/media/image.png` 被当成正文发送，文件意图损坏。 | 使用明确的文本交付类型或与现有持久键完全匹配的白名单恢复；复用旧持久记录。构造 pending 正文、标题、通知和未知文件回执，核对只有合法正文和通知可走聊天写入。 |
-| P1 | exact 自动回复及三个 operator 分支丢弃 `{ts,imageFailed}`。正文只有署名时可能无任何出站但仍报送达。手工回复对部分成功的文案一律称图未生成，也覆盖上传状态未知。该项为代码路径确认，尚缺调用级回归。 | 对 operator、exact 自动、steer 正文与进度、native 完成和重放分别断言空白、纯图、图文部分成功与无回执行为；保留实际正文链接，完成状态区分空白、已送达、渲染失败和传输未确认。 |
-| P2 | 图失败通知覆盖已经收到的文字时间戳。同一正文和图重放没有重复出站，缺文件回执保持 unknown，第二张图仍正常送达。 | 单独保留正文、图标题和通知时间戳；优先使用正文或标题，只有通知时以通知回执兜底。延续数据库的未知状态隔离，补同一键并发、无正文混合图、授权撤销以及网络完成后丢响应的测试。 |
-| P2 | 首行的 Markdown 署名变体会发布到公屏，包含 `**Skills used**:`、`__Used skills:__`、CRLF、BOM 和全角缩进。超过 Slack 字符预算的代码后半部分失去代码样式。正文经过多次署名过滤，危险边界在分段后再次匹配。 | 仅在完整公开回答开头识别署名，保留代码、引用及正文里的同样字样。渲染分段带着围栏上下文，用原文本验证拼接和 SQLite 回执。测试恰好跨转义预算、围栏边界和署名样式代码行。 |
-
-并发同一文件键时，第二个调用可能见到 `sending` 后抢先发布未确认通知。源码路径成立，尚无确定性夹具。未验证真实 Slack 富文本显示和文件回执，也未验证跨版本重放的已发送内容是否需要迁移。先补本地测试，再由主任务决定授权联调范围。
+1. 最新共享工作树的全量检查在两条直接收件箱测试失败。当前路由需要真实时间戳，旧假发送函数没有返回时间戳。主 agent 已收到测试名和堆栈，需在路由改动完成后重跑全量。
+2. 同键并发和实际 Slack 文件上传的可见回执仍未在本次夹具验证。进程内顺序重放覆盖了确认状态与未知状态，未确认的文件仍不盲重传。
 
 ## 验证
 
-- `npm test` 基线 → 148 通过，0 失败。
-- `SLACK_BRIDGE_REPO="<slack-codex-bridge 的绝对路径>" node --test regression.test.mjs` → 新增七项失败均为行为断言。其中两项在失败前已经验证已有的无重复上传、独立成功图片回执、未知状态留存和错误通知只发一次。
-- 出站路径 → 核对 native agent 完成、native 进度和恢复、精确会话自动回复、owner 手工回复和进度、operator 三分支，以及公共 Slack post/update/upload。
+- 初始 `node --test test/slack-answer-regression.test.js` → 七条预期行为断言失败。
+- `node --test test/slack-answer-regression.test.js test/slack-answer.test.js test/slack.test.js test/output-media.test.js` → 35 通过，0 失败。
+- `npm test` 最新集成结果 → 165 通过，2 失败。失败为 `test/direct-inbox.test.js:91` 交接期间报告和 `test/direct-inbox.test.js:368` 本机授权成员回帖，媒体用例均通过。并行路由更改前的全量复跑曾为 166 通过，0 失败。
+- 改动文件的 `node --check` 和 `git diff --check` → 通过。
 
 ## 产物
 
-- 本目录内可执行的本地回归夹具和失败日志。
+- `slack-codex-bridge/src/markdown-fences.js`、`src/slack-answer.js`、`src/slack-format.js`、`src/slack.js`、`src/output-media.js`、`src/bridge.js`。
+- `slack-codex-bridge/test/slack-answer-regression.test.js`。
 
 ## 写入 memory
 
@@ -38,7 +35,8 @@ status: DONE_WITH_CONCERNS
 
 | 文件 | 内容 |
 |---|---|
-| [regression.test.mjs](./regression.test.mjs) | 七条可复现的测试。Node 和 `dot` 使用仓库的现有依赖。 |
-| [regression-red.log](./regression-red.log) | 七次断言失败及实际输出。 |
+| [implementation-red.log](./implementation-red.log) | 仓库内新增七条回归的原始失败。 |
+| [implementation-green.log](./implementation-green.log) | 媒体和格式相关文件的完整绿灯结果。 |
+| [implementation-final.log](./implementation-final.log) | 集成共享树最新全量结果。 |
 
-使用 skill：ponytail、superpowers:systematic-debugging、superpowers:test-driven-development、superpowers:verification-before-completion
+使用 skill：ponytail、superpowers:brainstorming、superpowers:executing-plans、superpowers:systematic-debugging、superpowers:test-driven-development、superpowers:verification-before-completion

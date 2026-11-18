@@ -25,3 +25,11 @@ created: 2026-11-17
 <!-- 其他可写路径；可写的 memory 文件（新建一律标 status: draft） -->
 
 成功标准：以本地可重复回归验证任务描述的每个边界，复现的问题修复后变绿，并写入 result.md。
+
+## 追加 2026-11-17 23:50 · 上层续派
+
+实施已批准，明确追加可写范围：/Users/yuanyunchen/Desktop/AI Programing/Play for Fun/slack-codex-bridge/src/routes.js 内 dispatch 的撤回和控制命令相关分支、test/handoff-revocation.test.js、派发目录。修复你的全部三个场景，包括新引入的 ACK 前收件路径同样使用 channel base 的撤销记录；不改 exactInput/flushExactInbox。不要外发/部署/提交。
+
+## 追加 2026-11-17 23:58 · 上层续派
+
+新阶段：已授权在 /Users/yuanyunchen/Desktop/AI Programing/Play for Fun/slack-codex-bridge/scripts/bench-release.mjs 编写可复现性能 A/B，及在本派发目录生成结果。基线 834b20b 与候选同环境相同模拟器延迟，交替运行，每个主要组至少 100 次，报告完整分母、失败、p50/p95，明确非真实 Slack。不要提交。完成后联系主 agent 并写 result.md，保留此前验收结论。

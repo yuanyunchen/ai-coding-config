@@ -1,6 +1,6 @@
 ---
 name: slack-bot
-description: Connect the current local coding session to a Slack channel as Ethan’s Bot, or report to a bound Slack thread. Use for “加入 Slack #频道”, “把这个会话接入 Slack”, “join Slack #channel”, or “汇报到绑定的 Slack 话题”. Supports Codex and channel-enabled Claude Code on the bridge host.
+description: "Connect the current local coding session to a Slack channel as Ethan’s Bot, or report to a bound Slack thread. Use for “加入 Slack #频道”, “把这个会话接入 Slack”, “join Slack #channel”, or “汇报到绑定的 Slack 话题”. Supports Codex and channel-enabled Claude Code on the bridge host."
 ---
 
 # Join Slack from this session
@@ -17,7 +17,7 @@ For “加入 Slack #test”, run:
 "$HOME/.local/bin/slack-bot" '#test' --backend codex --channel-can-message-this-session
 ```
 
-Replace `#test` with the requested destination. The helper reads `CODEX_THREAD_ID`. Desktop sessions can join while their window is open. The configured Slack owner's text can steer that window. Other members and attachment requests use the authorized team-project path.
+Replace `#test` with the requested destination. The helper reads `CODEX_THREAD_ID`. Desktop sessions can join while their window is open. The verified Slack owner can steer that window, including supported attachments. With a live desktop binding, teammates use the authorized team project.
 
 ## Claude Code
 
@@ -35,4 +35,18 @@ For a new Slack-enabled Claude session, start `"$HOME/.local/bin/slack-claude"` 
 
 Return the Slack link and the state the helper reported. A pending takeover is still pending. When active, the first channel question mentions Ethan’s Bot and a participant can follow up in the same thread. Use the question’s language. If the app cannot access the named channel, ask for the exact Slack link or have a member invite Ethan’s Bot once. If access to the local socket is denied, use the session's normal shell approval flow. After an uncertain Slack delivery, inspect the destination before retrying.
 
-To report a user-authorized update, use the same helper with the selected `--backend`, the bound Slack thread link and `--report=<quoted text>`. Wait for the delivery receipt and return its link.
+## Answer in Slack
+
+Answer the actual question in its language. Use the current message first, then the supplied thread or relevant preceding public posts. A summary should explain the approach and open problems of the task in question. If the subject is still ambiguous, ask one focused question. Keep private conversation history and local skill announcements out of the public reply.
+
+Reply briefly in the original thread. A participant can follow up there without another mention; leave unrelated side conversations alone. Send proactive milestones only when requested, stop when cancelled, and skip automatic acknowledgments.
+
+Use the reply path supplied with the incoming message: for a Codex interruption, follow its ticket instructions and confirm the same body once; for a Claude Channel notification, call the team-slack report tool with its turn_id and one final or failed result. A local adapter acknowledgment alone does not prove Slack delivery. For architecture or a request path, send a short explanation and a single fenced `bridge-diagram` block together, e.g.:
+
+```bridge-diagram
+{"title":"Request path","nodes":["Slack thread","Bridge","Coding session"],"edges":[[0,1],[1,2]]}
+```
+
+Check for a separate file receipt before saying an image reached Slack. If a receipt is uncertain, inspect the thread before resending.
+
+To report a user-authorized update from the local coding window, use the same helper with the selected `--backend`, the bound Slack thread link and `--report=<quoted text>`. Wait for the delivery receipt and return its link.

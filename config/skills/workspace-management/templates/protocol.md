@@ -1,6 +1,6 @@
 本目录是 v4 工作区（标记文件 `.agents/ws.json`）。以下规则对主 agent 和子智能体都生效，hook 与 `ws check` 会检查。`ws` 不在 PATH 时用 `python3 {ws}`。
 
-1. 需求原文：用户每条消息和每轮的最终回答由 hook 自动记入 `.agents/conversation.md`（Q&A），用户消息另记一份 `.agents/inbox.md`。凡是需求或方向变化，当轮归档：`ws req <节点ID> --entry <id>`；开新任务用 `ws req --new <slug> --entry <id>`；不是需求的用 `ws req --not-req <id>`。没有 hook 的环境（Codex 等）把用户原话照录：`ws req <节点ID> --stdin`。
+1. 需求原文：用户每条消息和每轮的最终回答由 hook 自动记入 `.agents/conversation.md`（Q&A），用户消息另记一份 `.agents/inbox.md`。开工时 `ws focus <节点ID>` 设一次当前节点，之后每条用户消息自动追加进它 task.md 的「原文记录」，不用逐条归档或分类；换任务时重设。需求或方向有变化，把变化合进「任务说明」（`ws task spec`）。没有 hook 的环境（Codex 等）把用户原话照录：`ws req <节点ID> --stdin`。
 2. 任务节点：`.agents/task/NN-<名>/`，子任务在节点的 `task/` 下，结构相同。用 `ws task new <slug> [--parent ID]` 创建，不手建目录。task.md 由上层写，执行者不改：上半部「任务说明」（目标、背景、要求、约束、验收标准、输入、未定事项）是当前有效的完整任务，「要求」逐条 `- [ ]`，完成 `[x]`，取消 `[-]` 写理由并告知用户；每次归档新原文后当轮整段改写并用 `ws task spec <ID> --stdin` 写回；下半部「原文记录」只追加。任务说明写好、goal.md 和 plan.md 写好后执行 `ws task status <ID> active`；过程用 `ws log <ID> "…"` 追加进 progress.md；写完 result.md 后执行 `ws task status <ID> done`。
 3. 拆分：一步能做完的直接做；需要独立验收或跨多步的建子任务；交给子智能体执行的走派发。输入给定、输出很小的单次判断（打分、两两比较）用脚本批量调模型，不逐条开子智能体。
 4. 派发：先 `ws dispatch <ID> <slug> --stdin`（从 stdin 传入背景、成功标准、必读路径、可写范围），再原样使用它打印的那行 prompt。规范类内容写进 `.agents/memory/`，派发说明里只引用路径。未经 `ws dispatch` 的派发会被拦截；只读调研类子智能体（Explore、Plan 等）不受限。外部执行（codex exec、claude -p）用 `ws dispatch --external` 登记。给原执行者加新要求先 `ws followup <派发ID> --stdin` 再发续接消息；产物、可写范围或角色变了就新开派发。

@@ -10,7 +10,7 @@ codex login                    # ChatGPT subscription or API key → ~/.claude/a
 codex doctor                   # verify install/config/auth health
 ```
 
-House config lives in `~/.claude/config.toml` — relevant keys: `model` (keep at the best available; currently `gpt-5.5`), `model_reasoning_effort` (config default is fine — the skill passes effort per call), `approval_policy` / `sandbox_mode` (this machine: `never` + `danger-full-access`, matching the bypass house default). After install or upgrade, run the official docs sync (§4.1) — the CLI docs pages are the sources behind `cli-reference.md`, and the local `--help` is ground truth over both.
+House config lives in `~/.codex/config.toml` — relevant keys: `model`, `model_reasoning_effort` (config default is fine — the skill passes effort per call), `approval_policy` / `sandbox_mode` (this machine: `never` + `danger-full-access`, matching the bypass house default). After install or upgrade, run the official docs sync (§4.1) — the CLI docs pages are the sources behind `cli-reference.md`, and the local `--help` is ground truth over both.
 
 ## 2. Plugin install (where to download)
 
@@ -65,7 +65,7 @@ Everything this skill asserts about the runtime was verified against **v1.0.5 co
 | Check | How | Doc to fix if drifted |
 |---|---|---|
 | Command surface / new flags | `node "$RUNTIME" help`; diff against the Command surface section | `companion-runtime.md` |
-| Smoke test end-to-end | `task --effort low "Reply exactly: SMOKE-OK"` then `status`, `result <id>` | — |
+| Smoke test end-to-end | `task --model "$MODEL_ID" --effort low "Reply exactly: SMOKE-OK"` then `status`, `result <id>` | — |
 | `task` sandbox mapping | grep `executeTaskRun` in codex-companion.mjs: `--write` → `workspace-write`, else `read-only`; approval `never` | `companion-runtime.md`, SKILL.md task row |
 | review `--background` still a no-op? | grep `handleReviewCommand` — still `runForegroundCommand` only? | `companion-runtime.md`, `git-review.md` |
 | Git requirement scope | grep `ensureGitRepository` — still only in `executeReviewRun`? | `git-review.md` dependency table |

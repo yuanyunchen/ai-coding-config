@@ -108,6 +108,8 @@ run() { if [ "$DRY_RUN" -eq 1 ]; then echo "  [dry-run] $*"; else eval "$*"; fi;
 should_sync_skill() {
     local name="$1" tgt="$2"
     [ "$name" = ".system" ] && return 1
+    # qa-loop 是 Codex 本地入口；不跨工具复制，镜像同步也不裁剪它。
+    [ "$name" = "qa-loop" ] && return 1
     # skills/synced/ = Claude 应用从 claude.ai 下发的托管副本，只属于 Claude，不外传
     [ "$name" = "synced" ] && return 1
     case "$IGNORE_SKILLS" in *" $name "*) return 1 ;; esac

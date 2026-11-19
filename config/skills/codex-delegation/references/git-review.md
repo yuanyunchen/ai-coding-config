@@ -43,7 +43,7 @@ Neither review command can run — use a read-only `task` (or CLI `codex exec -s
 - Demand the contract: findings ordered most-severe first, each with severity / file:line / concrete failure scenario / observed-fact vs inference; end with overall verdict + residual risk.
 
 ```bash
-node "$RUNTIME" task --effort high "Adversarial design review — challenge the approach, not just find defects.
+node "$RUNTIME" task --model "$MODEL_ID" --effort "${EFFORT:-high}" "Adversarial design review — challenge the approach, not just find defects.
 <task>Review <files>, read-only. Design intent: <what it's supposed to be>.</task>
 <review_focus>1. ... 2. ...</review_focus>
 <structured_output_contract>Ordered findings, most severe first: severity, file:line, failure scenario, fact vs inference. End with verdict + residual risk. No code changes.</structured_output_contract>"

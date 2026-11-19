@@ -1,100 +1,99 @@
 ---
 name: frontend-pipeline
-description: "从头创作有设计感前端产物的统一入口:网页/落地页(web)、设计型 PDF——报告/海报/信息图(通用 PDF 读取/合并/填表用 pdf skill)、交互应用/dashboard(interactive)、幻灯片(slides)、生成/算法艺术(p5.js)与视觉艺术海报、实体关系图探索器(数据地图/血缘图/依赖拓扑/知识图谱/星图 starmap)、GitHub 仓库主页(README 展示)。先识别类型,再按 effort 档位路由到底层设计能力并管理验证。Entry point for creating designed frontend artifacts from scratch (web, design PDFs, interactive apps, slides, generative art, starmap relationship explorers)."
+description: "Route frontend artifacts built from scratch: websites and landing pages, designed PDF reports/posters/infographics, interactive apps and dashboards, slides, p5.js generative art, visual art posters, starmap explorers (data maps, lineage, dependency topologies, knowledge graphs, star maps), and GitHub README showcases. Select type and effort, route to design skills, and manage verification. For general PDF reading, merging, or form filling, use pdf."
 ---
 
 # frontend-pipeline
 
-前端任务的统一调度入口。它本身**只做路由**:识别产物类型、选定 effort 档位、声明计划、再加载对应的 `references/{type}.md` 执行。具体工作流不写在这里,下沉到 references。
+Use this as the routing entry point for frontend work. Identify the artifact type, choose the effort tier, announce the plan, then load the corresponding `references/{type}.md` for execution. Detailed workflows live in those references.
 
-## 唯一入口原则
+## Single entry point
 
-本 skill 是前端任务的规范入口。底层能力(美学方向、设计系统、主题、复杂 artifact 构建、浏览器验证)以**完整内部子 skill** 的形式 copy 在 `skills/` 下,由本 skill 编排调用。为什么:统一入口能在动手前就声明类型/档位/成本,避免 agent 各自挑 skill 导致路由错档、成本失控;自包含也保证不依赖外部 skill 是否存在。
+Start frontend tasks here. Complete internal copies of the underlying skills for aesthetic direction, design systems, themes, complex artifact construction, and browser verification live in `skills/`. Routing through this skill makes type, tier, and cost explicit before work begins. Independent skill selection can misclassify the effort and inflate costs. Bundling the skills removes dependence on external installations.
 
-调用子 skill 时,读 `skills/<name>/SKILL.md`(它们是与原始完全一致的完整副本)并按其原始流程执行。子 skill 嵌套在本目录内,不会被 harness 当作独立 skill 发现,因此天然不对外暴露——无需也未改动它们的 frontmatter。
+To invoke a subskill, read `skills/<name>/SKILL.md` and follow its original workflow. The subskills are full copies of the originals. Their nesting is intended to keep them internal to this skill without registering them separately in the harness or changing their frontmatter.
 
-> 内部子 skill 清单见本文件末尾。
+> The full internal skill inventory appears at the end of this file.
 
-## 路由流程
+## Routing workflow
 
-### Step 1 · 识别类型(4 选 1)
+### Step 1 · Choose one of four types
 
-| 类型 | 是什么 | 典型触发 |
+| Type | Description | Typical requests |
 |---|---|---|
-| `web` | 公开访问的静态网页 | 落地页、营销页、portfolio、品牌站、活动页 |
-| `pdf` | 无交互、固定排版、最终交付 PDF/图片 | 报告、白皮书、海报、信息图(HTML → PDF) |
-| `interactive` | 有状态、组件交互、多视图 | dashboard、admin、wizard、可交互 demo |
-| `slides` | 演示文稿,16:9、一页一概念、可翻页 | deck、pitch、技术分享、汇报 |
+| `web` | Publicly accessible static web page | Landing page, marketing page, portfolio, brand site, event page |
+| `pdf` | Noninteractive fixed layout delivered as a PDF or image | Report, white paper, poster, infographic (HTML → PDF) |
+| `interactive` | Stateful app with component interactions and multiple views | Dashboard, admin interface, wizard, interactive demo |
+| `slides` | A slide presentation in 16:9 with one concept per slide and page navigation | Deck, pitch, technical talk, presentation of results |
 
-**反信号纠偏**:提到 state/登录/dashboard → 改 `interactive`;提到 PDF/打印/A4 → 改 `pdf`;提到翻页/演讲/slide → 改 `slides`。
+**Correct for conflicting cues.** State, login, or dashboard indicates `interactive`. PDF, print, or A4 indicates `pdf`. Slide navigation, a talk, or slides indicates `slides`.
 
-**艺术分支**:两类「艺术」任务不走常规设计链(fd-pro→uux),而在所属类型里改用专门子 skill 的完整流程——
-- 生成/算法艺术(p5.js、flow field、粒子、noise、"用代码做艺术")→ 归 `interactive`,走 `algorithmic-art` 分支(见 `references/interactive.md`)。
-- 纯视觉艺术海报(美术馆/杂志级、90% 视觉 10% 文字、非数据报告)→ 归 `pdf`,走 `canvas-design` 分支(见 `references/pdf.md`)。
+**Art branches.** Two types of art use a specialist subskill's complete workflow within their artifact type, in place of the standard design chain (fd-pro → uux):
 
-**关系图探索器分支**:产物主体是一张可探索的实体—关系图(数据地图、血缘图、依赖/架构拓扑、知识图谱、嵌入星图、"做成 app 不要网页"、"starmap")→ 归 `interactive`,走 `starmap` 完整流程(读 `skills/starmap/SKILL.md`,含其布局量化与验证)。统计图表、dashboard、静态报告不走此分支。
+- Generative or algorithmic art (p5.js, flow fields, particles, noise, "make art with code") belongs to `interactive`. Use the `algorithmic-art` branch in `references/interactive.md`.
+- A purely visual art poster (gallery or magazine quality, 90% visuals and 10% text, outside the data-report category) belongs to `pdf`. Use the `canvas-design` branch in `references/pdf.md`.
 
-### Step 2 · 识别档位(默认「简单 + 验证」)
+**Relationship explorer branch.** If the main artifact is an explorable entity–relationship graph, choose `interactive` and follow the full `starmap` workflow, including layout metrics and verification. Read `skills/starmap/SKILL.md`. Signals include data maps, lineage, dependency or architecture topologies, knowledge graphs, embedding star maps, "make it an app instead of a web page," and "starmap." Statistical charts, dashboards, and static reports use their ordinary routes.
 
-| 档位 | 何时 | 验证(标准见 `references/verification.md`) |
+### Step 2 · Choose a tier (default: simple + verification)
+
+| Tier | When | Verification (standards in `references/verification.md`) |
 |---|---|---|
-| 简单(不验证) | 用户明确要"快速/草稿/不用测" | 无 |
-| **简单 + 验证(默认)** | 默认走这档 | 普通验证 |
-| 复杂 + 验证 | 出现高质量信号:`production`/客户用/投资人/打磨/`premium`/senior-level,或结构复杂 | 高质量验证 |
+| Simple, no verification | The user explicitly asks for something quick, a draft, or no tests. | None |
+| **Simple + verification (default)** | Default tier | Standard verification |
+| Complex + verification | The structure is complex or the user signals high quality: `production`, client-facing, for investors, polished, `premium`, or senior-level. | High-quality verification |
 
-### Step 2.5 · 定读者 + 读设计总纲（四类通用，必做）
+### Step 2.5 · Identify the reader and read the governing design principles (required for all four types)
 
-设计与构建之外还有一层:**内容读给谁**。动手前一句话写下读者,然后读
-`~/.claude/skills/design-principles/SKILL.md`——开头「总纲」五条(直观 · 控制文字比例 · 不重复 ·
-不用机器腔 · 重点突出不散乱)**所有给人看的产物必读**,交付前按 `references/verification.md`
-「总纲五查」打勾;要展开时按它的路由读 references。只有纯内部调试页可略过。
-(2026-11-04 起从「给团队外的人看才读」改为必读:有条件的必读在实际派发中被跳过,几轮返工都是已写明的规则。)
+Before designing or building, write one sentence identifying the reader. Read `~/.claude/skills/design-principles/SKILL.md`. **For every human-facing artifact, read its five opening principles:** make it intuitive, control the proportion of text, avoid repetition, write naturally, and keep a clear focal point. Before delivery, check each against the five corresponding checks in `references/verification.md`. Use the design-principles routing table for further detail. Only a purely internal debugging page may skip this step.
 
-- **多个页面一起交付**(dashboard + 关系图 + 说明页 + README):另读 [`references/content-for-readers.md`](references/content-for-readers.md)「多页交付物」。
-- **GitHub 仓库主页 / README 展示、静态站发布到 GitHub Pages**:读 [`references/github-repo-page.md`](references/github-repo-page.md)。
-- **说明型、文档型产物先定内容**:先用用户的语言给一份要点大纲 + 图清单,用户认可后再做页面;派子 agent 做页面时,由编排者先拿到认可再派发(2026-11-04 用户裁决)。
-- 版面审美仍按本 skill 子 skill;说明型单页(代码库导览、工作汇报)改走 `explainer`。
+The user made the reading mandatory on 2026-11-04. Previously it applied only to audiences outside the team, and delegations skipped it. Several rounds of rework repeated rules already written down.
 
-**派发子 agent 做前端产物时**,prompt 里写明读 design-principles 总纲与本 skill,子 agent 不会自己加载。
+- **Multiple pages delivered together** (dashboard, relationship graph, explainer page, README): also read the multi-page deliverables section in [`references/content-for-readers.md`](references/content-for-readers.md).
+- **GitHub repository homepage or README showcase, or a static site published to GitHub Pages:** read [`references/github-repo-page.md`](references/github-repo-page.md).
+- **Establish content first for explanatory and document-style artifacts.** Present the key-point outline and diagram list in the user's language and obtain their approval before building the page. When delegating the page, the orchestrator obtains approval before dispatch (user decision, 2026-11-04).
+- For layout aesthetics, use this skill's subskills. Route a single-page explanation, such as a codebase tour or a work report, to `explainer`.
 
-### Step 3 · 声明路由
+**When delegating a frontend artifact,** tell the subagent in the prompt to read this skill and the governing principles in design-principles. Subagents do not load them on their own.
 
-执行前先用一句话声明:**「本次走 {类型} 类型 + {档位},预计 ~{Z} tokens、~{N} min」**。这能避免路由错档导致成本暴增。
+### Step 3 · Announce the route
 
-### Step 4 · 加载对应 reference
+Before execution, announce the route in one sentence: **"Using the {type} route at the {tier} tier, estimated at ~{Z} tokens and ~{N} min."** This catches tier mismatches before costs mount.
 
-读 `references/{类型}.md`,按其中对应档位的链路执行。
+### Step 4 · Load the corresponding reference
 
-## 复杂档:完整调用子 skill
+Read `references/{type}.md` and execute the workflow for the selected tier.
 
-复杂+验证档调用子 skill 时,**读它的原始 `SKILL.md` 并完整执行其流程,与单独使用该 skill 完全一致**——不要用本仓库 references 里的概述替代原始流程,也不要只取它的 CLI 输出而跳过它要求读的文档。为什么:复杂档的质量正来自子 skill 的完整方法论(如 ui-ux-design-pro 强制先读的 reference 文档);只吃 CLI token 表会丢掉这部分判断。
+## Complex tier: invoke the full subskills
 
-复杂档的标准顺序:**先 `frontend-design-pro`(完整,做版面/视觉设计)→ 再 `ui-ux-design-pro`(完整,做设计系统级优化与 audit)**。
+For complex + verification work, **read the subskill's original `SKILL.md` and perform its entire workflow just as for a standalone invocation**. The summaries here cannot replace it. Read the documents required by the subskill as well as using its CLI. For example, the mandatory references in ui-ux-design-pro supply design judgment missing from the CLI token tables alone.
 
-## references 索引
+The standard complex-tier order is **the full `frontend-design-pro` workflow for layout and visual design, then the full `ui-ux-design-pro` workflow for design-system optimization and audit**.
 
-- `references/web.md` — web 三档工作流
-- `references/pdf.md` — pdf 三档工作流(含 HTML → PDF 路线、`canvas-design` 艺术海报分支)
-- `references/interactive.md` — interactive 三档(含 web-artifacts-builder 触发条件、`algorithmic-art` 生成艺术分支)
-- `references/slides.md` — slides 三档(theme-factory 主导)
-- `references/verification.md` — 普通 / 高质量两档验证清单 + 验证循环
-- `references/content-for-readers.md` — 多页交付物(写作与可读性细则已并入 design-principles)
-- `references/github-repo-page.md` — GitHub 仓库主页(README)组织与 GitHub Pages 发布
+## Reference index
 
-## 验证
+- `references/web.md` — three web tiers
+- `references/pdf.md` — three PDF tiers, including HTML → PDF and the `canvas-design` art-poster branch
+- `references/interactive.md` — three interactive tiers, criteria for web-artifacts-builder, and the `algorithmic-art` generative-art branch
+- `references/slides.md` — three slide tiers, led by theme-factory
+- `references/verification.md` — standard and high-quality checklists and the verification loop
+- `references/content-for-readers.md` — multi-page deliverables (writing and readability details now live in design-principles)
+- `references/github-repo-page.md` — organizing the GitHub repository homepage (README) and publishing to GitHub Pages
 
-验证统一用内部 `webapp-testing`(Playwright)。**每轮按「测试 → 反思 → 规划 → 执行」走,循环到无主要问题再交付**,有轮数上限:普通验证最多 3 轮(改到无主要问题即可),高质量验证最多 5 轮(做极致优化,必要时大规模重构)。两档清单与循环细节见 `references/verification.md`——简单+验证走「普通验证」,复杂+验证走「高质量验证」,艺术分支走轻量「艺术产物验证」。
+## Verification
 
-## 内部子 skill(`skills/`,已内置完整副本)
+Use the internal `webapp-testing` skill (Playwright). **Each round runs through test → reflect → plan → execute. Repeat until there are no major issues before delivery**, within the applicable cap. Standard verification allows at most 3 rounds and can finish as soon as major issues are resolved. High-quality verification allows at most 5 rounds for thorough optimization, including large refactors if necessary. See `references/verification.md` for both checklists and loop details. Use standard verification for simple + verification, high-quality verification for complex + verification, and lightweight art-artifact verification for the art branches.
 
-- `frontend-design-pro` — 审美方向(11 种风格)
-- `ui-ux-design-pro` — 数据驱动设计系统(Bun CLI + CSV + references)。`node_modules` **已预装,CLI 开箱即用**(纯 JS、可移植,无需现场 `bun install`)。注:其 SKILL.md 提到的 `scripts/*.py` 在上游该版本不存在,实际能力在 `cli/`(Bun)——用 `cli/` 即可。
-- `theme-factory` — 主题/配色/字体
-- `web-artifacts-builder` — React/Tailwind/shadcn 复杂 artifact(仅 interactive 重档按需)
-- `webapp-testing` — Playwright 验证
-- `frontend-design` — 通用前端设计
-- `algorithmic-art` — p5.js 生成/算法艺术(interactive 艺术分支按需;含 `templates/viewer.html`)
-- `canvas-design` — 静态视觉艺术海报 → PNG/PDF(pdf 艺术分支按需;含 `canvas-fonts/` 字体库)
-- `starmap` — 全屏可探索实体关系星图(interactive 关系图分支;用户自有 skill,2026-11-01 由顶层移入)
+## Internal subskills (full copies in `skills/`)
 
-> 副本与各自原始 skill 完全一致,未改 frontmatter(靠嵌套隐藏,不靠 `disable-model-invocation`)。其中上游副本的顶层版本多数已移入 `skills-disabled/`;例外:`webapp-testing` 顶层版仍在用(与内部副本相同),`ui-ux-design-pro` 无顶层版,`starmap` 是用户自有 skill(2026-11-01 移入)。
+- `frontend-design-pro` — aesthetic direction (11 styles)
+- `ui-ux-design-pro` — data-driven design system (Bun CLI, CSV, and references). **`node_modules` is preinstalled and the CLI is ready to run.** It is portable JavaScript and needs no local `bun install`. The upstream version lacks the `scripts/*.py` files mentioned by its SKILL.md. Use the actual implementation in `cli/` (Bun).
+- `theme-factory` — themes, palettes, typography
+- `web-artifacts-builder` — complex React/Tailwind/shadcn artifacts, as needed only for the heavy interactive tier
+- `webapp-testing` — Playwright verification
+- `frontend-design` — general frontend design
+- `algorithmic-art` — p5.js generative and algorithmic art, as needed for the interactive art branch, including `templates/viewer.html`
+- `canvas-design` — static visual art posters exported to PNG/PDF, as needed for the PDF art branch, including the `canvas-fonts/` font library
+- `starmap` — full-screen explorable entity–relationship star maps for the interactive graph branch. User-owned skill moved here from the top level on 2026-11-01.
+
+> The copies match their respective originals and retain their frontmatter. Nesting supplies the intended discovery boundary without `disable-model-invocation`. Most top-level upstream copies have moved to `skills-disabled/`. Exceptions: the top-level `webapp-testing` is still in use and matches the internal copy, `ui-ux-design-pro` has no top-level version, and the user-owned `starmap` moved here on 2026-11-01.

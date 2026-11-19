@@ -2,6 +2,7 @@
   "version": 2,
   "claude": {
     "enabledPlugins": {
+      "cc-plugin-you-should-know@builtin": true,
       "claude-md-management@claude-plugins-official": false,
       "code-review@claude-plugins-official": false,
       "code-simplifier@claude-plugins-official": false,
@@ -12,7 +13,8 @@
       "ralph-loop@claude-plugins-official": true,
       "session-report@claude-plugins-official": false,
       "skill-creator@claude-plugins-official": false,
-      "superpowers@claude-plugins-official": true
+      "superpowers@claude-plugins-official": true,
+      "superpowers@superpowers-marketplace": true
     }
   },
   "cursor": {

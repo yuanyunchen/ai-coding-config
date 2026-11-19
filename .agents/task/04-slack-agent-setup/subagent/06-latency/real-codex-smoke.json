@@ -1,0 +1,12 @@
+{
+  "realCodexTurns": 2,
+  "sharedHistory": true,
+  "questionLanguages": [
+    "zh",
+    "en"
+  ],
+  "simulatedSlackVisibleAckMs": [
+    3,
+    5
+  ]
+}

@@ -27,7 +27,7 @@ node "$RUNTIME" cancel  [job-id] [--json]
 ### task
 
 - **Sandbox**: `read-only` unless `--write` (→ `workspace-write`). Approval policy is hardcoded `never`. There is **no bypass/full-access mode** — tasks needing network or out-of-repo writes go to the raw CLI.
-- **Model**: unset by default → Codex config default (the best available). `spark` is shorthand the plugin maps to `gpt-5.3-codex-spark` (fast/cheap tier).
+- **Model**: Resolve the requested selector once per new task. Reuse the full ID for CLI fallback. Keep Fast in the Codex service tier configuration. Resume with the original model unless the user explicitly requests a switch.
 - **Effort**: unset → medium. House default: pass `--effort high`. Verified gotcha: `--effort minimal` gets rejected by the API (400: incompatible with the image_gen/web_search tools the app-server enables) — the floor in practice is `low`.
 - **Prompt**: positional arg, or piped stdin, or a prompt file.
 - **`--resume-last`**: resumes the most recent *tracked* task thread for this workspace root (threads are persisted and named automatically on first run). Prompt optional — omitting it sends a default "continue" instruction.

@@ -1,42 +1,44 @@
 ---
 name: skill-authoring
-description: "harness-management 内部 subskill(伪 skill,经其 update 模块第⑦步路由 Read):SKILL.md 写法规范——结构与行数上限、description 触发预算、零丢失拆分纪律、上游副本边界。增改任何 skill 文本前对照。"
+description: "Internal harness-management subskill. Read via step 7 of its update module before adding or editing skill text. Covers SKILL.md structure and length, the description trigger budget, lossless splitting, and boundaries for upstream copies."
 ---
 
-# skill-authoring — skill 写法规范（增改 skill 时对照）
+# Skill authoring
 
-> 2026-07-01 经审查方案批准沉淀（skill-refactor 任务);2026-07-03 自 continue-learning/references/ 收编为 harness-management subskill。适用于用户自有 skill；上游副本（插件 / lark-cli 托管）不受此约束、也不许按此重排。
+The reviewed skill-refactor proposal was approved on 2026-07-01. On 2026-07-03 this guide moved from continue-learning/references/ into harness-management as a subskill. It applies to user-owned skills. Upstream plugin and lark-cli-managed copies are outside its scope and must keep their upstream structure.
 
-## 结构
+## Structure
 
-- **SKILL.md 目标 ≤200 行**。invoke = 全文进上下文，成本 = 行数 × 调用频率；高频大 skill 优先整理。
-- **场景可分割内容住 references/**：范例（抄用件）、执行落地层（只在动手时用）、低频编排流程。主文件顶部放**场景路由表**（我要做 X → 一跳读哪个文件）；原有「必读」强制语义写进路由行，不许弱化。
-- **整读型不拆**：政策/纪律文档（每次都要全文的）拆了只多一跳，保持单文件。
-- **范例进 references/examples.md**：主文件留原则、格式速查与路由；范例带「动笔前挑最像的抄骨架」指引。
-- **免责/机制声明一处 canonical**：同一声明在一个 skill 内出现 ≥2 次即收敛为 canonical + 短回指。
+- Aim for **≤200 lines in SKILL.md**. Invocation loads the entire file. Context cost scales with line count times invocation frequency, so organize long, frequently invoked skills first.
+- Put scenario-specific examples to copy, implementation instructions needed only during execution, and infrequent orchestration procedures in references/. Put a scenario routing table at the top of the main file so the reader can reach the right file in one hop. Carry existing mandatory-read requirements into the corresponding row with their original force.
+- Keep policy or discipline documents in one file when every invocation requires the full document. Splitting these adds a hop.
+- Put reusable examples in references/examples.md. Keep principles, a format reference and routing in the main file. Tell the reader to select the closest example and use its skeleton before writing.
+- Keep one canonical instance of every caveat or statement about how a mechanism works. When it occurs ≥2 times within a skill, replace duplicates with short pointers.
 
-## description（触发预算）
+## Description and trigger budget
 
-- description 常驻每个会话的注册表（skillListingBudgetFraction 约束），职责只有**触发**：写清触发逻辑与核心功能就行，不写复杂细节。固定三段式：**定位一句（核心功能）| 触发时机 + 触发词 | 边界一句**（2026-07-03 用户裁决，四 management skill 为范例）。机制细节（模式表/子模块/命令）、使用说明、工作流步骤、历史沿革一律住正文。
-- 目标 **≤300 字符**（英文含大量触发短语可放宽到 ~450）；改 description **保留既有触发词**防触发回归（刻意收窄触发面除外，须经用户裁决）；被移出的信息若正文没有，先回填正文。
+- The description occupies every session's registry under skillListingBudgetFraction. Its only job is discovery. Use the fixed three-part form: one sentence on purpose and core function, trigger conditions and terms, and one sentence on scope boundaries. The user adopted this form on 2026-07-03 using the four management skills as examples. Mode tables, submodules, commands, usage, workflow steps and history belong in the body.
+- Aim for **≤300 characters**, extending to about 450 for English with many trigger phrases. Preserve existing triggers when editing a description to avoid regressions. A deliberate narrowing requires a user decision. Move any detail removed from the description into the body if it is absent there.
 
-## 拆分纪律（零丢失）
+## Lossless splitting
 
-- 内容**只搬不改写**；优先按行号/标题切片而非重打字。唯一允许的改写 = 指针句与相对路径随迁修正（如 `templates/` → `../templates/`），逐条记录。
-- 拆完做**行级比对**：旧文件实质行 ⊆ 新主文件 + 新 references 并集；未命中的每一行都要能解释（指针化/路径修正）。
-- 迁出章节**保留原 § 编号**并在新文件头声明（「外部引用 §N 均指本文件对应节」）；跨 skill 的高频外部指针改为直连新文件。
-- 动手前备份到任务区（tar）；改完 grep 关键锚一跳可达。
+- Move content verbatim. Prefer cutting at line numbers or headings to retyping. Rewrite only the pointer sentences and relative paths affected by the move, such as `templates/` → `../templates/`. Record each adjustment.
+- Compare lines after splitting. Every substantive line from the original must appear in the union of the new main file and references, or have a specific explanation such as a pointer substitution or a corrected path.
+- Retain original § numbers in moved sections and put a note in the new file header that external references to §N refer to the corresponding section in that file. Point frequent cross-skill references directly to the new file.
+- Before editing, save a tar backup in the task area. Afterwards use grep to check that the key anchors are reachable in one hop.
 
-## 边界
+## Boundaries
 
-- 上游副本（当前工具 home 的 `plugins/**`、lark-cli 托管的 `~/.agents/skills/**`、Anthropic 官方 skill 目录形状）：不动结构、不重排；只允许头部薄层批注（如现状注/前置声明），且接受更新时被覆盖的风险要登账。
-- 飞书域 skill 改动不再登同步台账(Mira 同步已冻结 2026-07-03,台账归档于 feishu-task-management `mira-sync-archive.md`)。
+- Keep the structure and order of upstream material: `plugins/**` in the current tool's home, lark-cli-managed `~/.agents/skills/**`, and the official Anthropic skill directory layout. Only thin header annotations such as a status note or preamble are permitted. Record the risk that a future update may overwrite them.
+- Feishu skill changes no longer go in the sync ledger. Mira sync was frozen on 2026-07-03. Its ledger is archived in feishu-task-management's `mira-sync-archive.md`.
 
-## 进阶心法(2026-07-02 自 writing-great-skills 并入;全文见 [`writing-great-skills.md`](writing-great-skills.md) + [`writing-great-skills-glossary.md`](writing-great-skills-glossary.md))
+## Advanced guidance
 
-- **可预测性是根本德性**:skill 的目的是让 agent 每次走同一个**过程**(不是产出相同输出),以下杠杆都服务于它。
-- **invocation 二选一**:model-invoked(有 description,agent 可自动触发,付 **context load**——description 常驻每轮)vs user-invoked(`disable-model-invocation: true`,零 context load,付 **cognitive load**——人是索引)。只在 agent 必须自主触达时才选 model-invoked;user-invoked 多到记不住时用 **router skill**(一个入口 skill 登记其余,如 feishu-task-management)收敛。
-- **description 每分支一个触发词**:同一分支的同义词重写 = duplication,合并;身份性内容(正文已有)从 description 剪掉。
-- **拆分两刀**:按 invocation 拆(有独立 leading word 或被其它 skill 引用才拆,付 context load)/ 按 sequence 拆(后续步骤诱发 premature completion 时才拆);每一刀都花两种 load 之一,拆不出收益不拆。
-- **leading word**:用模型预训练里已有的紧凑概念词(tight / red / relentless)替代多词重述——省 token 且执行/触发双锚定。
-- **失败模式自查**:premature completion(完成标准不够可查验)· duplication(同义多处)· sediment(只加不删的沉积)· sprawl(每行都活但整体过长)· no-op(默认行为重述,「be thorough」类,删句不删词)。
+Incorporated from writing-great-skills on 2026-07-02. See [writing-great-skills.md](writing-great-skills.md) and [writing-great-skills-glossary.md](writing-great-skills-glossary.md) for the full texts.
+
+- **Predictability.** Skills should produce a consistent process even when the output varies. The choices below support that aim.
+- **Choose the invocation model.** A model-invoked skill has a description, permits automatic triggering and incurs context load each turn. A user-invoked skill (`disable-model-invocation: true`) has zero context load and relies on the user's memory, a cognitive load. Choose model invocation only when the agent must find the skill autonomously. When users would have to remember too many skills, consolidate behind a router such as feishu-task-management, which registers the others at one entry point.
+- **One trigger per branch.** Merge synonymous rewrites of the same trigger. Remove identity statements from descriptions when the body already covers them.
+- **Two reasons to split.** Split by invocation when a part has its own leading word or another skill references it. This costs context load. Split by sequence when later steps cause premature completion. Each split incurs one of the two loads. Keep the original structure when splitting adds no benefit.
+- **Leading word.** Replace a repeated, multiword expression with a compact concept already established in model pretraining, such as tight, red or relentless. This saves tokens and anchors both triggering and execution.
+- **Check for failure modes.** Premature completion means the acceptance criteria are too hard to verify. Duplication repeats a meaning in several places. Sediment accumulates additions without removals. Sprawl leaves every line useful but the whole document too long. A no-op restates default behavior such as “be thorough”. Delete empty sentences outright.

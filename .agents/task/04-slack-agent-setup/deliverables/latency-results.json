@@ -1,0 +1,1996 @@
+{
+  "mock": {
+    "node": "v24.1.0",
+    "options": {
+      "rounds": 24,
+      "slackMs": 8,
+      "attachmentMs": 80,
+      "agentMs": 150
+    },
+    "summary": [
+      {
+        "metric": "arrival_to_visible_ack",
+        "samples": 48,
+        "delivered": 48,
+        "missing": 0,
+        "p50Ms": 11,
+        "p95Ms": 13,
+        "maxMs": 22
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "samples": 48,
+        "delivered": 48,
+        "missing": 0,
+        "p50Ms": 11,
+        "p95Ms": 164,
+        "maxMs": 164
+      }
+    ],
+    "samples": [
+      {
+        "key": "ack/first-1",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 1,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954984210,
+        "visibleAtMs": 1794954984222,
+        "durationMs": 12,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-1",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 1,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954984224,
+        "visibleAtMs": 1794954984234,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-1/mock-turn-1",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 1,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954984310,
+        "visibleAtMs": 1794954984322,
+        "durationMs": 12,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-1/mock-turn-1",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 1,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954984323,
+        "visibleAtMs": 1794954984332,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-2",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 2,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954984356,
+        "visibleAtMs": 1794954984367,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-2",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 2,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954984372,
+        "visibleAtMs": 1794954984383,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-2/mock-turn-2",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 2,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954984372,
+        "visibleAtMs": 1794954984535,
+        "durationMs": 163,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-2/mock-turn-2",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 2,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954984537,
+        "visibleAtMs": 1794954984547,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-3",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 3,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954984567,
+        "visibleAtMs": 1794954984578,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-3",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 3,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954984593,
+        "visibleAtMs": 1794954984604,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-3/mock-turn-3",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 3,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954984682,
+        "visibleAtMs": 1794954984696,
+        "durationMs": 14,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-3/mock-turn-3",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 3,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954984699,
+        "visibleAtMs": 1794954984708,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-4",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 4,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954984742,
+        "visibleAtMs": 1794954984752,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-4",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 4,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954984754,
+        "visibleAtMs": 1794954984763,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-4/mock-turn-4",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 4,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954984754,
+        "visibleAtMs": 1794954984914,
+        "durationMs": 160,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-4/mock-turn-4",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 4,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954984921,
+        "visibleAtMs": 1794954984931,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-5",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 5,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954984957,
+        "visibleAtMs": 1794954984969,
+        "durationMs": 12,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-5",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 5,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954984974,
+        "visibleAtMs": 1794954984987,
+        "durationMs": 13,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-5/mock-turn-5",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 5,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954985067,
+        "visibleAtMs": 1794954985087,
+        "durationMs": 20,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-5/mock-turn-5",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 5,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954985089,
+        "visibleAtMs": 1794954985099,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-6",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 6,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954985122,
+        "visibleAtMs": 1794954985133,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-6",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 6,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954985140,
+        "visibleAtMs": 1794954985150,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-6/mock-turn-6",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 6,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954985140,
+        "visibleAtMs": 1794954985302,
+        "durationMs": 162,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-6/mock-turn-6",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 6,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954985308,
+        "visibleAtMs": 1794954985317,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-7",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 7,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954985342,
+        "visibleAtMs": 1794954985353,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-7",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 7,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954985357,
+        "visibleAtMs": 1794954985368,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-7/mock-turn-7",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 7,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954985446,
+        "visibleAtMs": 1794954985463,
+        "durationMs": 17,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-7/mock-turn-7",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 7,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954985466,
+        "visibleAtMs": 1794954985477,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-8",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 8,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954985500,
+        "visibleAtMs": 1794954985510,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-8",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 8,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954985512,
+        "visibleAtMs": 1794954985523,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-8/mock-turn-8",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 8,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954985512,
+        "visibleAtMs": 1794954985674,
+        "durationMs": 162,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-8/mock-turn-8",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 8,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954985682,
+        "visibleAtMs": 1794954985692,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-9",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 9,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954985724,
+        "visibleAtMs": 1794954985735,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-9",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 9,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954985738,
+        "visibleAtMs": 1794954985751,
+        "durationMs": 13,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-9/mock-turn-9",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 9,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954985828,
+        "visibleAtMs": 1794954985842,
+        "durationMs": 14,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-9/mock-turn-9",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 9,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954985844,
+        "visibleAtMs": 1794954985854,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-10",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 10,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954985880,
+        "visibleAtMs": 1794954985892,
+        "durationMs": 12,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-10",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 10,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954985900,
+        "visibleAtMs": 1794954985911,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-10/mock-turn-10",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 10,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954985899,
+        "visibleAtMs": 1794954986063,
+        "durationMs": 164,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-10/mock-turn-10",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 10,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954986070,
+        "visibleAtMs": 1794954986080,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-11",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 11,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954986107,
+        "visibleAtMs": 1794954986121,
+        "durationMs": 14,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-11",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 11,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954986140,
+        "visibleAtMs": 1794954986151,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-11/mock-turn-11",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 11,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954986227,
+        "visibleAtMs": 1794954986242,
+        "durationMs": 15,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-11/mock-turn-11",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 11,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954986243,
+        "visibleAtMs": 1794954986252,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-12",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 12,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954986276,
+        "visibleAtMs": 1794954986287,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-12",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 12,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954986293,
+        "visibleAtMs": 1794954986305,
+        "durationMs": 12,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-12/mock-turn-12",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 12,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954986293,
+        "visibleAtMs": 1794954986456,
+        "durationMs": 163,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-12/mock-turn-12",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 12,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954986462,
+        "visibleAtMs": 1794954986471,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-13",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 13,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954986494,
+        "visibleAtMs": 1794954986504,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-13",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 13,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954986506,
+        "visibleAtMs": 1794954986517,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-13/mock-turn-13",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 13,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954986594,
+        "visibleAtMs": 1794954986611,
+        "durationMs": 17,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-13/mock-turn-13",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 13,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954986613,
+        "visibleAtMs": 1794954986623,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-14",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 14,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954986646,
+        "visibleAtMs": 1794954986656,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-14",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 14,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954986661,
+        "visibleAtMs": 1794954986672,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-14/mock-turn-14",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 14,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954986661,
+        "visibleAtMs": 1794954986825,
+        "durationMs": 164,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-14/mock-turn-14",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 14,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954986831,
+        "visibleAtMs": 1794954986840,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-15",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 15,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954986864,
+        "visibleAtMs": 1794954986886,
+        "durationMs": 22,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-15",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 15,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954986888,
+        "visibleAtMs": 1794954986898,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-15/mock-turn-15",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 15,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954986977,
+        "visibleAtMs": 1794954986993,
+        "durationMs": 16,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-15/mock-turn-15",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 15,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954986995,
+        "visibleAtMs": 1794954987004,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-16",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 16,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954987033,
+        "visibleAtMs": 1794954987043,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-16",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 16,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954987056,
+        "visibleAtMs": 1794954987068,
+        "durationMs": 12,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-16/mock-turn-16",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 16,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954987056,
+        "visibleAtMs": 1794954987220,
+        "durationMs": 164,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-16/mock-turn-16",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 16,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954987229,
+        "visibleAtMs": 1794954987239,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-17",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 17,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954987263,
+        "visibleAtMs": 1794954987275,
+        "durationMs": 12,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-17",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 17,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954987276,
+        "visibleAtMs": 1794954987285,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-17/mock-turn-17",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 17,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954987367,
+        "visibleAtMs": 1794954987384,
+        "durationMs": 17,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-17/mock-turn-17",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 17,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954987387,
+        "visibleAtMs": 1794954987397,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-18",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 18,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954987424,
+        "visibleAtMs": 1794954987435,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-18",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 18,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954987443,
+        "visibleAtMs": 1794954987453,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-18/mock-turn-18",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 18,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954987442,
+        "visibleAtMs": 1794954987605,
+        "durationMs": 163,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-18/mock-turn-18",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 18,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954987618,
+        "visibleAtMs": 1794954987628,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-19",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 19,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954987655,
+        "visibleAtMs": 1794954987666,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-19",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 19,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954987668,
+        "visibleAtMs": 1794954987680,
+        "durationMs": 12,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-19/mock-turn-19",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 19,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954987758,
+        "visibleAtMs": 1794954987776,
+        "durationMs": 18,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-19/mock-turn-19",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 19,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954987778,
+        "visibleAtMs": 1794954987788,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-20",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 20,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954987818,
+        "visibleAtMs": 1794954987830,
+        "durationMs": 12,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-20",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 20,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954987841,
+        "visibleAtMs": 1794954987852,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-20/mock-turn-20",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 20,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954987841,
+        "visibleAtMs": 1794954988004,
+        "durationMs": 163,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-20/mock-turn-20",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 20,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954988007,
+        "visibleAtMs": 1794954988015,
+        "durationMs": 8,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-21",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 21,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954988036,
+        "visibleAtMs": 1794954988046,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-21",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 21,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954988047,
+        "visibleAtMs": 1794954988056,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-21/mock-turn-21",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 21,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954988130,
+        "visibleAtMs": 1794954988141,
+        "durationMs": 11,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-21/mock-turn-21",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 21,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954988141,
+        "visibleAtMs": 1794954988150,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-22",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 22,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954988170,
+        "visibleAtMs": 1794954988179,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-22",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 22,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954988181,
+        "visibleAtMs": 1794954988191,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-22/mock-turn-22",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 22,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954988181,
+        "visibleAtMs": 1794954988343,
+        "durationMs": 162,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-22/mock-turn-22",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 22,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954988345,
+        "visibleAtMs": 1794954988354,
+        "durationMs": 9,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-23",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 23,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954988378,
+        "visibleAtMs": 1794954988388,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-23",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 23,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954988389,
+        "visibleAtMs": 1794954988399,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-23/mock-turn-23",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 23,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954988475,
+        "visibleAtMs": 1794954988489,
+        "durationMs": 14,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-23/mock-turn-23",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 23,
+        "scenario": "slow-attachment",
+        "arrivedAtMs": 1794954988490,
+        "visibleAtMs": 1794954988500,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "ack/first-24",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 24,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954988524,
+        "visibleAtMs": 1794954988536,
+        "durationMs": 12,
+        "attempts": 1
+      },
+      {
+        "key": "ack/second-24",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "round": 24,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954988539,
+        "visibleAtMs": 1794954988549,
+        "durationMs": 10,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-24/mock-turn-24",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "round": 24,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954988539,
+        "visibleAtMs": 1794954988701,
+        "durationMs": 162,
+        "attempts": 1
+      },
+      {
+        "key": "progress/mock-thread-24/mock-turn-24",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "round": 24,
+        "scenario": "slow-agent",
+        "arrivedAtMs": 1794954988704,
+        "visibleAtMs": 1794954988713,
+        "durationMs": 9,
+        "attempts": 1
+      }
+    ],
+    "rounds": [
+      {
+        "number": 1,
+        "scenario": "slow-attachment",
+        "workStartedAtMs": 1794954984224,
+        "workFinishedAtMs": 1794954984306,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 2,
+        "scenario": "slow-agent",
+        "workStartedAtMs": 1794954984372,
+        "workFinishedAtMs": 1794954984524,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 3,
+        "scenario": "slow-attachment",
+        "workStartedAtMs": 1794954984593,
+        "workFinishedAtMs": 1794954984675,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 4,
+        "scenario": "slow-agent",
+        "workStartedAtMs": 1794954984754,
+        "workFinishedAtMs": 1794954984906,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 5,
+        "scenario": "slow-attachment",
+        "workStartedAtMs": 1794954984974,
+        "workFinishedAtMs": 1794954985059,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 6,
+        "scenario": "slow-agent",
+        "workStartedAtMs": 1794954985140,
+        "workFinishedAtMs": 1794954985292,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 7,
+        "scenario": "slow-attachment",
+        "workStartedAtMs": 1794954985357,
+        "workFinishedAtMs": 1794954985439,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 8,
+        "scenario": "slow-agent",
+        "workStartedAtMs": 1794954985512,
+        "workFinishedAtMs": 1794954985664,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 9,
+        "scenario": "slow-attachment",
+        "workStartedAtMs": 1794954985737,
+        "workFinishedAtMs": 1794954985823,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 10,
+        "scenario": "slow-agent",
+        "workStartedAtMs": 1794954985900,
+        "workFinishedAtMs": 1794954986053,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 11,
+        "scenario": "slow-attachment",
+        "workStartedAtMs": 1794954986140,
+        "workFinishedAtMs": 1794954986224,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 12,
+        "scenario": "slow-agent",
+        "workStartedAtMs": 1794954986293,
+        "workFinishedAtMs": 1794954986447,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 13,
+        "scenario": "slow-attachment",
+        "workStartedAtMs": 1794954986506,
+        "workFinishedAtMs": 1794954986589,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 14,
+        "scenario": "slow-agent",
+        "workStartedAtMs": 1794954986661,
+        "workFinishedAtMs": 1794954986814,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 15,
+        "scenario": "slow-attachment",
+        "workStartedAtMs": 1794954986888,
+        "workFinishedAtMs": 1794954986970,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 16,
+        "scenario": "slow-agent",
+        "workStartedAtMs": 1794954987056,
+        "workFinishedAtMs": 1794954987209,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 17,
+        "scenario": "slow-attachment",
+        "workStartedAtMs": 1794954987276,
+        "workFinishedAtMs": 1794954987359,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 18,
+        "scenario": "slow-agent",
+        "workStartedAtMs": 1794954987442,
+        "workFinishedAtMs": 1794954987595,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 19,
+        "scenario": "slow-attachment",
+        "workStartedAtMs": 1794954987668,
+        "workFinishedAtMs": 1794954987751,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 20,
+        "scenario": "slow-agent",
+        "workStartedAtMs": 1794954987841,
+        "workFinishedAtMs": 1794954987995,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 21,
+        "scenario": "slow-attachment",
+        "workStartedAtMs": 1794954988047,
+        "workFinishedAtMs": 1794954988128,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 22,
+        "scenario": "slow-agent",
+        "workStartedAtMs": 1794954988181,
+        "workFinishedAtMs": 1794954988333,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 23,
+        "scenario": "slow-attachment",
+        "workStartedAtMs": 1794954988389,
+        "workFinishedAtMs": 1794954988471,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      },
+      {
+        "number": 24,
+        "scenario": "slow-agent",
+        "workStartedAtMs": 1794954988539,
+        "workFinishedAtMs": 1794954988691,
+        "firstAckBeforeWork": true,
+        "secondAckDuringWork": true,
+        "states": [
+          "completed",
+          "completed"
+        ],
+        "finalDelivered": true,
+        "errors": []
+      }
+    ],
+    "bridgeTimings": [
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-1",
+        "durationMs": 13
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-1",
+        "durationMs": 11
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-1/mock-turn-1/1794954984310/turn/started",
+        "durationMs": 12
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-1/mock-turn-1/1794954984323/item/completed",
+        "durationMs": 9
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-2",
+        "durationMs": 12
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-2",
+        "durationMs": 12
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-2/mock-turn-2/1794954984372/turn/started",
+        "durationMs": 164
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-2/mock-turn-2/1794954984537/item/completed",
+        "durationMs": 10
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-3",
+        "durationMs": 25
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-3",
+        "durationMs": 15
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-3/mock-turn-3/1794954984682/turn/started",
+        "durationMs": 16
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-3/mock-turn-3/1794954984699/item/completed",
+        "durationMs": 19
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-4",
+        "durationMs": 10
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-4",
+        "durationMs": 10
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-4/mock-turn-4/1794954984754/turn/started",
+        "durationMs": 162
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-4/mock-turn-4/1794954984922/item/completed",
+        "durationMs": 11
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-5",
+        "durationMs": 14
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-5",
+        "durationMs": 16
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-5/mock-turn-5/1794954985068/turn/started",
+        "durationMs": 21
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-5/mock-turn-5/1794954985089/item/completed",
+        "durationMs": 10
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-6",
+        "durationMs": 12
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-6",
+        "durationMs": 11
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-6/mock-turn-6/1794954985140/turn/started",
+        "durationMs": 164
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-6/mock-turn-6/1794954985308/item/completed",
+        "durationMs": 11
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-7",
+        "durationMs": 14
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-7",
+        "durationMs": 13
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-7/mock-turn-7/1794954985446/turn/started",
+        "durationMs": 20
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-7/mock-turn-7/1794954985466/item/completed",
+        "durationMs": 13
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-8",
+        "durationMs": 11
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-8",
+        "durationMs": 14
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-8/mock-turn-8/1794954985512/turn/started",
+        "durationMs": 165
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-8/mock-turn-8/1794954985682/item/completed",
+        "durationMs": 13
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-9",
+        "durationMs": 13
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-9",
+        "durationMs": 16
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-9/mock-turn-9/1794954985828/turn/started",
+        "durationMs": 16
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-9/mock-turn-9/1794954985845/item/completed",
+        "durationMs": 11
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-10",
+        "durationMs": 14
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-10",
+        "durationMs": 13
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-10/mock-turn-10/1794954985900/turn/started",
+        "durationMs": 164
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-10/mock-turn-10/1794954986070/item/completed",
+        "durationMs": 12
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-11",
+        "durationMs": 31
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-11",
+        "durationMs": 12
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-11/mock-turn-11/1794954986228/turn/started",
+        "durationMs": 15
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-11/mock-turn-11/1794954986243/item/completed",
+        "durationMs": 10
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-12",
+        "durationMs": 12
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-12",
+        "durationMs": 16
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-12/mock-turn-12/1794954986293/turn/started",
+        "durationMs": 165
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-12/mock-turn-12/1794954986462/item/completed",
+        "durationMs": 10
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-13",
+        "durationMs": 11
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-13",
+        "durationMs": 12
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-13/mock-turn-13/1794954986594/turn/started",
+        "durationMs": 19
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-13/mock-turn-13/1794954986613/item/completed",
+        "durationMs": 12
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-14",
+        "durationMs": 11
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-14",
+        "durationMs": 12
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-14/mock-turn-14/1794954986661/turn/started",
+        "durationMs": 165
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-14/mock-turn-14/1794954986831/item/completed",
+        "durationMs": 11
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-15",
+        "durationMs": 24
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-15",
+        "durationMs": 11
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-15/mock-turn-15/1794954986977/turn/started",
+        "durationMs": 18
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-15/mock-turn-15/1794954986995/item/completed",
+        "durationMs": 12
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-16",
+        "durationMs": 14
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-16",
+        "durationMs": 14
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-16/mock-turn-16/1794954987056/turn/started",
+        "durationMs": 166
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-16/mock-turn-16/1794954987229/item/completed",
+        "durationMs": 11
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-17",
+        "durationMs": 13
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-17",
+        "durationMs": 10
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-17/mock-turn-17/1794954987367/turn/started",
+        "durationMs": 20
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-17/mock-turn-17/1794954987387/item/completed",
+        "durationMs": 12
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-18",
+        "durationMs": 13
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-18",
+        "durationMs": 12
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-18/mock-turn-18/1794954987442/turn/started",
+        "durationMs": 165
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-18/mock-turn-18/1794954987618/item/completed",
+        "durationMs": 11
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-19",
+        "durationMs": 13
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-19",
+        "durationMs": 14
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-19/mock-turn-19/1794954987759/turn/started",
+        "durationMs": 19
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-19/mock-turn-19/1794954987778/item/completed",
+        "durationMs": 12
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-20",
+        "durationMs": 14
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-20",
+        "durationMs": 13
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-20/mock-turn-20/1794954987841/turn/started",
+        "durationMs": 164
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-20/mock-turn-20/1794954988007/item/completed",
+        "durationMs": 9
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-21",
+        "durationMs": 10
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-21",
+        "durationMs": 10
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-21/mock-turn-21/1794954988130/turn/started",
+        "durationMs": 11
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-21/mock-turn-21/1794954988141/item/completed",
+        "durationMs": 10
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-22",
+        "durationMs": 10
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-22",
+        "durationMs": 10
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-22/mock-turn-22/1794954988181/turn/started",
+        "durationMs": 162
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-22/mock-turn-22/1794954988345/item/completed",
+        "durationMs": 10
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-23",
+        "durationMs": 11
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-23",
+        "durationMs": 11
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-23/mock-turn-23/1794954988475/turn/started",
+        "durationMs": 15
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-23/mock-turn-23/1794954988490/item/completed",
+        "durationMs": 11
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "first-24",
+        "durationMs": 13
+      },
+      {
+        "metric": "arrival_to_visible_ack",
+        "id": "second-24",
+        "durationMs": 11
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-24/mock-turn-24/1794954988539/turn/started",
+        "durationMs": 163
+      },
+      {
+        "metric": "event_to_visible_progress",
+        "id": "mock-thread-24/mock-turn-24/1794954988704/item/completed",
+        "durationMs": 10
+      }
+    ],
+    "breakdown": [
+      {
+        "scenario": "slow-attachment",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "samples": 24,
+        "delivered": 24,
+        "missing": 0,
+        "p50Ms": 11,
+        "p95Ms": 14,
+        "maxMs": 22
+      },
+      {
+        "scenario": "slow-attachment",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "samples": 12,
+        "delivered": 12,
+        "missing": 0,
+        "p50Ms": 15,
+        "p95Ms": 20,
+        "maxMs": 20
+      },
+      {
+        "scenario": "slow-attachment",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "samples": 12,
+        "delivered": 12,
+        "missing": 0,
+        "p50Ms": 10,
+        "p95Ms": 11,
+        "maxMs": 11
+      },
+      {
+        "scenario": "slow-agent",
+        "metric": "arrival_to_visible_ack",
+        "operation": "post",
+        "samples": 24,
+        "delivered": 24,
+        "missing": 0,
+        "p50Ms": 11,
+        "p95Ms": 12,
+        "maxMs": 12
+      },
+      {
+        "scenario": "slow-agent",
+        "metric": "event_to_visible_progress",
+        "operation": "post",
+        "samples": 12,
+        "delivered": 12,
+        "missing": 0,
+        "p50Ms": 163,
+        "p95Ms": 164,
+        "maxMs": 164
+      },
+      {
+        "scenario": "slow-agent",
+        "metric": "event_to_visible_progress",
+        "operation": "update",
+        "samples": 12,
+        "delivered": 12,
+        "missing": 0,
+        "p50Ms": 9,
+        "p95Ms": 10,
+        "maxMs": 10
+      }
+    ]
+  },
+  "realCodexSmoke": {
+    "command": "node scripts/smoke-pipeline.js",
+    "exitCode": 0,
+    "realCodexTurns": 2,
+    "sharedHistory": true,
+    "questionLanguages": [
+      "zh",
+      "en"
+    ],
+    "simulatedSlackVisibleAckMs": [
+      3,
+      5
+    ]
+  },
+  "tests": {
+    "command": "npm test",
+    "total": 53,
+    "passed": 53
+  }
+}

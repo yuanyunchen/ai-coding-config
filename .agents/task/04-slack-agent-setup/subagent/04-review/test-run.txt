@@ -1,0 +1,52 @@
+
+> slack-codex-bridge@1.0.0 test
+> node --test test/*.test.js
+
+(node:99853) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ context contains discussion, deduplicates mentions, handles Chinese and English and only sends final once (20.567625ms)
+✔ explicit queue waits, stop addresses the live turn, and desktop progress omits raw commands (13.527583ms)
+✔ question language wins over workspace language for receipts (0.294291ms)
+✔ slow attachment cannot delay the second visible receipt (16.179833ms)
+✔ an edited remark preserves unaffected bindings; bot diagrams survive bad graph syntax (18.310042ms)
+✔ restart reconciles an accepted mutation by message ID instead of generating twice (4.022208ms)
+✔ binds one session, delivers and steers a real Unix-socket session, reports public output (20.685167ms)
+✔ actual MCP stdio handshake, channel notification and Claude report tool round-trip (250.8055ms)
+✔ matches concurrent responses, streams events and rejects pending RPC on disconnect (64.733625ms)
+✔ quoted Slack content includes its source; unsafe URLs never get a token (43.731583ms)
+✔ vision inputs retain verified image bytes until cleanup (241.993791ms)
+✔ declares whole-file refusal rather than truncating a source (3.3905ms)
+✔ graph renderer accepts only valid node indexes (1.084583ms)
+✔ native audio input is normalized with ffmpeg and removed on cleanup (114.697791ms)
+✔ spreadsheet cells carry sheet and cell coordinates; PDF carries its page number (442.640458ms)
+✔ Word paragraphs and reordered PowerPoint slides have user-visible source order (267.867ms)
+✔ authorized mention is cleaned, carries file references, accepted before ACK (1.813834ms)
+✔ internal workspace, audience and person are checked (2.750334ms)
+✔ only original mentions dispatch; own echoes and edited mentions remain context (2.667875ms)
+✔ failed persistence leaves envelope unacknowledged (0.855333ms)
+✔ Unicode chunks preserve every character and respect Slack message limits (14.740583ms)
+✔ delivery uses bound thread and prevents automatic mentions; blocks channel after external sharing (1.309833ms)
+✔ cached Slack file IDs must still be shared into the selected audience (0.847458ms)
+✔ only a verified owner can activate an unconfigured bridge; enrollment code never enters memory (3.124375ms)
+✔ missing is_member falls back to paginated membership evidence (0.680666ms)
+✔ passive and active event variants store identical text; own @ cannot start work (3.00325ms)
+(node:99858) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ durable intake and exact bot delivery survive a process restart (16.524875ms)
+✔ late edits cannot resurrect a deleted source; stale revisions cannot replace a correction (6.8295ms)
+✔ CJK search finds earlier exact evidence through unrelated channel noise and isolates destinations (42.881166ms)
+✔ a shared agent thread cannot be attached to a different audience (1.3565ms)
+✔ attachment intent, delivery and source revocation reconcile independently of chat timestamps (4.107459ms)
+✔ retention watermark blocks late expired events and unknown deliveries cannot be retried blindly (2.210084ms)
+✔ a channel message arriving before app_mention preserves cleaned actionable commands (1.41ms)
+✔ progress edit uses the actual Slack receipt for the same public message (5.030583ms)
+✔ incremental topic projections separate a promised test date from a corrected release decision (8.318417ms)
+✔ RPC message identity, read cursor and exact source dependencies survive restart (13.321166ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1249.386084

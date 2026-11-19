@@ -72,14 +72,15 @@ git add -A && git commit && git push
 ## 当前安装一览
 
 <!-- installed:start -->
-_Updated: 2026-11-05 00:49 UTC_
+_Updated: 2026-11-19 05:09 UTC_
 
 ## claude
 
-**manifest 启用**: 4 · **git 快照**: 12
+**manifest 启用**: 6 · **git 快照**: 12
 
 | pluginId | kind | version | snapshot |
 |----------|------|---------|----------|
+| `cc-plugin-you-should-know@builtin` | — | — | *(无快照，运行 `plugins pull --platform claude`)* |
 | `claude-md-management@claude-plugins-official` | portable (off) | 1.0.0 | `claude/disabled/claude-md-management__claude-plugins-official/` |
 | `code-review@claude-plugins-official` | portable (off) | 1.0.1 | `claude/disabled/code-review__claude-plugins-official/` |
 | `code-simplifier@claude-plugins-official` | portable (off) | 1.0.0 | `claude/disabled/code-simplifier__claude-plugins-official/` |
@@ -88,9 +89,10 @@ _Updated: 2026-11-05 00:49 UTC_
 | `hookify@claude-plugins-official` | hook | 0.1.1 | `claude/enabled/hookify__claude-plugins-official/` |
 | `learning-output-style@claude-plugins-official` | hook | 1.0.1 | `claude/enabled/learning-output-style__claude-plugins-official/` |
 | `ralph-loop@claude-plugins-official` | hook | 1.0.1 | `claude/enabled/ralph-loop__claude-plugins-official/` |
-| `session-report@claude-plugins-official` | portable (off) | a7ba5b93db0c | `claude/disabled/session-report__claude-plugins-official/` |
-| `skill-creator@claude-plugins-official` | portable (off) | a7ba5b93db0c | `claude/disabled/skill-creator__claude-plugins-official/` |
-| `superpowers@claude-plugins-official` | hook | 7.0.0 | `claude/enabled/superpowers__claude-plugins-official/` |
+| `session-report@claude-plugins-official` | portable (off) | b5b01ac4f889 | `claude/disabled/session-report__claude-plugins-official/` |
+| `skill-creator@claude-plugins-official` | portable (off) | b5b01ac4f889 | `claude/disabled/skill-creator__claude-plugins-official/` |
+| `superpowers@claude-plugins-official` | hook | 7.0.2 | `claude/enabled/superpowers__claude-plugins-official/` |
+| `superpowers@superpowers-marketplace` | hook | 5.1.0 | `claude/enabled/superpowers__superpowers-marketplace/` |
 
 ## cursor
 

@@ -149,7 +149,7 @@ When a web/browser task needs automation (open pages, read rendered content, scr
 > The task file system. The core logic below applies even when the skill is not loaded.
 
 - **Recognition and entry**: a directory is a v4 workspace when the nearest `.agents/ws.json` up the tree (never `$HOME`) exists; its root `AGENTS.md` is the agent-maintained entry and map, and its 「工作协议」 block binds the main agent and every subagent. A directory with `.agent/MEMORY.md` or `.agent/memory/` is a v3 workspace: follow `workspace-management references/v3-legacy.md` and never convert it unasked. `~/.agents/skills` is lark-cli's managed skill copy, not a workspace.
-- **Structure by `ws`, content by the agent**: tasks, dispatches, numbering and indexes come from the `ws` CLI; a hook records each user message and each final reply in `.agents/conversation.md` (user messages alone also in `.agents/inbox.md`); requirement messages are filed verbatim into the node `task.md`'s append-only 「原文记录」 and folded the same turn into its structured 「任务说明」 (`ws task spec`). The root holds only `AGENTS.md` and `.agents/`; temp files go to the scratchpad.
+- **Structure by `ws`, content by the agent**: tasks, dispatches, numbering and indexes come from the `ws` CLI; a hook records each user message and each final reply in `.agents/conversation.md` (user messages alone also in `.agents/inbox.md`); once a current node is set (`ws focus <ID>`), the same hook appends every user message verbatim to that node `task.md`'s append-only 「原文记录」 — no per-message filing or classifying; requirement changes are folded into its structured 「任务说明」 (`ws task spec`). The root holds only `AGENTS.md` and `.agents/`; temp files go to the scratchpad.
 - **Dispatch records**: every subagent dispatch inside a workspace is created with `ws dispatch` under the task node's `subagent/NN-<name>/` (task.md in, result.md written by the subagent itself); a hook denies dispatches that skip it.
 - **When to load**: long tasks; the user asks to create a workspace / wrap up / archive; work inside a workspace that goes beyond its AGENTS.md; /project-* commands → invoke workspace-management. Light tasks: no workspace.
 
@@ -180,12 +180,13 @@ Dispatch subagents only for complex, relatively independent tasks (saves main co
 - **Core rule files passed in by default**; context given preferentially as **file-path references**, not restated; reusable content written to md once, then distributed to multiple subagents.
 - **Name the skills to use**: subagents won't always invoke them on their own; list the needed skills in the prompt.
 
-**Model routing (three tiers, sonnet floor; built-in agent types Explore/Plan etc. follow the same rules)**:
+**Model routing (inherit by default; built-in agent types Explore/Plan etc. follow the same rules; user ruling 2026-11-16, replaces "default = Opus")**:
 
-- **Default = Opus**: decisions, quality gates, core development — tasks requiring autonomous judgment.
-- **High-level = inherit the main model (fable allowed)**: design discussions, final result review, and the like; keep context lean — only the minimum material needed for the verdict, path references instead of full text, a single-digit must-read list.
-- **Sonnet**: operational, low-autonomy tasks (mechanical execution of explicit instructions: batch replace, formatting, collection/aggregation, running commands).
-- **One sanctioned exception below the floor**: the upstream `/code-review` command's Haiku triage agents (eligibility checks, file listing, summaries).
+- **Default = inherit the main model**: omit `model` on every dispatch. Do not tier unless the user says to.
+- **Tier only when the user says so, and then by task difficulty**: core work — anything that affects functional quality (decisions, quality gates, core development, final review) — still inherits; basic work that does not affect functional quality (mechanical execution of explicit instructions: batch replace, formatting, collection/aggregation, running commands) drops one tier along fable → opus → sonnet.
+- **Reasoning effort follows the model**: a dispatch that inherits the model also inherits the effort; a dispatch dropped a tier runs at `medium` effort.
+- **Keep context lean on every dispatch**: only the minimum material needed, path references instead of full text, a single-digit must-read list.
+- **Floor = Sonnet; one sanctioned exception below it**: the upstream `/code-review` command's Haiku triage agents (eligibility checks, file listing, summaries).
 
 Full dispatch protocol = workspace-management `references/subagent-protocol.md`.
 

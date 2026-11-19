@@ -33,11 +33,11 @@ There is **no `bash` and no `browser` subagent type here.** Run shell commands w
 
 Dispatch with the **`Agent` tool**: `Agent(description, prompt, subagent_type, model?, run_in_background?, isolation?)`.
 
-**Model — three tiers, per global `AGENTS.md` "Model routing" (that file is the authority; this is its dispatch-side restatement).**
-- **Opus (default; pass `model: "opus"` explicitly — omitting `model` inherits the main model, which may not be Opus)** — decisions, quality gates, core development; anything needing autonomous judgment. Final `verifier` / `qa-specialist`, `report-writer` and the `executor` building a web deliverable on the primary deliverable, any high-stakes design or review call.
-- **Inherit the main model (omit `model`; fable allowed)** — high-level design discussion and final result review. The real discipline here is **context economy**: pass path references instead of full text, and keep the must-read list to single digits.
-- **`model: "sonnet"`** — operational, low-autonomy work: mechanical execution of explicit instructions, batch replace, formatting, collection/aggregation, running commands. `file-extractor` already declares `model: sonnet` in its own definition, so you do not need to pass it for that.
-- **Decision rule:** does this dispatch require the agent to *judge* something, or only to *execute* something already decided? Judge → opus. Execute → sonnet.
+**Model — inherit by default, per global `AGENTS.md` "Model routing" (that file is the authority; this is its dispatch-side restatement).**
+- **Default: omit `model`** so every subagent inherits the main model. Do not tier unless the user says to.
+- **When the user asks for tiering, tier by task difficulty**: core work that affects functional quality (decisions, quality gates, core development, final `verifier` / `qa-specialist`, the producer of the primary deliverable) still inherits; basic work that does not affect functional quality (mechanical execution of explicit instructions, batch replace, formatting, collection/aggregation, running commands) drops one tier along fable → opus → sonnet, passed explicitly as `model`.
+- **Reasoning effort follows the model**: inheriting dispatches inherit the effort (omit `effort`); a dispatch dropped a tier passes `effort: "medium"`.
+- **Context economy on every dispatch**: path references instead of full text, must-read list in single digits. `file-extractor` declares `model: sonnet` in its own definition; that definition stands.
 - There is **no `composer-2`** on this harness. Values used here: `opus` / `sonnet` / `fable`; Sonnet is the floor (`haiku` only in the upstream `/code-review` command). Passing an invalid model silently loses the tier distinction.
 
 **Foreground vs background.**

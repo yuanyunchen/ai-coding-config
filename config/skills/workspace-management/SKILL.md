@@ -1,77 +1,78 @@
 ---
 name: workspace-management
-description: "Agent 工作区 v4 的唯一规范：结构、ws 命令行、派发协议、memory 组织，以及 init / recall / update 三个例程。触发：长任务开工或用户要求时——建工作区、任务收尾、恢复工作区上下文、在工作区里拆任务或派发子智能体、整理工作区 memory、管理工作区 skill；当前目录向上能找到 .agents/ws.json（v4）或 .agent/（v3 旧版）时。触发词：工作区、workspace、长期任务、收尾、归档、ws、.agents。边界：轻任务不建工作区；全局记忆归 memory-management，harness 变更归 harness-management。"
+description: "Manage v4 workspace structure, ws commands, dispatch, memory and init/recall/update. Use for long tasks, workspace creation, wrap-up, archiving, restoring context, splitting tasks, dispatching agents, or organizing workspace memory or skills. Detect .agents/ws.json (v4) or .agent/ (legacy v3) up the directory tree. Skip workspace creation for light tasks. Route global memory and harness changes to their respective management skills."
 ---
 
-# workspace-management — Agent 工作区 v4
+# Agent workspace v4
 
-一个工作区 = 根目录的 `AGENTS.md`（agent 维护的入口和地图）+ `.agents/`（agent 的一切）。结构性写入全部走 `ws` 命令行；hook `~/.claude/hooks/workspace-guard.py` 负责注入现状、记录用户原文、拦截不合规的派发、收回子智能体的结果。规则正文写进每个工作区 AGENTS.md 的「工作协议」区块，主 agent 和子智能体每次会话都会读到。
+A workspace consists of a root `AGENTS.md`, the agent-maintained entry point and map, plus `.agents/` for agent files. Use the `ws` CLI for all structural writes. The `~/.claude/hooks/workspace-guard.py` hook injects current state, records user messages verbatim, intercepts noncompliant dispatches and collects subagent results. Each workspace's AGENTS.md contains the rules in its working protocol block (`工作协议`), read by the lead and subagents in every session.
 
-## 结构
+## Layout
 
 ```
 <workspace>/
-├── AGENTS.md                 入口和地图，agent 维护，100–200 行；<!-- ws:… --> 区块由 ws index 生成
+├── AGENTS.md                 Entry and map, maintained by the agent, 100–200 lines. ws index generates <!-- ws:… --> blocks.
 └── .agents/
-    ├── ws.json               激活标记：有它才是 v4 工作区（也是锁；"hooks": "off" 关 hook）
-    ├── conversation.md       hook 记下的 Q&A：用户原文 + 每轮最终回答 + 归档标记（只追加，不进 git）
-    ├── inbox.md              只有用户消息：日期时间 + 编号 + 原文（只追加，不进 git）
-    ├── secrets.env           密钥（600，不进 git）
-    ├── memory/               知识库：按主题分目录；大文件拆成目录 + README.md；INDEX.md 自动生成
-    ├── skills/<名>/SKILL.md  工作区专属 skill，AGENTS.md 的 Skills 表自动列出
-    └── task/NN-<名>/         任务节点，结构到哪一层都一样：
-        ├── task.md           上层写：「任务说明」（结构化、随需求改写）+「原文记录」（只追加）
-        ├── goal.md · plan.md 自己写，开工前
-        ├── progress.md       frontmatter status + 只追加的日志
-        ├── result.md         自己写，收尾时交给上层：核心 ≤6KB + 附件索引
-        ├── brief.md          可选：本节点多次派发共用的说明，派发时自动列进必读
-        ├── input/ · deliverables/  用户交来的文件 · 给人看的产物
-        ├── subagent/NN-<名>/ 派发：task.md 进，result.md 出（子智能体自己写）
-        └── task/NN-<名>/     子任务，同样结构
+    ├── ws.json               v4 activation marker and lock. "hooks": "off" disables the hook.
+    ├── conversation.md       Hook-recorded Q&A: verbatim user messages, each turn's final answer and archive markers. Append only, excluded from git.
+    ├── inbox.md              User messages only, with date, time, number and verbatim text. Append only, excluded from git.
+    ├── secrets.env           Secrets, mode 600, excluded from git.
+    ├── memory/               Knowledge organized by topic. Split large files into a directory and README.md. INDEX.md is generated.
+    ├── skills/<name>/SKILL.md Workspace-specific skills, automatically listed in the AGENTS.md Skills table.
+    └── task/NN-<name>/       Task node. The same structure applies at each depth.
+        ├── task.md           Parent writes the structured current specification and append-only verbatim record.
+        ├── goal.md · plan.md Executor writes these before starting.
+        ├── progress.md       Frontmatter status and an append-only log.
+        ├── result.md         Executor's handoff to the parent at close: core ≤6KB plus attachment index.
+        ├── brief.md          Optional instructions common to this node's dispatches, automatically listed as required reading.
+        ├── input/ · deliverables/  User-supplied inputs and human-facing outputs.
+        ├── subagent/NN-<name>/ Dispatch. task.md in, result.md out. The subagent writes the result.
+        └── task/NN-<name>/   Subtask with the same structure.
 ```
 
-ID 由路径推出：`T01.02` 是任务 01 的子任务 02，`T01.02/S03` 是它的第 3 次派发。
+IDs derive from paths. `T01.02` is subtask 02 of task 01. `T01.02/S03` is its third dispatch.
 
-## 八条硬规则
+## Eight mandatory rules
 
-1. **是不是工作区只看 `.agents/ws.json`。** 家目录下的 `~/.agents/skills` 是 lark-cli 托管的 skill 副本，与工作区无关；`ws` 和 hook 都不会越过 `$HOME` 往上找。
-2. **结构只由 `ws` 创建。** 任务、派发、编号、索引都用命令生成；不手建 `NN-` 目录，不手改 `<!-- ws:… -->` 区块。
-3. **需求原文不丢。** 用户消息和每轮回答由 hook 自动记进 conversation.md；凡是需求或方向变化，当轮用 `ws req` 把原文追加进对应节点 task.md 的「原文记录」，再把变化合进「任务说明」（`ws task spec`）。执行者不改 task.md。
-4. **节点有门槛。** 任务说明（目标、验收标准）、goal、plan 写好才能 active；result.md 合格、派发都有结果、子任务收尾、本节点的 draft 转正、inbox 清空，才能 done。
-5. **派发走文件。** 先 `ws dispatch` 生成 task.md，再原样使用它打印的 prompt；子智能体自己写 result.md，聊天回复不算结果。结果里的「需要上层处理」逐条定修 / 豁免 / 报用户并记 decision；给原执行者加要求先 `ws followup`。一个节点最多派发 3 波，之后的波次建成子任务。协议见 `references/subagent-protocol.md`。
-6. **memory 只放跨任务有用的事实、做法、教训、资料、长期决策。** 按主题分目录；超过 8KB 拆成目录 + README.md（读完 README 就能干活）；代码类笔记写 basis/covers 以便查过期；计划和建议留在任务节点，用户裁决只写 AGENTS.md「规则」节；子智能体写的标 draft。
-7. **AGENTS.md 是地图。** 控制在 100–200 行，细节放进 memory 留指针；「规则」一节只记用户的裁决，自己想出的规则走 harness-management。
-8. **v3 工作区原样保留。** 有 `.agent/MEMORY.md` 或 `.agent/memory/` 的目录按 `references/v3-legacy.md` 办，不自动转换。
+1. **Recognize v4 only by `.agents/ws.json`.** The home-level `~/.agents/skills` contains lark-cli-managed skills and is unrelated to workspaces. Neither `ws` nor the hook walks above `$HOME`.
+2. **Create structure with `ws` only.** Generate tasks, dispatches, numbers and indexes through commands. Never create `NN-` directories or edit `<!-- ws:… -->` blocks by hand.
+3. **Preserve requirements verbatim.** The hook records user messages and each turn's final answer in conversation.md. At kickoff, set the current node once with `ws focus <ID>`. The hook then appends user messages to the node's task.md under `原文记录` (verbatim record), without per-message filing or classification. When requirements or direction change, fold the change into `任务说明` (current specification) using `ws task spec`. The executor does not edit task.md.
+4. **Apply node gates.** Before active, write the task specification (goal and acceptance criteria), goal and plan. Before done, ensure result.md passes, all dispatches have results, subtasks are closed, this node's drafts are promoted.
+5. **Dispatch through files.** First use `ws dispatch` to generate task.md, then send the printed prompt verbatim. The subagent writes result.md itself. A chat reply does not qualify as its result. For each item in `需要上层处理` (requires parent action), choose a fix, waiver or escalation to the user and record the decision. Use `ws followup` before giving additional requirements to the original executor. Allow at most 3 dispatch waves per node. Create subtasks for subsequent waves. See `references/subagent-protocol.md`.
+6. **Keep memory useful across tasks.** Include facts, practices, lessons, source materials and long-term decisions. Use topic directories. Split files over 8KB into directories with a README.md sufficient to start work. Include basis/covers in code notes to detect staleness. Keep plans and suggestions in their task nodes and user rulings only in the AGENTS.md rules section (`规则`). Mark subagent-written memory draft.
+7. **Use AGENTS.md as a map.** Keep it to 100–200 lines and point to details in memory. Reserve the rules section for user decisions. Route agent-proposed rules through harness-management.
+8. **Preserve v3 workspaces.** For directories containing `.agent/MEMORY.md` or `.agent/memory/`, follow `references/v3-legacy.md`. Never convert them automatically.
 
-## 命令
+## Commands
 
-`ws` 在 `~/.local/bin`（软链到本 skill 的 `scripts/ws`）；不在 PATH 时用 `python3 <本 skill>/scripts/ws`。
+`ws` lives in `~/.local/bin` as a symlink to this skill's `scripts/ws`. If unavailable on PATH, use `python3 <skill-dir>/scripts/ws`.
 
-| 命令 | 作用 |
+| Command | Purpose |
 |---|---|
-| `ws init [DIR] [--profile task\|repo] [--title] [--yes]` | 新建工作区；repo 类型只在 AGENTS.md 末尾追加一个区块，需用户同意后加 `--yes` |
-| `ws req --new <slug> --entry <id>` · `ws req <ID> --entry <id>` · `ws req --not-req <id>` | 把 inbox 原文开成新任务、追加进已有节点，或标成"不是需求"；`--stdin` 用于没有 hook 的环境 |
-| `ws task new <slug> [--parent ID] [--title] [--stdin]` | 新建任务节点（上层的说明从 stdin 进 task.md） |
-| `ws task spec <ID> --stdin` | 用最新的完整版本改写 task.md「任务说明」（### 目标 / 背景 / 要求 / 约束 / 验收标准 / 输入 / 未定事项） |
-| `ws task status <ID> <planned\|active\|blocked\|done\|dropped>` | 改状态，带门槛检查；`--force "<原因>"` 跳过检查，原因记进 progress |
-| `ws dispatch <ID> <slug> --stdin [--force 原因] [--external]` | 新建派发目录和 task.md，打印派发用的那行 prompt；第 4 波起拦下；`--external` 给 codex exec / claude -p 登记；说明里有段落和以前的派发重复时提醒 |
-| `ws followup <派发ID> --stdin` | 续派：新要求追加进原派发 task.md，旧 result.md 改名保留，打印续接消息 |
-| `ws log <ID> "…" [--tag decision\|surprise\|note]` | 在 progress.md 追加一行 |
-| `ws inbox` · `ws status` · `ws check` · `ws index` | 未归档原文 · 现状摘要 · 全面检查 · 刷新生成区块 |
-| `ws migrate` | 旧版 v4 工作区升级到 v4.2：对话新格式、inbox.md、task.md 分成任务说明 + 原文记录 |
+| `ws init [DIR] [--profile task\|repo] [--title] [--yes]` | Create a workspace. The repo profile appends only a block to AGENTS.md and requires user consent before passing `--yes`. |
+| `ws focus <ID>` · `ws focus --clear` · `ws focus` | Set, clear or display the current node. The hook appends subsequent user messages to its task.md verbatim section unless they contain secrets or are shorter than 20 characters. |
+| `ws req --new <slug> --entry <id>` · `ws req <ID> --entry <id>` | Manually backfill an original message by creating a task or appending it to another node. Use `--stdin` in environments without a hook. |
+| `ws task new <slug> [--parent ID] [--title] [--stdin]` | Create a task node with the parent's instructions from stdin in task.md. |
+| `ws task spec <ID> --stdin` | Replace the current task.md specification with the latest complete one. Its required format uses `###` headings `目标` (goal), `背景` (background), `要求` (requirements), `约束` (constraints), `验收标准` (acceptance criteria), `输入` (inputs), and `未定事项` (open questions). |
+| `ws task status <ID> <planned\|active\|blocked\|done\|dropped>` | Change status with gate checks. `--force "<reason>"` skips the checks and records the reason in progress. |
+| `ws dispatch <ID> <slug> --stdin [--force reason] [--external]` | Create the dispatch directory and task.md, then print the dispatch prompt. Blocks starting at wave 4. `--external` registers codex exec / claude -p. Warns when a paragraph duplicates one in a prior dispatch. |
+| `ws followup <dispatch-ID> --stdin` | Append new requirements to the original dispatch task.md, preserve its old result.md under a new name and print the follow-up message. |
+| `ws log <ID> "…" [--tag decision\|surprise\|note]` | Append one line to progress.md. |
+| `ws inbox` · `ws status` · `ws check` · `ws index` | Show original messages recorded in no task node, summarize current state, check workspace integrity, or refresh generated blocks. |
+| `ws migrate` | Upgrade an older v4 workspace to v4.2: new conversation format, inbox.md and separate current specification and verbatim record in task.md. |
 
-## 例程与参考
+## Routines and references
 
-| 场景 | 读 |
+| Situation | Read |
 |---|---|
-| 开工、建工作区 | `modules/init.md` |
-| 新会话接手、压缩后恢复 | `modules/recall.md` |
-| 阶段收口、收尾、移交 | `modules/update.md` |
-| 派发子智能体（主 agent 必读第二节，并把路径交给子智能体读第一节） | `references/subagent-protocol.md` |
-| 完整规则：识别、repo 类型、节点生命周期、inbox、memory、AGENTS.md、hook、检查项、边界、已知限制 | `references/spec.md` |
-| 工作区 skill 与根 `.claude/` | `references/capability-layer.md` |
-| v3 旧工作区 | `references/v3-legacy.md`；巡检 `scripts/legacy/lint-v3.sh` |
-| 模板 | `templates/`（AGENTS 两种、协议、节点五件、派发、memory 笔记与目录 README） |
-| 版本历史 | `CHANGELOG.md` |
+| Start work or create a workspace | `modules/init.md` |
+| Take over in a new session or recover from context compaction | `modules/recall.md` |
+| Close a stage, wrap up or hand off | `modules/update.md` |
+| Dispatch a subagent. The lead must read section 2 and give the subagent the path to read section 1. | `references/subagent-protocol.md` |
+| Full rules for recognition, repo workspaces, node lifecycle, inbox, memory, AGENTS.md, hooks, checks, boundaries and known limitations | `references/spec.md` |
+| Workspace skills and the root `.claude/` directory | `references/capability-layer.md` |
+| Legacy v3 workspaces and inspection | `references/v3-legacy.md` and `scripts/legacy/lint-v3.sh` |
+| Templates | `templates/` holds both AGENTS variants, the protocol, five task-node files, dispatch, memory notes and directory README. |
+| Version history | `CHANGELOG.md` |
 
-测试：`python3 -m unittest discover -s scripts/tests`（ws）与 `python3 -m unittest discover -s ~/.claude/hooks/tests`（hook）。
+Run `python3 -m unittest discover -s scripts/tests` for ws and `python3 -m unittest discover -s ~/.claude/hooks/tests` for the hook.

@@ -1,0 +1,37 @@
+{
+  "firstSeen": 1794956016003,
+  "lastUpdateCheck": 1794956016657,
+  "latestVersion": "0.6.1",
+  "latestHighlights": {
+    "en": [
+      "New diagrams: state machines, UML classes and HTTP/RPC contracts",
+      "Copy as image puts the page on the clipboard; pages_dir picks the folder",
+      "am video --voice cmd narrates with edge-tts, piper or another CLI TTS"
+    ],
+    "zh": [
+      "新增图表：状态机、UML 类图和 HTTP/RPC 接口契约",
+      "「复制为图片」把整页放进剪贴板；pages_dir 指定页面输出目录",
+      "am video --voice cmd 用 edge-tts、piper 等命令行 TTS 配音"
+    ],
+    "zh-Hant": [
+      "新增圖表：狀態機、UML 類別圖和 HTTP/RPC 介面契約",
+      "「複製為圖片」把整頁放進剪貼簿；pages_dir 指定頁面輸出資料夾",
+      "am video --voice cmd 用 edge-tts、piper 等命令列 TTS 配音"
+    ],
+    "ja": [
+      "新しい図：状態遷移図、UML クラス図、HTTP/RPC の API 仕様",
+      "「画像としてコピー」でページをクリップボードへ。出力先は pages_dir",
+      "am video --voice cmd で edge-tts や piper などのコマンド TTS が使えます"
+    ],
+    "he": [
+      "דיאגרמות חדשות: מכונות מצבים, מחלקות UML וחוזי HTTP/RPC",
+      "העתקה כתמונה שמה את העמוד בלוח; pages_dir קובע את התיקייה",
+      "am video --voice cmd מקריא עם edge-tts, piper או TTS אחר משורת הפקודה"
+    ],
+    "tr": [
+      "Yeni diyagramlar: durum makineleri, UML sınıfları, HTTP/RPC sözleşmeleri",
+      "Görsel olarak kopyala sayfayı panoya alır; klasörü pages_dir seçer",
+      "am video --voice cmd; edge-tts, piper gibi komut satırı TTS ile seslendirir"
+    ]
+  }
+}

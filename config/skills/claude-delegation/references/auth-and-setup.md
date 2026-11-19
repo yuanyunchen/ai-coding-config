@@ -31,7 +31,7 @@ After any of these, confirm:
 
 ```bash
 claude auth status        # expect {"loggedIn":true,"authMethod":"..."}
-claude -p --model haiku "Reply with exactly: SMOKE-OK"   # end-to-end check
+claude -p "Reply with exactly: SMOKE-OK" --model haiku --effort high --tools ""   # end-to-end check
 ```
 
 ## Hermetic / CI runs

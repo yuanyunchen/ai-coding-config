@@ -65,6 +65,9 @@ Canonical live 源沿用既有约定 ~/.claude；本轮只迁移工作区，没�
 <!-- ws:tree -->
 - T01 迁移 Harness 并建立可追溯工作区 — done · [result](.agents/task/01-workspace-migration/result.md)
 - T02 Harness 基线审计与系统升级方案 — planned
+- T03 安装 Answer me with HTML 并对比现有能力 — done · [result](.agents/task/03-answer-me-with-html/result.md)
+- T04 按 Slack 官方流程接入可被 @ 的 Agent — blocked，派发 11 · [result](.agents/task/04-slack-agent-setup/result.md)
+  - （2 个子任务，已折叠）
 <!-- /ws:tree -->
 
 ### 外部资源

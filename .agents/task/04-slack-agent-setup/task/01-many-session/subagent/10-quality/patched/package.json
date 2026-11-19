@@ -1,0 +1,27 @@
+{
+  "name": "slack-codex-bridge",
+  "version": "1.0.0",
+  "description": "A team-scoped Slack Socket Mode bridge for shared coding sessions.",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "start": "node src/main.js",
+    "status": "node scripts/manage.js status",
+    "enroll": "node scripts/manage.js enroll",
+    "pair": "node scripts/manage.js pair"
+  },
+  "license": "ISC",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@slack/bolt": "^5.1.0",
+    "ws": "^8.23.0"
+  },
+  "devDependencies": {
+    "@slack/cli-hooks": "^2.0.0"
+  },
+  "main": "app.js",
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

@@ -1,8 +1,8 @@
 {
   "pluginId": "superpowers@claude-plugins-official",
   "platform": "claude",
-  "installPath": "/Users/yuanyunchen/.claude/plugins/cache/claude-plugins-official/superpowers/7.0.0",
-  "version": "7.0.0",
+  "installPath": "/Users/yuanyunchen/.claude/plugins/cache/claude-plugins-official/superpowers/7.0.2",
+  "version": "7.0.2",
   "hasHooks": true,
-  "copiedAt": "2026-11-05T00:49:09Z"
+  "copiedAt": "2026-11-19T05:09:27Z"
 }

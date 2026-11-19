@@ -5,41 +5,41 @@ description: "Unified skill for the bytedcli command surface. Use for ByteDance 
 
 # bytedcli
 
-## 如何调用 bytedcli
+## Invoking bytedcli
 
-推荐：先全局安装一次，后续所有命令直接调用 `bytedcli`。
+Install globally once, then call `bytedcli` directly.
 
 ```bash
-# 推荐方式：先全局安装，后续直接调用 bytedcli
+# Recommended: install globally, then invoke bytedcli directly
 NPM_CONFIG_REGISTRY=http://bnpm.byted.org npm install -g @bytedance-dev/bytedcli@latest
 bytedcli <command> [options]
 ```
 
 ```bash
-# Fallback：仅在无法全局安装时使用 npx 临时执行
+# Fallback: use npx for a one-off invocation only if global installation is impossible
 NPM_CONFIG_REGISTRY=http://bnpm.byted.org npx -y @bytedance-dev/bytedcli@latest <command> [options]
 ```
 
-- 默认使用全局安装的 `bytedcli ...`，不要把 `npx -y @bytedance-dev/bytedcli@latest` 写进自动化或日常调用。
-- 仅当目标环境完全无法 `npm install -g`（如临时容器、无写权限的 CI）时，才把示例里的 `bytedcli` 替换为 `NPM_CONFIG_REGISTRY=http://bnpm.byted.org npx -y @bytedance-dev/bytedcli@latest`。
+- Default to the globally installed `bytedcli ...`. Keep `npx -y @bytedance-dev/bytedcli@latest` out of automation and routine calls.
+- Only if the environment cannot run `npm install -g` (for example, an ephemeral container or CI without write access), replace `bytedcli` in the examples with `NPM_CONFIG_REGISTRY=http://bnpm.byted.org npx -y @bytedance-dev/bytedcli@latest`.
 
-这是 bytedcli 的统一入口说明。任务涉及字节内部研发平台时，先用它判断该走哪个命令域，再按需进入对应领域的详细说明。
+Use this entry point to identify the command domain for a ByteDance internal development platform, then read its guide as needed.
 
 ## How to use
 
-0. **`bytedance` 知识库先查(记忆优先)** — 本 skill 覆盖的是**官方接口面**(命令、参数、schema);官方文档没写的那一层——平台实际怎么用、指标口径、实验结论、机制原理、历史决策、踩过的坑——在统一仓 `global-memory` 的 BM project **`bytedance`**(目录 `bytedance/`)。**做内网平台 / 广告算法任务前先查它**:
+0. **Consult the `bytedance` knowledge base first.** This skill covers the official interface (commands, parameters, schemas). Practical platform usage, metric definitions, experimental findings, mechanisms, historical decisions and known pitfalls live in the `global-memory` repository's BM project **`bytedance`** (directory `bytedance/`). Search it before internal platform or advertising algorithm work.
    ```
-   <repo>/bin/bm tool search-notes --project bytedance "<你的问题>"
+   <repo>/bin/bm tool search-notes --project bytedance "<your question>"
    ```
-   (`<repo>` = `global-memory` 仓根;或 MCP `search_notes`,`project=bytedance`)。命中就直接用,并核对该事实 `source.quote` 的时效;命中率最高是带名字/实体的查询。
-   现有域与它们大致对应本 skill 的哪些命令域:`platforms`(内部平台目录,167 张)· `ad-algo-core`(广告算法机制/公式/结构,145 张)· `psort-recall` · `project-cid-recall` · `signal-pixel` · `experiment-method`(AB 实验方法与参数)· `ads-foundation` · `ops` · `weekly-notes`。
-   **两者是互补不是替代**:本 skill 告诉你命令怎么敲,`bytedance` 告诉你这条命令在真实环境里会怎么翻车、以及这个数该怎么算。跳过它的典型代价是重复研究一件已经研究过的事。
+   `<repo>` is the `global-memory` repository root. Alternatively, use MCP `search_notes` with `project=bytedance`. Use matches directly after checking that the fact's `source.quote` is current. Queries with names or entities work best.
+   Relevant domains include `platforms` (internal platform catalog, 167 cards), `ad-algo-core` (advertising algorithms, formulas and structures, 145 cards), `psort-recall`, `project-cid-recall`, `signal-pixel`, `experiment-method` (A/B methods and parameters), `ads-foundation`, `ops` and `weekly-notes`.
+   The two resources complement each other. This guide gives command syntax. `bytedance` describes real-world failures and how to calculate a metric. Skipping it can duplicate earlier investigations.
 
-1. 先判断任务属于哪个平台或对象类型。
-2. 先选对命令域，再调用对应的 bytedcli 命令。
-3. 需要稳定机器可读输出时，默认加 `--json`，并把它放在 `<domain>` 前面。
-4. 不确定命令名或参数时，先看 `--help`，不要猜。
-5. 命令支持控制台 URL、文档 URL、仓库上下文自动推断时，优先直接使用这些输入。
+1. Identify the platform or object type.
+2. Select the command domain, then run its bytedcli command.
+3. For stable machine-readable output, place `--json` before `<domain>` by default.
+4. Check `--help` before using an unfamiliar command or parameter.
+5. Prefer console URLs, document URLs and automatic repository-context inference wherever supported.
 
 ## Quick start
 
@@ -56,16 +56,16 @@ bytedcli self plugin list
 bytedcli self plugin doctor --name demo-tools
 ```
 
-## Self 管理与技能更新
+## Self-management and skill updates
 
-全局安装的 bytedcli 会在普通命令执行时自动检查 CLI 与已安装技能版本；`self` 子命令自身不会触发 auto-upgrade。需要关闭自动升级时使用全局参数或环境变量：
+A global bytedcli installation checks the CLI and installed skill versions during ordinary commands. The `self` commands do not trigger auto-upgrade. Disable automatic upgrades with either the global option or the environment variable.
 
 ```bash
 bytedcli --no-auto-upgrade <domain> <command> [options]
 export BYTEDCLI_NO_AUTO_UPGRADE=1
 ```
 
-管理随 bytedcli 打包的 agent skills 时用 `self skill`，不要直接手删技能目录：
+Manage bundled agent skills with `self skill`. Do not delete their directories manually.
 
 ```bash
 bytedcli self skill list
@@ -76,172 +76,172 @@ bytedcli self skill update -g
 bytedcli self skill remove -s bytedance-feishu -g
 ```
 
-- `-g/--global` 对应全局技能目录 `~/.agents/skills/`；省略时操作当前项目的 `.agents/skills/`。
-- `self skill remove` 会同时删除目录和 `~/.local/share/bytedcli/data/skill-lock.json` 中的记录；只手动删除目录时，lock 仍可能保留该技能，后续版本升级时可能被重新同步。
+- `-g/--global` selects `~/.agents/skills/`. Omitting it selects the current project's `.agents/skills/`.
+- `self skill remove` removes both the directory and the entry in `~/.local/share/bytedcli/data/skill-lock.json`. Deleting only the directory can leave a lock entry that restores the skill at the next upgrade.
 
-## 生产网 prod
+## Production network (prod)
 
-VA / Maliva / 生产开发机上，调 i18n-tt / i18n-bd / sg 命令前先 `export BYTEDCLI_NETWORK_PROFILE=prod`。办公网跳过。
+On VA, Maliva or a production development machine, run `export BYTEDCLI_NETWORK_PROFILE=prod` before calling i18n-tt, i18n-bd or sg commands. Skip this on the office network.
 
 ## Route by task
 
-- 登录、状态、JWT、用户信息：`auth`
-  - 例子：“帮我登录”“看当前账号”“拿 codebase jwt”
-- 仓库、MR、Issue、Review、CI、文件、跨仓搜索：`codebase`
-  - 例子：“看这个 MR”“给这个 MR 回复评论”“查这个仓库的 CI”
-- 代码审查 / code review：`bits-code-guard`（完整评审 skill）、`code-review`（拉取仓库自定义审查规则 / 工作流的 CLI 命令）
-  - 例子：“review 这个 MR 的代码”“CR 一下我这次改动”“帮我看看这段有没有 bug”
-  - 查某个仓库绑定的自定义审查规则 / 工作流用 `bytedcli code-review rule list --repo group/project` / `bytedcli code-review workflow list --repo group/project`（`--repo` 也接受 code.byted.org 的 SSH/HTTPS remote URL，或在仓库目录内自动推断）
-- 研发任务管理（创建发布任务、查看任务详情与部署状态、搜索任务列表、查询项目与需求）：`devflow`
-  - 例子：”创建一个发布任务””查这个 devflow 任务详情””搜我的发布任务””查这个空间有哪些项目””查项目下有哪些需求”
-- FTF 系统级测试任务、聚合报告、diff 明细与 TeslaX plan：`ftf` / `bytedance-ftf`
-  - 例子：“查这个 FTF task”“看某个方法的 FTF 聚合报告”“拉 diff value 详情”“触发 FTF plan”
-- Dora 云真机/云手机：`dora` / `bytedance-dora`
-  - 例子：“查询 Dora 云真机”“申请云手机”“获取 Dora ADB 地址”
-- BITS 研发任务、流水线、MR、release、任意门代理抓包与 mock：`bits` / `bytedance-bits`
-  - 例子：“查 BITS pipeline”“重试这个 jobRun”“调试任意门抓包”“列任意门设备”“把任意门 capture 转 curl”“创建/启停任意门 mock”
-  - 任意门不是顶层命令域，使用 `bytedcli bits anywhere ...`；完整说明见 [references/subskills/bytedance-bits/references/anywheredoor.md](references/subskills/bytedance-bits/references/anywheredoor.md)
-- ByteFlow 工作流引擎、应用/状态机/revision 查询、workflow JSON/ASL 校验与安全写操作辅助：`bytedance-byteflow`
-  - 例子：“查 ByteFlow app/状态机”“校验这个 workflow JSON”“创建或更新 ByteFlow revision”
-- LG Admin Torch 发版/发版本、镜像发布、构建历史页同款 payload、cpu/cuda/mlu Torch 版本选择、use cache / skip arm / image rebuild 等高级选项：`lg-admin torch`
-  - 路由优先级：当用户明确提到 ICM 查询语义，例如 ICM prod、发布历史、最近发布、构建 commit、构建仓库、repo/build 信息查询时，优先走顶层 `icm`。产品名、包名或 repo 名中的 `lagrange`、`torch`、`cpu`、`cuda`、`mlu` 等词不能单独触发 `lg-admin`，也不要说或尝试 `lagrange torch`。
-  - 例子：“发一个 lg-admin Torch DEV build / 发版 / 发版本”→ `lg-admin torch release package build`；“发 LG 镜像 / 发布 LG Torch 镜像”→ `lg-admin torch release image build`
-- Academy 广告特征开发与管理（source_v2、raw feature set group、feature 搜索）：`academy`
-  - 例子：“查 Academy 里有没有这个 source”“搜某个 raw feature set group”“按关键词查在线 feature”
-- Feishu / Lark 文档、评论、日历、待办、消息、表格、多维表格：`feishu`
-  - 例子：“读这个 Lark 文档”“在文档里追加一段”“给某人发飞书消息”
-- People 自助请假记录查询与全天/半天假申请：`people`
-  - 例子：“查我今天请了几天假”“帮我请一天年假”“给今天下午补提半天假”
-- Jinshu / 云锦书消息预览与发送：`jinshu`
-  - 例子：“预览这段锦书消息”“发送这段锦书消息”
-- Lark Oncall 工单、打标/归因元数据、oncall 群消息和值班信息：`lark-oncall` / `bytedance-lark-oncall`
-  - 例子：“查某业务线过去 7 天的 oncall 工单”“拿某个 ticket 的 oncall 群聊天记录”“列 oncall tag/归因选项”
-- VOC（抖音 CEM 用户反馈，cem.bytedance.net）feedback 详情查询：`voc` / `bytedance-voc`
-  - 例子：“查这条 voc feedback 详情”“按 voc 控制台 URL 拉反馈”“按 voc 分享链接拉反馈列表”“看本地 voc 鉴权 cookie 是否还在”
-- Vimo Web 模板资源查询与模板 ZIP 下载：`vimo` / `bytedance-vimo`
-  - 例子：“下载这个 Vimo 模板包”“根据 Vimo template RID 拿 ZIP”“解析 lv.ulikecam.com sharevideo 链接里的 template_id 并下载模板”
-  - 边界：`bytedcli vimo` 只做 Vimo Web 模板 RID/URL 查询和 ZIP 下载；素材 CRUD、面板、分类、上传、发布、服务账号 OpenAPI 流程用 `vimocli`
-- FundEye / Fullink 核对规则、diff、告警：`fundeye`
-  - 例子：“查这个规则详情”“按 rule_id 看最近一天的 diff”“查某个 alarm_order_id 对应的 diff”
-- Starling 文案平台、项目、空间、文案搜索：`starling`
-  - 例子：“查这个 Starling 项目”“创建一个 Starling space”“搜索某个文案 key”
-- Luban npm 包查询、PyPI 制品仓库搜索/版本查询与发布：`luban`
-  - 例子：“查某个 TTP-US npm 包在 Luban 里有没有”“看某个包的 2.1.x 版本”“按 pip 包名查 Luban PyPI 仓库”“查 Luban PyPI 仓库版本列表”“基于 master 分支发布 PyPI 版本，先 dry-run，再确认发布并轮询结果”
-- Lynx 工具集合、LynxExample 产物元信息与下载：`lynx`
-  - 例子：“查 LynxExample 产物”“下载 LynxExample Android 包”
-- Argus Hybrid 工单生成：`argus hybrid`
-  - 例子：“给 Lynx 应用绑定 Gecko channel”“给 H5 应用新增安全 URL”“申请 H5/Lynx JSB 权限”“申请 secure 方法”“搜一下这个宿主 label”
-  - 当前用户身份来自 `bytedcli auth userinfo`；命令通过 Argus Hybrid OpenAPI 创建工单，默认只生成工单，不自动执行。`--hosts` 支持 label-only 模糊搜索，唯一 host 或 host group 命中会自动解析，多命中返回候选。
-- Mango / 芒果任务管理：`bytedance-mango`
-  - 例子：“登录 Mango”“列出 Mango 空间”“查询 Mango 任务”
-- Gecko CN 控制台只读资源查询（诊断、App、Project、Deployment、Channel 概览/分组/巡检、离线规则树、资源包与 workflow/tag/scan/stats 子资源）：`gecko`
-  - 例子：“查 Gecko CN 某个 channel 的详情”“列某个 channel 下的离线资源包”“查看资源包处理日志”
-- TikTok Gecko 控制台只读资源查询（工作台、App、Channel、Ticket、Host App、Deployment）：`tiktok-gecko`
-  - 例子：“查 Gecko 某个 channel 的详情”“列出 deployment 下所有 channel”“筛选某个 creator 的 Gecko 工单”
-- 技术文章、知识问答、AI 对话 / 附件 prompt：、`bitsai`、`tika`、`aime`
-- AI Dev Pro AFS / Agent File System 代码、接口、PSM、调用图、DB caller、FE wiki 等研发流程内的知识查询：`ai-dev-pro afs`
-  - 例子：“查这个 PSM 的接口参数”“搜某个代码实体”“查接口下游”“查 某个psm的AGENTS.md 知识”
-- 内部搜索（飞书文档、ByteCloud 文档、内网、ByteTech 文章、BitsAI 问答）与内部 URL 只读 GET：`insearch`
-  - 例子：“搜索 kitex ppe 环境”、“查飞书文档里有没有 BMQ 接入指南”、“用 BitsAI 问一下 TCC 怎么配置”、“用当前登录态 GET 这个内部接口”
-  - 读取内部 HTTP(S) URL 用 `insearch get <url>`；无法结构化解析的允许 URL 会自动走只读 GET fallback
-- SQL、数据库平台、数据资产、报表、离线任务：`rds`（子组：`db`/`slow`/`alert`/`ops`/`bpm`）、`bytedoc`（ByteDoc/MongoDB）、`tokadb`（TokaDB/Bytetable）、`hive`、`magnus`（Magnus GLS metadata read-only queries for catalogs, databases, tables, and schemas.）、`dorado`（子组：`project`/`task`/`instance`/`adhoc`）、`blade`（子组：`task`，当前支持 `task get` 和 `--region mycis`；鉴权优先复用 `blade.byteintl.net` 站点 cookie 与 fresh ByteCloud JWT）、`oceanus`（子组：`project`/`tree-node`/`node`/`task`）、`aeolus`、`dataq`、`tqs`、`forge`
-  - 例子：”查我关注的 ByteDoc 数据库””看这个库的慢查询””执行一段 SQL””查这个 dashboard 对应的数据集”
-  - 在 hive-sql 上进行语法检查、提交 sql 任务、获取状态和结果：`tqs`
-- TEA / tea-next 看板、报表、快照、DSL、analysis 查询、行为细查、事件元数据与事件上报：`tea` / `bytedance-tea`
-  - 例子：“读这个 TEA 链接的数据”“从 tea-next 快照拿 DSL 并查询”“查某个事件按维度分组”“查询 behavior-detail 行为流”
-  - tea-captain SG 链接做 `get-dsl | query` 时，query 阶段也传同一个 `--url`；完整说明见 [references/subskills/bytedance-tea/GUIDE.md](references/subskills/bytedance-tea/GUIDE.md)
-- NVQoS / VQoS 空间、数据集与智能归因：`nvqos` / `bytedance-nvqos`
-  - 例子：“列出某个 NVQoS 空间下的数据集”“触发 rootcause 归因分析”“按 Filters JSON 发起归因”
-- Eventbus CN-only event 详情查询：`eventbus-cn`
-  - 例子：“查国内 CN 这个 event 的详情”“确认 event 绑定了哪些 topic”“验证 eventbus OpenAPI 是否可用”
-  - 限定：仅支持国内 CN/BOE，i18n、US、EU 用户不支持该 skill
-- BMT 多租户服务、标签、资源、隔离集与 user role 查询：`bmt`
-  - 例子：“按 PSM 反查 BMT service”“看这个 PSM 绑定了哪些 RDS 或 RocketMQ 资源”“查某个 BMT resource code 对应的连接信息”
-- 查询 Forge 任务日志：`forge logs`
-- Chronos 调度平台：`chronos`
-  - 例子：“分页列出命名空间”“按 namespace 看任务列表”“按 task_id 看 HTTP 调度链接和报警接收人”
-- OneService query 元信息、版本详情、SQL 提取：`oneservice`
-  - 例子：“查这个 OneService query 的元信息”“按 queryId 拿当前 ONLINE 版本的 SQL”“按 versionId 看 query detail”
-- Holmes TBase 产品、字段、字段新增提审与 row-key 查询：`holmes tbase` / `bytedance-holmes-tbase`
-  - 例子：“查这个 TBase product 的配置”“列某个产品的字段”“给 TBase 新增字段提审”“按 row key 查多字段或 all-fields”
-- Byterec index service 产品信息、配置、模型配置列表、Viking service config 查询/flag 更新/ByteKV deploy、Viking DB 调试/资源查询，以及同组件在 Holmes 平台下的 proto / record 调试：`byterec indexservice` / `byterec model list` / `byterec viking` / `holmes indexservice` / `bytedance-byterec-indexservice`
-  - 例子：“查这个 Byterec indexservice 的 product 信息”“按 PSM 看 Byterec config”“按 Viking PSM 看 service config 或 flags”“dry-run 修改 Viking service config 的某个 flag”“把 Viking service config 部署到 ByteKV 并返回 review URL”“列 Byterec 某个 namespace 下的模型列表/版本”“判断模型是否绑定 Viking serving”“执行 Viking DB DSL recall”“查看 Viking DB database/model”“列 Holmes IndexService proto”“按显式参数读一条 IndexService record”
-- Merlin job 提交和从中抽取 YAML 描述，Merlin job run 列表与 job->trial 解析，Merlin trial diagnose/local-log，Merlin job/trial 的 stdout/stderr 日志查询，Merlin tracking project、run、metrics 和 job 链接读取，`merlin` 计算资源 quota 的 group、cluster 只读查询：`merlin`
-  - 例子：“提取这个 Merlin job 的 YAML”“把这份 `trial.yaml` 重提到 `seed-cn`”“看这个 Merlin tracking run 的 config/summary”“根据 job id 找 tracking 链接”“拉这个 Merlin trial 的 stdout/stderr”“查这个 trial 为什么还在排队”
-- Helix 模型与 AI 任务生命周期，当前覆盖 Video AIPF 数据准备、训练/评估提交、状态查询、停止和记录查询：`helix`
-  - 例子：“提交一个 Video AIPF 数据准备任务”“提交一个 Video AIPF 训练任务”“查询 Helix 评估状态”“停止这个 Video AIPF Ray 评估任务”“查最近的 Helix 训练记录”
-- Fornax prompt workspace、prompt 草稿与版本、prompt 发布，以及 experiment 创建与结果查询：`fornax`
-  - 例子：“列出这个 Fornax workspace 下的 prompts”“读取 prompt 个人草稿”“发布这个 prompt 到 ppe”“查询 experiment 第一页结果”“配置 Fornax experiment 的 AK/SK 或 JWT”
-- BES 元信息修改工单：`bes`
-  - 例子：`bytedcli bes metadata update --config '{"title":"demo-ticket"}'`
-- Kani 权限审批：`kani`
-  - 例子：“查 Kani request 页工单”“看 reviewer 视角的已完结审批”
-- 报销单查询与 AI 订阅报销草稿：`reimbursement`
-  - 例子：“查最近报销单”“检测这个报销单”“用这张订阅收据创建 AI 学习研究报销草稿”“关闭/删除这个草稿”“确认后提交这个报销单”
-- 配置中心、配置查询、新建、更新、发布与权限申请：`tcc`（子组：`namespace`/`config`/`deployment`/`env`/`site`/`permission`）、`bytestable`（子组：`wcc`、`qcss`）
-  - 例子：”查 TCC namespace 下的配置””更新一个 TCC 配置并发布””申请某个 TCC namespace 的读写权限””在 WCC 里新建配置””更新 WCC 配置值””发起 WCC 配置工单””通过 QCSS 检查项”
-- 部署、环境、ByteCopy、服务树、TrafficRoute PrivateZone、域名治理、对象存储、云函数资源、Ent Platform Storage IAC 新表 workflow 提交/已有表 entry 导入/字段标注校验与 MOSS 测试物料管理平台查询：`tce`、`env`（子组：`site`/`service`/`bytecopy`/`device`/`ticket`）、`bytetree`、`ent`、`trafficroute`、`goofy`、`netlink`、`neptune`、`tos`、`faas`、`volcano`、`bytecloud`、`moss`
-  - 例子：”查服务实例””看发布单””更新配置””做一个 Goofy preview””通过 Ent Platform 提交新表 workflow””导入已有 RDS 表到 Storage IAC entry””查询 TrafficRoute PrivateZone 的 zone / record / resolver”
-- TAE / AI PaaS（MCP Server/Tool 优先用 `bytedcli tae mcp ...`；Agent、Sandbox、Memory、Skill 等未覆盖能力走内部 API 指南）：`bytedance-tae`
-  - 例子：“在 TAE MCP Server 批量录入 RPC tools”“修复 MCP Input Schema”“把 HTTP tools 改成 RPC tools”“发布 MCP server revision”“调研 TAE Agent/Sandbox/Memory API”
-- TMates sandbox run / managed agent / managed-agent space 只读调试：`tmates` / `bytedance-tmates`
-  - 例子：“看这个 TMates share URL 的运行详情”“查 MP2C Regression Steward Agent 配置摘要”“确认当前 bytedcli JWT 是否能调 TMates OpenAPI”
-  - 当前仅注册 read-only 命令；reply/stop/update/archive 等写路径没有暴露。TikTok ROW 网关用 `--site i18n-tt`。
-- Janus / Janus Mini 泳道、group、配置、IDL、endpoint、backend 与发布 workflow：`janus` / `janus-mini` / `bytedance-janus` / `bytedance-janus-mini`
-  - 例子：“创建 Janus 泳道”“查询 Janus Mini group service_type”“创建 endpoint/backend”“创建 publish workflow 并查询状态”
-- Spark Platform 空间与链路资源：`spark-platform`
-  - 例子：“列出 Spark space”“按业务线 bid 列 link”“某个 space 下的 link”“拿某个 link 的完整 raw（含所有 version 与原始 deployConfig）用 `link get`”“要最新已发布 version + 解析后的 schema（含 schemaUrl / bundle / bundlePath）用 `link summary`”“列某个 link 的 env 配置”“给 link 设置 PPE env，先 `--dry-run` 看 payload 再真实执行”“删除某个 env”“指定非默认 `--app-id`”
-- Kross 多平台容器环境（workload）列表、创建、容器内远程执行与文件传输：`kross`
-  - 例子：“先用 `kross workspace list` 看我有哪些 workspace，再用 `kross template list` 查这个 workspace 在当前 cluster 下可用模板，然后用 `kross workload list` 看这个 workspace 下已有 workload，最后直接创建 job workload；quick create 默认会带 1000m CPU / 2048 MB memory / 300 秒 timeout / 自动删除”“删除某个 workload”“通过 webshell 在 workload 容器里执行命令”“上传或下载 workload 容器文件”
-- 日志、Footprint/TCE pod 文件日志、Megatron/Primus concrete 日志 URL 下载、监控、告警、Dashboard、Kubernetes 对象生命周期 trace、App 异常趋势、App/OS symbol、Redis / ABase / Kafka / RocketMQ / EventBus、Vela 单机指标：`log`（Footprint 入口是 `log footprint`）、`apm`（子组：`service`/`redis`）、`kelemetry`、`slardar`（子组：`web`/`app`/`os`）、`vela`（子组：`one-machine`）、`cache`、`abase`、`bmq`、`eventbus-cn`、`rmq`
-  - 例子：”查这个 logid””下载这个 Footprint / mljob-log-proxy 日志 URL””tail 这个 Footprint pod 日志文件””先看某个接口的总体瓶颈””按 logid 看链路各节点延迟””查某个 K8s 对象的 Kelemetry trace””看 Redis 大 key””分析这个告警页””查这个 Vela one-machine 页面里的指标””根据 Slardar dashboard URL 看看板配置或改标题””用 Slardar App issue URL retrace native 栈””用 Slardar OS issue URL 解析主线程 native 栈””搜索 RocketMQ topic””查看 RocketMQ consumer group 列表”
-- Primus History 任务摘要、AM 环境变量、newStatus、role pod、日志索引、CRD、Pod 生命周期：`primus` / `bytedance-primus`
-  - 例子：“查这个 Primus app 为什么失败”“拿 role pod 的日志索引”“看 Primus CRD 和 Pod lifecycle”
-- ByteDog profiling：`bytedog`
-  - 例子：”采一个 CPU 火焰图””分析这个 ByteDog URL 的 profile 结果””查历史 profiling 任务””先查这个 pod 里的 PID””分析 pthread 锁竞争””看 jemalloc 内存分配火焰图”
-- Libra / DataTester A/B 实验、指标组、指标组模版：`libra`
-  - 例子：“看这个实验详情”“查这个 flight 的报告”“根据 template 页面 URL 查看 metric-group template”
-- Tesla RM 自动化测试平台：测试任务触发/查询/run 等待、列表、失败归因，测试计划 CRUD 与统计：`tesla`
-  - 例子：“按计划 507863 触发一个 Tesla 任务并等结果”“查这个 Tesla 任务的状态和失败用例”“列出这个计划最近 7 天的任务”“看这个测试计划的执行统计”
-- TestIDE / SmartQ 小 Q UI 自动化：读取用例集、自动化步骤、片段引用，创建/更新用例集和步骤，创建测试任务并查询进度/结果：`smartq`
-  - 例子：“读取这个 TestIDE 用例集的自动化步骤和引用片段”“创建一个小 Q UI 测试任务”“查询 TestIDE 任务结果”
-- Panama 平台 RPC 工具执行：`panama rpc execute`
-  - 例子：“用 Panama 调一个 RPC 方法”“把这段 RPC body 通过 Panama 工具执行”“查看 Panama assertion 结果”
-- OneService 查询：`oneservice`
-  - 例子：“查这个 query 的 meta”“查这个 query version detail”“取当前 ONLINE 版本 SQL”
-- Life 生活服务生财有数平台：`life live-screen`
-  - 例子：“根据直播间 ID 看直播数据工作台核心指标”“按主播昵称 / 主播 ID / 抖音号 / 直播间 ID 获取用户信息”
-- Live Trace / 消息链路排查：`live trace`
-  - 例子：“发起 ack_trace”“查这个 task_id 的明细”“解析这段 pb_payload”
-- ByteIO 埋点、需求、点位、测试用例与广告元数据查询：`bytedance-byteio`
-  - 例子：“查这个 app_id 下某个 event_name 是否存在”“校验这个埋点参数”“查询 ByteIO 需求详情 / BTM 点位 / 测试用例 / 广告 tag”
-- 跨区域数据交换：`decc`
-  - 例子："创建 DECC channel""注册 DECC data""申请 channel 权限"
-- 安全与权限：`dkms`、`kmsv2`、`iam`
-  - 例子："查 data key 权限""给 key 加 ACL""搜一个员工"
-- 混沌工程、故障注入、演练方案创建：`chaos`
-  - 例子："创建一个演练方案，为 xxx 注入 cpu 受限 80% 的故障，持续时间 300 s，使用新建隔离环境的策略，选择最新的 rhino 流量"
-- Dataleap Pontus 成本与资产管理，如：Hive表存储大小与增长量查询：`pontus` / `bytedance-pontus`
-  - 例子："查询某个 Hive 表的存储大小与增长量"
-- 将 bytedcli 暴露给宿主、升级本地安装或管理受信任 CLI 插件：`mcp`、`self`
+- Login, status, JWT and user information: `auth`
+  - Examples: Log me in. Show the current account. Get a Codebase JWT.
+- Repositories, MRs, issues, reviews, CI, files and cross-repository search: `codebase`
+  - Examples: Show this MR. Reply to a comment on this MR. Check CI for this repository.
+- Code review: `bits-code-guard` (full review skill), `code-review` (CLI for a repository's custom review rules and workflows).
+  - Examples: Review this MR's code. Review my changes. Check this snippet for bugs.
+  - List a repository's custom rules or workflows with `bytedcli code-review rule list --repo group/project` or `bytedcli code-review workflow list --repo group/project`. `--repo` also accepts code.byted.org SSH/HTTPS remote URLs or can be inferred inside the repository.
+- Development task management (create release tasks, inspect details and deployment status, search tasks, query projects and requirements): `devflow`
+  - Examples: Create a release task. Show this Devflow task's details. Find my release tasks. List this space's projects. List this project's requirements.
+- FTF system tests, aggregate reports, diff details and TeslaX plans: `ftf` / `bytedance-ftf`
+  - Examples: Show this FTF task. Show a method's FTF aggregate report. Fetch diff value details. Trigger an FTF plan.
+- Dora cloud devices and phones: `dora` / `bytedance-dora`
+  - Examples: Find Dora cloud devices. Request a cloud phone. Get the Dora ADB address.
+- BITS development tasks, pipelines, MRs, releases, Anywheredoor proxy captures and mocks: `bits` / `bytedance-bits`
+  - Examples: Show the BITS pipeline. Retry this jobRun. Debug an Anywheredoor capture. List devices. Convert a capture to curl. Create, start or stop a mock.
+  - Use `bytedcli bits anywhere ...` for Anywheredoor. It has no top-level domain. See [references/subskills/bytedance-bits/references/anywheredoor.md](references/subskills/bytedance-bits/references/anywheredoor.md).
+- ByteFlow workflow engine, app/state machine/revision queries, workflow JSON/ASL validation and safe write helpers: `bytedance-byteflow`
+  - Examples: Find a ByteFlow app or state machine. Validate this workflow JSON. Create or update a ByteFlow revision.
+- LG Admin Torch releases, image publishing, payloads matching the build-history page, cpu/cuda/mlu Torch versions, and advanced options such as use cache, skip arm and image rebuild: `lg-admin torch`
+  - Route explicit ICM queries (ICM prod, release history, recent releases, build commit, build repository or repo/build information) to top-level `icm` first. Terms such as `lagrange`, `torch`, `cpu`, `cuda` or `mlu` in a product, package or repository name cannot alone trigger `lg-admin`. Do not suggest or try `lagrange torch`.
+  - Examples: Release an lg-admin Torch DEV build/version → `lg-admin torch release package build`. Publish an LG image or LG Torch image → `lg-admin torch release image build`.
+- Academy advertising feature development and management (source_v2, raw feature set groups and feature search): `academy`
+  - Examples: Does Academy have this source? Search for a raw feature set group. Find an online feature by keyword.
+- Feishu/Lark documents, comments, calendar, tasks, messages, spreadsheets and Base: `feishu`
+  - Examples: Read this Lark document. Append a paragraph. Send someone a Feishu message.
+- People self-service leave history and full-/half-day requests: `people`
+  - Examples: How many days of leave have I taken today? Request one day of annual leave. Submit a retroactive half-day request for this afternoon.
+- Jinshu / Cloud Jinshu message preview and delivery: `jinshu`
+  - Examples: Preview this Jinshu message. Send this Jinshu message.
+- Lark Oncall tickets, tag/attribution metadata, oncall group messages and duty information: `lark-oncall` / `bytedance-lark-oncall`
+  - Examples: Find this business line's oncall tickets for the past 7 days. Get the oncall group chat for a ticket. List oncall tag/attribution options.
+- VOC feedback details (Douyin CEM user feedback, cem.bytedance.net): `voc` / `bytedance-voc`
+  - Examples: Show this VOC feedback. Get feedback from a VOC console URL. Get the feedback list from a shared link. Check whether the local VOC authentication cookie is still present.
+- Vimo Web template resource lookup and ZIP downloads: `vimo` / `bytedance-vimo`
+  - Examples: Download this Vimo template package. Get a ZIP using a Vimo template RID. Parse template_id from an lv.ulikecam.com sharevideo link and download the template.
+  - `bytedcli vimo` only handles Vimo Web template RID/URL queries and ZIP downloads. Use `vimocli` for asset CRUD, panels, categories, uploads, publishing and service-account OpenAPI workflows.
+- FundEye/Fullink reconciliation rules, diffs and alerts: `fundeye`
+  - Examples: Show rule details. Get the last day's diff by rule_id. Look up the diff for an alarm_order_id.
+- Starling copy platform, projects, spaces and copy search: `starling`
+  - Examples: Show this Starling project. Create a Starling space. Search for a copy key.
+- Luban npm package lookup and PyPI artifact repository search, version queries and publishing: `luban`
+  - Examples: Does Luban have a particular TTP-US npm package? Show a package's 2.1.x versions. Find a Luban PyPI repository by pip package name. List its versions. Publish a PyPI version from master, dry-run first, then confirm publication and poll the result.
+- Lynx tools and LynxExample artifact metadata/downloads: `lynx`
+  - Examples: Find LynxExample artifacts. Download the LynxExample Android package.
+- Argus Hybrid ticket generation: `argus hybrid`
+  - Examples: Bind a Gecko channel to a Lynx app. Add a safe URL to an H5 app. Request H5/Lynx JSB permission. Request a secure method. Search for a host label.
+  - The current identity comes from `bytedcli auth userinfo`. Argus Hybrid OpenAPI creates a ticket only by default, without executing it. `--hosts` supports fuzzy label-only search. A unique host or host group resolves automatically. Multiple matches return candidates.
+- Mango task management: `bytedance-mango`
+  - Examples: Log in to Mango. List Mango spaces. Query Mango tasks.
+- Read-only Gecko CN console queries (diagnostics, App, Project, Deployment, Channel overview/groups/inspection, offline rule tree, packages and workflow/tag/scan/stats subresources): `gecko`
+  - Examples: Show a Gecko CN channel's details. List its offline packages. View package processing logs.
+- Read-only TikTok Gecko console queries (workbench, App, Channel, Ticket, Host App and Deployment): `tiktok-gecko`
+  - Examples: Show a Gecko channel's details. List all channels in a deployment. Filter Gecko tickets by creator.
+- Technical articles, knowledge Q&A, AI conversations and attachment prompts: `bitsai`, `tika`, `aime`.
+- AI Dev Pro AFS / Agent File System development knowledge (code, interfaces, PSMs, call graphs, DB callers and FE wiki): `ai-dev-pro afs`
+  - Examples: Show this PSM's interface parameters. Search for a code entity. Find an interface's downstream calls. Look up a PSM's AGENTS.md knowledge.
+- Internal search (Feishu docs, ByteCloud docs, intranet, ByteTech articles, BitsAI Q&A) and read-only GET of internal URLs: `insearch`
+  - Examples: Search for kitex ppe environments. Find a BMQ integration guide in Feishu documents. Ask BitsAI how to configure TCC. GET this internal endpoint using the current login.
+  - Read internal HTTP(S) URLs with `insearch get <url>`. Allowed URLs that cannot be parsed structurally fall back automatically to read-only GET.
+- SQL, database platforms, data assets, reports and offline tasks: `rds` (subgroups `db`/`slow`/`alert`/`ops`/`bpm`), `bytedoc` (ByteDoc/MongoDB), `tokadb` (TokaDB/Bytetable), `hive`, `magnus` (read-only Magnus GLS catalog, database, table and schema metadata), `dorado` (subgroups `project`/`task`/`instance`/`adhoc`), `blade` (subgroup `task`, currently supports `task get` and `--region mycis`, preferentially reuses the `blade.byteintl.net` site cookie and a fresh ByteCloud JWT), `oceanus` (subgroups `project`/`tree-node`/`node`/`task`), `aeolus`, `dataq`, `tqs`, `forge`.
+  - Examples: Find the ByteDoc databases I follow. Show slow queries for this database. Execute SQL. Find the dataset behind this dashboard.
+  - For hive-sql syntax checks, SQL task submission, status and results, use `tqs`.
+- TEA / tea-next dashboards, reports, snapshots, DSL, analysis queries, behavior details, event metadata and reporting: `tea` / `bytedance-tea`
+  - Examples: Read this TEA link's data. Extract DSL from a tea-next snapshot and query it. Group an event by dimension. Query the behavior-detail stream.
+  - For a tea-captain SG link using `get-dsl | query`, pass the same `--url` at the query stage. See [references/subskills/bytedance-tea/GUIDE.md](references/subskills/bytedance-tea/GUIDE.md).
+- NVQoS / VQoS spaces, datasets and intelligent attribution: `nvqos` / `bytedance-nvqos`
+  - Examples: List datasets in an NVQoS space. Trigger rootcause attribution analysis. Start attribution using Filters JSON.
+- Eventbus CN-only event details: `eventbus-cn`
+  - Examples: Show this domestic CN event's details. Confirm its bound topics. Verify Eventbus OpenAPI availability.
+  - Only domestic CN/BOE is supported. This skill does not support i18n, US or EU users.
+- BMT multi-tenant services, tags, resources, isolation sets and user roles: `bmt`
+  - Examples: Find the BMT service by PSM. Show the RDS or RocketMQ resources bound to this PSM. Find connection information for a BMT resource code.
+- Forge task logs: `forge logs`
+- Chronos scheduling platform: `chronos`
+  - Examples: List namespaces with pagination. List tasks by namespace. Show the HTTP scheduling link and alert recipients by task_id.
+- OneService query metadata, version details and SQL extraction: `oneservice`
+  - Examples: Show this OneService query's metadata. Get the current ONLINE SQL by queryId. Show query details by versionId.
+- Holmes TBase products, fields, submission of new fields for review and row-key queries: `holmes tbase` / `bytedance-holmes-tbase`
+  - Examples: Get this TBase product's configuration. List product fields. Submit a new field for review. Query multiple fields or all-fields by row key.
+- Byterec index service product information, configuration and model configurations, Viking service config queries/flag updates/ByteKV deployment, Viking DB debugging/resource queries, and Holmes proto/record debugging for the same component: `byterec indexservice` / `byterec model list` / `byterec viking` / `holmes indexservice` / `bytedance-byterec-indexservice`
+  - Examples: Show Byterec indexservice product details. Find the Byterec config by PSM. Find Viking service config or flags by PSM. Dry-run a Viking service config flag change. Deploy the config to ByteKV and return the review URL. List models/versions in a Byterec namespace. Check whether a model is bound to Viking serving. Run Viking DB DSL recall. Inspect a Viking DB database/model. List Holmes IndexService protos. Read an IndexService record with explicit parameters.
+- Merlin job submission/YAML extraction, job runs and job-to-trial resolution, trial diagnose/local-log, job/trial stdout/stderr, tracking projects/runs/metrics/job links, and read-only group/cluster queries for `merlin` compute quotas: `merlin`
+  - Examples: Extract this Merlin job's YAML. Resubmit this `trial.yaml` to `seed-cn`. Show this tracking run's config/summary. Find the tracking link by job ID. Get this trial's stdout/stderr. Find out why this trial is still queued.
+- Helix model and AI task lifecycle, currently covering Video AIPF data preparation, training/evaluation submissions, status, stopping and history: `helix`
+  - Examples: Submit Video AIPF data preparation. Submit a Video AIPF training task. Check Helix evaluation status. Stop this Video AIPF Ray evaluation. Find recent Helix training records.
+- Fornax prompt workspaces, drafts, versions, publishing, experiment creation and results: `fornax`
+  - Examples: List prompts in this Fornax workspace. Read a personal prompt draft. Publish this prompt to ppe. Get the first page of experiment results. Configure a Fornax experiment's AK/SK or JWT.
+- BES metadata change tickets: `bes`
+  - Examples: `bytedcli bes metadata update --config '{"title":"demo-ticket"}'`
+- Kani permission approvals: `kani`
+  - Examples: Find tickets on the Kani request page. Show completed approvals from the reviewer's perspective.
+- Expense reports and draft AI subscription reimbursements: `reimbursement`
+  - Examples: Find recent reports. Check this report. Create an AI learning/research reimbursement draft from this subscription receipt. Close/delete the draft. Submit the report after confirmation.
+- Configuration centers, lookup, creation, updates, publishing and access requests: `tcc` (subgroups `namespace`/`config`/`deployment`/`env`/`site`/`permission`), `bytestable` (subgroups `wcc` and `qcss`).
+  - Examples: List configurations in a TCC namespace. Update and publish a TCC configuration. Request namespace read/write access. Create a WCC configuration. Update a WCC value. Open a WCC configuration ticket. Pass a QCSS check.
+- Deployments, environments, ByteCopy, service tree, TrafficRoute PrivateZone, domain governance, object storage, cloud functions, Ent Platform Storage IAC new-table workflows/existing-table entry imports/field annotation validation, and MOSS test asset platform queries: `tce`, `env` (subgroups `site`/`service`/`bytecopy`/`device`/`ticket`), `bytetree`, `ent`, `trafficroute`, `goofy`, `netlink`, `neptune`, `tos`, `faas`, `volcano`, `bytecloud`, `moss`.
+  - Examples: Find service instances. Show the release ticket. Update configuration. Make a Goofy preview. Submit a new-table workflow through Ent Platform. Import an existing RDS table into a Storage IAC entry. Query PrivateZone zone/record/resolver in TrafficRoute.
+- TAE / AI PaaS (prefer `bytedcli tae mcp ...` for MCP Server/Tool. Use internal API guides for uncovered Agent, Sandbox, Memory and Skill capabilities): `bytedance-tae`
+  - Examples: Bulk register RPC tools on a TAE MCP Server. Fix MCP Input Schema. Convert HTTP tools to RPC. Publish an MCP server revision. Research TAE Agent/Sandbox/Memory APIs.
+- Read-only TMates sandbox run / managed agent / managed-agent space debugging: `tmates` / `bytedance-tmates`
+  - Examples: Show the run details for this TMates share URL. Show the MP2C Regression Steward Agent config summary. Check whether the current bytedcli JWT can call TMates OpenAPI.
+  - Only read-only commands are registered. Write paths such as reply/stop/update/archive are not exposed. Use `--site i18n-tt` for the TikTok ROW gateway.
+- Janus / Janus Mini lanes, groups, configurations, IDL, endpoints, backends and release workflows: `janus` / `janus-mini` / `bytedance-janus` / `bytedance-janus-mini`
+  - Examples: Create a Janus lane. Query a Janus Mini group's service_type. Create an endpoint/backend. Create a publish workflow and check its status.
+- Spark Platform spaces and link resources: `spark-platform`
+  - Examples: List Spark spaces. List links by business-line bid. Find links in a space. Use `link get` for the complete raw link, including all versions and original deployConfig. Use `link summary` for the latest released version and parsed schema, including schemaUrl, bundle and bundlePath. List a link's env configurations. Set its PPE env, inspecting the payload with `--dry-run` before executing. Delete an env. Specify a nondefault `--app-id`.
+- Kross cross-platform container environments (workloads), listing, creation, remote execution and file transfers: `kross`
+  - Examples: Use `kross workspace list` to find my workspaces, `kross template list` to find the workspace's available templates on the current cluster, then `kross workload list` to see existing workloads. Create a job workload directly. Quick create defaults to 1000m CPU, 2048 MB memory, 300 seconds timeout and automatic deletion. Delete a workload. Run a command in a workload container via webshell. Upload or download a container file.
+- Logs, Footprint/TCE pod file logs, Megatron/Primus concrete log URL downloads, monitoring, alerts, dashboards, Kubernetes object lifecycle traces, app exception trends, App/OS symbols, Redis/ABase/Kafka/RocketMQ/EventBus and Vela per-machine metrics: `log` (Footprint uses `log footprint`), `apm` (subgroups `service`/`redis`), `kelemetry`, `slardar` (subgroups `web`/`app`/`os`), `vela` (subgroup `one-machine`), `cache`, `abase`, `bmq`, `eventbus-cn`, `rmq`.
+  - Examples: Find this logid. Download this Footprint/mljob-log-proxy log URL. Tail a Footprint pod log file. Find an interface's overall bottleneck first. Show per-node latency by logid. Get a K8s object's Kelemetry trace. Find large Redis keys. Analyze this alert page. Look up metrics on this Vela one-machine page. Use the Slardar dashboard URL to inspect the configuration or change its title. Retrace a native stack from a Slardar App issue URL. Resolve the main-thread native stack from a Slardar OS issue URL. Search RocketMQ topics. List RocketMQ consumer groups.
+- Primus History task summaries, AM environment variables, newStatus, role pods, log indexes, CRDs and Pod lifecycle: `primus` / `bytedance-primus`
+  - Examples: Find why a Primus app failed. Get a role pod's log index. Show the Primus CRD and Pod lifecycle.
+- ByteDog profiling: `bytedog`
+  - Examples: Capture a CPU flame graph. Analyze profiling results at this ByteDog URL. Find past profiling tasks. Check the PID in this pod first. Analyze pthread lock contention. Show a jemalloc allocation flame graph.
+- Libra / DataTester A/B experiments, metric groups and metric group templates: `libra`
+  - Examples: Show this experiment's details. Get this flight's report. Inspect a metric-group template using its page URL.
+- Tesla RM automated testing (trigger/query tasks, wait for runs, list tasks, attribute failures, test plan CRUD and statistics): `tesla`
+  - Examples: Trigger a Tesla task for plan 507863 and wait for results. Check its status and failed cases. List this plan's tasks for the past 7 days. Show plan execution statistics.
+- TestIDE / SmartQ (Little Q) UI automation, reading suites, steps and fragment references, creating/updating suites and steps, creating test tasks and querying progress/results: `smartq`
+  - Examples: Read this TestIDE suite's automation steps and referenced fragments. Create a Little Q UI test task. Get TestIDE task results.
+- Panama RPC tool execution: `panama rpc execute`
+  - Examples: Call an RPC method with Panama. Execute this RPC body through Panama. Inspect Panama assertion results.
+- OneService queries: `oneservice`
+  - Examples: Show query metadata. Get query version details. Get the current ONLINE version's SQL.
+- Life local-services live analytics platform: `life live-screen`
+  - Examples: Show core live dashboard metrics by room ID. Get user information by host nickname, host ID, Douyin account or live room ID.
+- Live Trace / message delivery diagnostics: `live trace`
+  - Examples: Start ack_trace. Show details for this task_id. Parse this pb_payload.
+- ByteIO event instrumentation, requirements, tracking points, test cases and advertising metadata: `bytedance-byteio`
+  - Examples: Check whether this event_name exists under app_id. Validate this instrumentation parameter. Look up ByteIO requirement details/BTM tracking points/test cases/ad tags.
+- Cross-region data exchange: `decc`
+  - Examples: Create a DECC channel. Register DECC data. Request channel access.
+- Security and access: `dkms`, `kmsv2`, `iam`
+  - Examples: Check data key permissions. Add an ACL to a key. Find an employee.
+- Chaos engineering, fault injection and exercise planning: `chaos`
+  - Examples: Create a drill for xxx with an 80% CPU restriction lasting 300 s, using a new isolated environment and the latest rhino traffic.
+- Dataleap Pontus cost and asset management, including Hive table storage size and growth: `pontus` / `bytedance-pontus`
+  - Examples: Query a Hive table's storage size and growth.
+- Expose bytedcli to its host, upgrade the local installation or manage trusted CLI plugins: `mcp`, `self`
 
 ## Common inputs
 
-- 如果用户给的是 MR / issue / 文档 / 配置 / 告警控制台 URL，优先直接用 URL，不要先手拆 ID。
-- 如果用户只说 Footprint，或给出 `footprint.tiktok-row.net`、Primus `redirect_log.html`、concrete `mljob-log-proxy` 文件 URL，进入 Log 领域并使用 `bytedcli log footprint ...`；当前 CLI 没有顶层 `bytedcli footprint`。如果只是 Primus/History 解析出的 mljob landing URL，不要当作具体日志文件下载；先看 `primus log get` 的 `logResolutionStatus`，`landing-only` 表示日志后端未暴露 concrete file。
-- 如果任务是 Meego，优先直接使用工作项 / 视图 URL；很多命令支持 `--url` 自动回填 `project_key`、`work_item_id`、`view_id` 等标识。
-- 如果用户给的是仓库目录上下文，优先让 Codebase 自动从当前 `origin` 推断仓库；当前支持 `code.byted.org` 和 `code-tx.byted.org` remote。如果推断失败，CLI 会继续说明是非 Git 仓库、缺少 `origin`、host 不支持，还是 remote 无法解析。
-- 如果任务跨站点，先确认 `--site` 或 `BYTEDCLI_CLOUD_SITE`。
-- 如果命令失败，优先看 `error.hint`、`error.auth_command`，或参考排障说明。
+- Use MR, issue, document, configuration and alert console URLs directly before extracting IDs manually.
+- For Footprint, `footprint.tiktok-row.net`, Primus `redirect_log.html` or a concrete `mljob-log-proxy` file URL, use the Log domain and `bytedcli log footprint ...`. There is no top-level `bytedcli footprint`. A Primus/History mljob landing URL is not a downloadable log file. Check `logResolutionStatus` from `primus log get` first. `landing-only` means the log backend exposed no concrete file.
+- For Meego, use the work-item or view URL directly. Many commands accept `--url` to populate `project_key`, `work_item_id`, `view_id` and related identifiers.
+- From a repository directory, let Codebase infer the repository from `origin`. It supports `code.byted.org` and `code-tx.byted.org` remotes. On failure, the CLI distinguishes a non-Git directory, missing `origin`, unsupported host and unparseable remote.
+- For cross-site tasks, confirm `--site` or `BYTEDCLI_CLOUD_SITE` first.
+- On failure, check `error.hint` and `error.auth_command` first, or consult the troubleshooting guide.
 
 ## Domain guides
 
-任务已经收敛到某个具体领域时，继续看对应领域说明：
+Once the domain is clear, read its guide.
 
 - Codebase: [references/subskills/bytedance-codebase/GUIDE.md](references/subskills/bytedance-codebase/GUIDE.md)
-- Code Review（代码审查）: [references/subskills/bits-code-guard/GUIDE.md](references/subskills/bits-code-guard/GUIDE.md)
+- Code Review: [references/subskills/bits-code-guard/GUIDE.md](references/subskills/bits-code-guard/GUIDE.md)
 - Dora: [references/subskills/bytedance-dora/GUIDE.md](references/subskills/bytedance-dora/GUIDE.md)
-- BITS / 任意门: [references/subskills/bytedance-bits/GUIDE.md](references/subskills/bytedance-bits/GUIDE.md)
+- BITS / Anywheredoor: [references/subskills/bytedance-bits/GUIDE.md](references/subskills/bytedance-bits/GUIDE.md)
 - Feishu: [references/subskills/bytedance-feishu/GUIDE.md](references/subskills/bytedance-feishu/GUIDE.md)
 - Jinshu: [references/subskills/bytedance-jinshu/GUIDE.md](references/subskills/bytedance-jinshu/GUIDE.md)
 - Lark Oncall: [references/subskills/bytedance-lark-oncall/GUIDE.md](references/subskills/bytedance-lark-oncall/GUIDE.md)
@@ -310,7 +310,7 @@ VA / Maliva / 生产开发机上，调 i18n-tt / i18n-bd / sg 命令前先 `expo
 - Search: [references/subskills/bytedance-insearch/GUIDE.md](references/subskills/bytedance-insearch/GUIDE.md)
 - People: [references/subskills/bytedance-people/GUIDE.md](references/subskills/bytedance-people/GUIDE.md)
 - Reimbursement: [references/subskills/bytedance-reimbursement/GUIDE.md](references/subskills/bytedance-reimbursement/GUIDE.md)
-- 其他领域路径索引: [references/subskills-index.md](references/subskills-index.md)
+- Other domain paths: [references/subskills-index.md](references/subskills-index.md)
 
 ## References
 

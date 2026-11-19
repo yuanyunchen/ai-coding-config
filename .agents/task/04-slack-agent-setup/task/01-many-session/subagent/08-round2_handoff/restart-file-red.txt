@@ -1,0 +1,38 @@
+(node:66516) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ resuming a handoff rechecks a file withdrawal recorded before the queue was cleaned (14.813042ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 142.420333
+
+✖ failing tests:
+
+test at test/handoff-revocation.test.js:157:1
+✖ resuming a handoff rechecks a file withdrawal recorded before the queue was cleaned (14.813042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      [
+  +     'FREVOKED',
+        'FKEEP'
+      ],
+  +   [
+  +     'FREVOKED'
+  +   ]
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/slack-codex-bridge/test/handoff-revocation.test.js:166:10)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ [ 'FREVOKED', 'FKEEP' ], [ 'FREVOKED' ] ],
+    expected: [ [ 'FKEEP' ] ],
+    operator: 'deepStrictEqual'
+  }

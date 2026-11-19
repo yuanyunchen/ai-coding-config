@@ -7,6 +7,20 @@ description: Use OpenAI Codex as a second autonomous coding agent — delegate c
 
 Codex is a peer engineer with its own filesystem, shell, and agent loop. You are the orchestrator: brief it like a capable colleague, let it work, read the result, follow up. Don't micromanage individual edits.
 
+## Model selection
+
+For every new task, set SKILL_DIR to the directory containing this SKILL.md and MODEL to the user's selector (unset means default). Resolve before launching either route:
+
+```bash
+MODEL_ID=$(python3 "$SKILL_DIR/scripts/resolve-model.py" "${MODEL:-default}") || exit 1
+```
+
+`astra` and `sol` select the latest visible numeric family version from the CLI catalog, with the local cache as fallback if the catalog cannot be read. `spark` retains Companion's existing shorthand. A full ID passes through unchanged. `default` reads the configured model. Keep MODEL_ID with the job when changing entry points. For resume, omit the model override unless explicitly switching; if the runtime needs an ID to preserve the session choice, reuse its recorded ID.
+
+```bash
+node "$RUNTIME" task --model "$MODEL_ID" --effort "${EFFORT:-high}" "$PROMPT"
+```
+
 ## Route
 
 ```bash
@@ -35,18 +49,17 @@ All commands: `node "$RUNTIME" <command ...>`.
 
 | Command | Meaning |
 |---|---|
-| `task [--write] [--background] [--effort <lvl>] "<prompt>"` | One-shot agent run rooted at this repo. Read-only unless `--write` (ceiling: workspace-write; approvals always off). `--background` detaches and prints a job id. |
+| `task --model <resolved-id> --effort <lvl> [--write] [--background] "<prompt>"` | One-shot agent run rooted at this repo. Read-only unless `--write` (ceiling: workspace-write; approvals always off). `--background` detaches and prints a job id. |
 | `task --resume-last "<followup>"` | Continue this repo's most recent thread — Codex keeps its full context; follow up instead of re-briefing. "Most recent" is repo-global: with concurrent sessions or parallel delegations in the same repo it can grab the wrong thread — then resume by explicit id instead: `codex exec resume <session-id>` (id is in the job output). |
 | `review` / `adversarial-review` | Git-scoped reviewers (git repo required) — semantics and the non-git fallback recipe in `references/git-review.md`. |
 | `status` / `result <job-id>` / `cancel <job-id>` | Job ledger for background runs: list jobs, fetch stored output, kill an active one. Call from the same directory as the original task. |
 
-Usage: always pass `--effort high` (runtime default is medium; `xhigh` for the hardest, lower only for trivial — floor is `low`, the API rejects `minimal`); never pass a model — config default is already the best. Verify outcomes yourself (`git diff`, run the tests) — Codex's "done" is a claim, not a fact.
+Resolve the requested selector once per new task. Reuse the full ID for CLI fallback. Keep Fast in the Codex service tier configuration. Resume with the original model unless the user explicitly requests a switch. Default effort is high; honor explicit overrides. Verify outcomes yourself (`git diff`, run the tests) — Codex's "done" is a claim, not a fact.
 
 ## Raw CLI — interface
 
 ```bash
-codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check \
-  -c model_reasoning_effort="high" \
+codex exec -m "$MODEL_ID" -c "model_reasoning_effort=${EFFORT:-high}" --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check \
   -o codex_out.txt \
   "<TASK PROMPT>" < /dev/null
 ```
@@ -56,7 +69,7 @@ codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check \
 | `exec` | One-shot non-interactive agent loop. stdout = final message, stderr = streaming progress (`2> codex.log`). |
 | `--dangerously-bypass-approvals-and-sandbox` | No approvals, no sandbox — full FS + network. House default for write tasks. Swap for `-s read-only` when Codex must inspect but not touch; if all you need is one extra writable dir, `-s workspace-write --add-dir <dir>` is the tighter choice. |
 | `--skip-git-repo-check` | Allow running outside a git repo. |
-| `-c model_reasoning_effort="high"` | Reasoning budget. Same discipline as runtime: high default, no `-m`. |
+| `-c model_reasoning_effort="high"` | Reasoning budget. Same discipline as runtime: high by default, user-overridable. |
 | `-o <file>` | Final answer to a file — essential for background runs. |
 | `< /dev/null` | Required headless: with stdin open, Codex hangs forever waiting for EOF. |
 | `exec resume --last "<followup>"` / `exec resume <session-id> "..."` | Continue a session, context kept. Always `exec resume` — plain `codex resume` opens the interactive TUI and captures nothing. Fresh `-o` filename per turn or it overwrites. |

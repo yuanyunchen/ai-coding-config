@@ -1,0 +1,55 @@
+---
+id: T04.01
+status: done
+---
+# 进度 — T04.01 多会话路由、自然交互与 test 联调
+
+<!-- 只追加，用 ws log。格式：- YYYY-MM-DD HH:MM [tag] 内容；tag：status dispatch decision surprise note req -->
+- 2026-11-17 18:05 [status] planned
+- 2026-11-17 18:05 [dispatch] T04.01/S01 dialog
+- 2026-11-17 18:05 [dispatch] T04.01/S02 live-test
+- 2026-11-17 18:05 [dispatch] T04.01/S03 route-qa
+- 2026-11-17 18:18 [dispatch] T04.01/S03 续派：Live test #test now bound; new robustness acceptance: statef
+- 2026-11-17 18:37 [status] active
+- 2026-11-17 18:38 [status] done
+- 2026-11-17 19:09 [dispatch] T04.01/S04 format
+- 2026-11-17 19:09 [dispatch] T04.01/S05 media-audit
+- 2026-11-17 19:09 [dispatch] T04.01/S06 exactqa
+- 2026-11-17 19:46 [dispatch] T04.01/S06 续派：Validate thread/sample as the exact-thread answering primiti
+- 2026-11-17 20:08 [dispatch] T04.01/S06 续派：New user steering: Slack interruptions should send a native
+- 2026-11-17 20:15 [req] stdin 归档进 task.md
+- 2026-11-17 20:16 [req] 任务说明已更新
+- 2026-11-17 20:16 [note] Codex 插话服务已在线。全套 127 项回归通过；以生产 notifyAside 入口和真实 app-server 另测原任务运行中先答侧问，再在原 turn 完成。Slack 实际回帖另有回执。
+- 2026-11-17 20:17 [dispatch] T04.01/S06 续派：复用上轮真实 app-server 测试，验证 owner 的 Slack 正文进入正在运行的同一个 turn，模型依次
+- 2026-11-17 20:18 [req] stdin 归档进 task.md
+- 2026-11-17 20:18 [req] 任务说明已更新
+- 2026-11-17 20:19 [note] 修正忙时插话：所有者正文用原生 turn/steer 进入活跃回合，真实 helper 按原 Slack 帖子回帖并返回送达回执，再继续原任务。只读回合通过专用 commentary 回帖。桥接服务已部署，128 项通过。
+- 2026-11-17 20:19 [req] 任务说明已更新
+- 2026-11-17 20:19 [decision] S06 同步 helper 的确切顺序与只读 sandbox 的原回合 commentary 路径均由真实 app-server 独立验收。只读回执无法阻塞回合，保留现有沙箱并在用户回复中说明。
+- 2026-11-17 20:24 [req] stdin 归档进 task.md
+- 2026-11-17 20:24 [req] 任务说明已更新
+- 2026-11-17 20:24 [note] 诊断：#test 原绑定仍可用。当前桌面会话的 rollout 由应用内置 Codex 持有，内部服务使用 stdio，无共享可订阅端点。修复绑定先订阅、收到批准后原子替换原帖路由。
+- 2026-11-17 20:29 [req] stdin 归档进 task.md
+- 2026-11-17 20:29 [req] 任务说明已更新
+- 2026-11-17 20:29 [note] 后到接管采用持久最新申请以及事务切换。等待写入权时仍由旧会话收件。129 项回归通过。
+- 2026-11-17 20:29 [note] 线上 #test 原帖：已从当前桌面会话提交接管，查询确认旧会话仍 active，当前会话为唯一 pending。桥接已重新启动并自动重试；现场切换等待应用释放。
+- 2026-11-17 21:44 [req] stdin 归档进 task.md
+- 2026-11-17 21:44 [req] 任务说明已更新
+- 2026-11-17 21:44 [note] 当前桌面窗口收到真实 steer 并返回 turn ID，#test active origin=当前 session，pending=0，Slack 回帖回执 1794969837.077359。后到绑定撤销旧授权与消息持久重放、其他讨论隔离经过回归。
+- 2026-11-17 23:27 [req] stdin 归档进 task.md
+- 2026-11-17 23:27 [note] 系统性检查完成：恢复所有者带附件追问到原回合，公开格式去除技能署名，修复提及重投、撤回和偏好；148 项回归通过。#test 已实测并重新读取短说明与 PNG 的同线程回执。详见 deliverables/slack-usecase-audit.md。
+- 2026-11-17 23:27 [req] 任务说明已更新
+- 2026-11-17 23:32 [dispatch] T04.01/S07 round2_media
+- 2026-11-17 23:32 [dispatch] T04.01/S08 round2_handoff
+- 2026-11-17 23:44 [req] stdin 归档进 task.md
+- 2026-11-17 23:44 [decision] S07、S08 审查结论进入下一轮实施计划，按优先级设置门禁；本轮只交付计划与复现材料，未修改或部署桥接代码。
+- 2026-11-17 23:44 [req] 任务说明已更新
+- 2026-11-17 23:50 [dispatch] T04.01/S07 续派：实施已批准，明确追加可写范围：/Users/yuanyunchen/Desktop/AI Programing/Play
+- 2026-11-17 23:50 [dispatch] T04.01/S08 续派：实施已批准，明确追加可写范围：/Users/yuanyunchen/Desktop/AI Programing/Play
+- 2026-11-17 23:51 [decision] 派发波次超限仍在本节点派发：已授权当前发布的独立浏览器验收，与已派发修复并行
+- 2026-11-17 23:51 [dispatch] T04.01/S09 qa_live
+- 2026-11-17 23:58 [dispatch] T04.01/S08 续派：新阶段：已授权在 /Users/yuanyunchen/Desktop/AI Programing/Play for F
+- 2026-11-18 00:00 [dispatch] T04.01/S10 quality
+- 2026-11-18 01:11 [req] stdin 归档进 task.md
+- 2026-11-18 01:11 [decision] S07/S08/S09/S10 审查的撤回、成员隔离、媒体最后一跳、浏览器旁聊红灯已修并独立复测。Claude 额度和缺同工作区第二账号的验收保留；真实桌面忙时延迟未过门槛，不用本地或空闲样本替代。
+- 2026-11-18 01:11 [req] 任务说明已更新

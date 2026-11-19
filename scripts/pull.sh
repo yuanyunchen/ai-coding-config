@@ -89,12 +89,12 @@ fi
 
 if [ -d "$SRC_BASE/skills" ]; then
     echo "[skills]"
-    rsync_pull "$CONFIG/skills/" "$SRC_BASE/skills/" --exclude='.system/' --exclude='/synced/'
+    rsync_pull "$CONFIG/skills/" "$SRC_BASE/skills/" --exclude='.system/' --exclude='/synced/' --exclude='/qa-loop/'
 fi
 
 if [ -d "$SRC_BASE/skills-disabled" ]; then
     echo "[skills-disabled]"
-    rsync_pull "$CONFIG/skills-disabled/" "$SRC_BASE/skills-disabled/"
+    rsync_pull "$CONFIG/skills-disabled/" "$SRC_BASE/skills-disabled/" --exclude='/qa-loop/'
 fi
 
 if [ -d "$SRC_BASE/scripts" ]; then

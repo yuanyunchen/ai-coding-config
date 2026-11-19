@@ -1,0 +1,34 @@
+{
+  "id": "M06",
+  "modelId": "gpt-6.2-sol",
+  "effort": "low",
+  "transport": "local Slack substitute",
+  "turns": [],
+  "events": [
+    {
+      "stage": 3,
+      "inbound": "message",
+      "thread": "1.000000",
+      "sender": "ULIN",
+      "text": "好，谢谢"
+    },
+    {
+      "stage": 4,
+      "inbound": "message",
+      "thread": "1.000000",
+      "sender": "UMAYA",
+      "text": "还有呢？"
+    },
+    {
+      "stage": 5,
+      "inbound": "message",
+      "thread": "1.000000",
+      "sender": "ULIN",
+      "text": "<@UMAYA> 等你意见"
+    }
+  ],
+  "outbound": [],
+  "errors": [],
+  "externalSlackCalls": 0,
+  "windowMs": 6
+}

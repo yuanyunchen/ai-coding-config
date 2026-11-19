@@ -263,13 +263,22 @@ class TestInboxAndReq(WsTestCase):
             self.ws.file_req(nid, entry=e)
         self.ws.file_req(nid, entry=e, allow_secret=True)
 
-    def test_unfiled_blocks_done(self):
+    def test_focus_files_automatically_and_unfiled_never_blocks(self):
         d, nid = self.ws.new_task("x")
         self.fill(d)
         self.write_result(d)
-        self.ws.record_question("s", "ffffffff-1", "另外记得把图表的配色换成蓝色系，标题加上日期")
-        with self.assertRaisesRegex(wslib.WsError, "未归档"):
-            self.ws.set_status(nid, "done")
+        msg = "另外记得把图表的配色换成蓝色系，标题加上日期"
+        self.ws.record_question("s", "ffffffff-1", msg)  # no focus: conversation.md only
+        self.assertNotIn(msg, (d / "task.md").read_text())
+        self.assertEqual(self.ws.set_focus(nid), nid)
+        e = self.ws.record_question("s", "ffffffff-2", msg + "，再加图例")
+        self.ws.record_question("s", "ffffffff-3", "用这个 key 跑一下 sk-abcdefghijklmnopqrstuvwxyz123456 谢谢")
+        task = (d / "task.md").read_text()
+        self.assertIn(f"· 用户原文 · {e}\n\n{msg}，再加图例", task)
+        self.assertNotIn("sk-abcdef", task)
+        self.assertEqual(self.ws.entry(e)["mark"], "filed")
+        self.assertIsNone(self.ws.set_focus(None))
+        self.ws.set_status(nid, "done")
 
 
 class TestIndexAndCheck(WsTestCase):

@@ -33,6 +33,8 @@ claude auth status          # {"loggedIn":true,...} required before delegating
 
 **When to prefer the CLI over the Task tool:** you need genuine isolation — a separate process that can't corrupt this session, its own cwd/git worktree, a truly detached background job, a different account or model, or hermetic execution. For everything lighter, the in-process Task tool is the right call; don't reflex-spawn a subprocess.
 
+Pass `fable`, `opus`, `sonnet`, `haiku`, or a full ID verbatim. The CLI/provider resolves aliases. New tasks use explicit `--model default` and `--effort high` unless overridden. On resume or continue, omit the model override unless the user explicitly requests a switch. Check account-specific extra usage before a live Fable test.
+
 ## Interface — `claude -p`
 
 Canonical unattended write task — **prompt goes first** (see the variadic gotcha below):
@@ -41,7 +43,7 @@ Canonical unattended write task — **prompt goes first** (see the variadic gotc
 claude -p "<TASK PROMPT>" \
   --output-format json \
   --permission-mode bypassPermissions \
-  --model sonnet --effort high \
+  --model "${MODEL:-default}" --effort "${EFFORT:-high}" \
   --session-id "$(uuidgen)" \
   --add-dir /path/to/repo
 ```
@@ -51,8 +53,8 @@ claude -p "<TASK PROMPT>" \
 | `-p, --print` | Headless: run the agent loop, print the final result, exit. The delegation entry point. |
 | `--output-format json` | Emit structured JSON (a **JSON array** of the run's messages) instead of bare text; the final `type:"result"` element carries `result`, `session_id`, `total_cost_usd`, `usage`, `is_error`. Select it — don't scrape stdout: `jq '.[] | select(.type=="result")'`. `text` (default) or `stream-json` (JSONL event stream) also available. |
 | `--permission-mode <mode>` | `bypassPermissions` = fully unattended writes (house default for delegated write tasks). Read-only: keep the default and disallow write tools instead. Modes: `acceptEdits`, `auto`, `bypassPermissions`, `manual`, `dontAsk`, `plan`. |
-| `--model <alias>` | `opus` · `sonnet` · `haiku` · `fable`, or a full id. Omit to inherit the config default. Match the model to the job — `sonnet`/`haiku` for mechanical work, `opus` for judgment. |
-| `--effort <lvl>` | `low` · `medium` · `high` · `xhigh` · `max`. Default high for real work; lower only for trivial. |
+| `--model <alias>` | `opus` · `sonnet` · `haiku` · `fable`, or a full id. Pass `default` when unspecified. |
+| `--effort <lvl>` | `low` · `medium` · `high` · `xhigh` · `max`. Default high; honor user overrides. |
 | `--session-id <uuid>` | Pin a known session id up front so you can resume it deterministically later (cleaner than fishing the id out of output). Must be a valid UUID; use a fresh one per parallel job. |
 | `--add-dir <dir>` | Grant tool access to a directory outside cwd. Tighter than running from a broad root. |
 | `--worktree <name>` | Run in a fresh git worktree — the delegate can't touch your working tree. Ideal for parallel edits that would otherwise collide. |
@@ -62,7 +64,7 @@ claude -p "<TASK PROMPT>" \
 **Read-only investigation** (prompt first, write tools removed):
 
 ```bash
-claude -p "Find the root cause of the failing test in tests/auth_test.py. Do not modify any files. Report file:line and the mechanism." \
+claude -p "Find the root cause of the failing test in tests/auth_test.py. Do not modify any files. Report file:line and the mechanism." --model "${MODEL:-default}" --effort "${EFFORT:-high}" \
   --output-format json --disallowedTools Edit Write NotebookEdit
 ```
 

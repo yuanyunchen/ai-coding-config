@@ -57,7 +57,7 @@
 - **状态**：`planned → active → done`，以及 `blocked`、`dropped`；记在 progress.md frontmatter，变化由 `ws task status` 记一行日志。
 - **门槛**：
   - active：task.md「任务说明」的目标和验收标准有内容；goal.md 和 plan.md 去掉标题和注释后必须有内容；
-  - done：result.md 的 status 为 DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED 之一且有内容；所有派发都有 result.md；所有子任务 done 或 dropped；`source` 指向本节点的 draft memory 已转正；conversation.md 没有未归档的用户原文；
+  - done：result.md 的 status 为 DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED 之一且有内容；所有派发都有 result.md；所有子任务 done 或 dropped；`source` 指向本节点的 draft memory 已转正；
   - `--force "<原因>"` 可跳过，原因记进 progress，`ws check` 不会替你掩盖遗留问题。
 - **拆分**：一步能做完的直接做；需要独立验收、跨多步或跨会话的建子任务；交给子智能体执行的走派发。同一波次可并行的派发，各自负责的文件不能重叠（写进 plan.md「拆分」表）。一个节点最多派发 3 波（距本波第一次派发 10 分钟以上的派发算新一波，所以陆续发出的派发不会连成一波；同一波并行多少路不限），之后的波次建成子任务：`ws dispatch` 在第 4 波拦下，`--force "<原因>"` 放行并记进 progress。层级建议不超过 3 层。计划只保留一份 plan.md。
 - **不挪目录**：完成的节点原地标 done；AGENTS.md 任务树只展开含 active 节点的子树，其余折叠成一行。
@@ -93,7 +93,7 @@
 - `inbox.md`：hook 记 Q 时同步追加，只有用户消息：`## <id> · <日期时间> · session <会话>` 加原文，不含回答和标记。这里只有用户原文，用 `##` 标题不会和内容混淆。
 - hook 在 UserPromptSubmit 时把用户亲手输入的消息记成 Q，条目 ID 形如 `p1a2b3c4d`；在 Stop 时把该轮最终回答记成 A，挂到本会话所有未答的 Q 上；没有未答的 Q（例如后台任务回来后才给答复）时记成「A（续）→ 上一条 Q」。单条 A 超过 6000 字截断并注明（`ANSWER_MAX_CHARS`）。不记：子智能体回报（`<task-notification>`）、跨会话消息、本地命令输出、`claude -p` 等非交互会话（`WS_HOOKS=force` 可强制记录）。
 - 不少于 20 个字符的消息会附带一行提示，给出条目 ID；更短的（"继续""好的"）静默记录，无需归档。
-- 归档：`ws req <ID> --entry <id>` 追加进已有节点 task.md「原文记录」的 `### <时间> · 用户原文 · <id>`，然后当轮把变化合进「任务说明」（`ws task spec`）；`ws req --new <slug> --entry <id> [--parent ID]` 开新任务；`ws req --not-req <id>…` 标成不是需求（提问、闲聊）。
+- 归档（v4.4 起自动）：`ws focus <ID>` 把当前节点写进 ws.json 的 `focus`；之后 hook 每记一条用户消息，就同时追加进该节点 task.md「原文记录」的 `### <时间> · 用户原文 · <id>` 并打上归档标记。不足 20 字的、疑似含密钥的不追加（只留在 conversation.md）。提问和需求不再区分，原文记录是完整的逐字记录；需求有变化时把变化合进「任务说明」（`ws task spec`）。没设 focus 时消息只进 conversation.md。手动补录：`ws req <ID> --entry <id>`、`ws req --new <slug> --entry <id> [--parent ID]`。
 - 含疑似密钥（`sk-`、`ghp_`、`AKIA`、`xox?-`、私钥头、`XXX_KEY=…`）的原文拒绝归档，除非加 `--allow-secret`：task.md 可能进 git，conversation.md 不会。密钥统一放 `.agents/secrets.env`（600，不进 git），不得写进 task.md、memory 或派发说明。
 - 没有 hook 的环境（Codex、Cursor、Trae）：把用户原话照录，`ws req <ID> --stdin` 或 `ws task new <slug> --stdin`。
 
@@ -138,7 +138,7 @@ hook 还在两个时刻给主 agent 提示（只提示，不拦截）：
 
 | 事件 | 行为 |
 |---|---|
-| SessionStart | v4：注入 `ws status`（active 节点、目标首句、最近进度、未归档原文、检查摘要、绕过次数）；v3：注入一句"按 v3 办，不要转换" |
+| SessionStart | v4：注入 `ws status`（active 节点、目标首句、最近进度、当前节点、检查摘要、绕过次数）；v3：注入一句"按 v3 办，不要转换" |
 | UserPromptSubmit | 把用户亲手输入的消息记成 Q（见 §5）；子智能体回报时注入一行回传提示（见 §6） |
 | PreToolUse(Agent) | 派发把关（见 §6） |
 | PreToolUse(SendMessage) | 续接带新要求时提醒先 `ws followup`（见 §6），不拦截 |
@@ -170,7 +170,6 @@ hook 还在两个时刻给主 agent 提示（只提示，不拦截）：
 | close-ready | warn | active 节点的派发都已交结果、子任务都已收尾、2 小时没有新进展 |
 | memory-empty / dispatch-size | warn | 已有 10 份以上派发结果而 memory 为空；派发目录超过 20MB（大数据放项目数据目录） |
 | agents-length / dead-link / root-file / legacy | warn | AGENTS.md 超 200 行，或已有 10 份以上派发结果而不足 100 行；失效链接；根目录有多余文件；同时存在 `.agent/` |
-| inbox | warn | conversation.md 里未归档的用户原文 |
 | stale | info | 生成内容过期（`ws index` 修复） |
 
 收尾时的冲突仲裁：task.md「原文记录」（上层的原话）优先，其次是实际产物，最后是自己写的记录；消解结果记进 AGENTS.md「关键决策」。

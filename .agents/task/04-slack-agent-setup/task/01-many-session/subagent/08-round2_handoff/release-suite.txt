@@ -1,0 +1,264 @@
+
+> slack-codex-bridge@1.0.0 test
+> node --test test/*.test.js
+
+(node:79709) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ context contains discussion, deduplicates mentions, handles Chinese and English and only sends final once (39.200292ms)
+✔ explicit queue waits, stop addresses the live turn, and desktop progress omits raw commands (24.494208ms)
+✔ question language wins over workspace language for receipts (0.126583ms)
+✔ slow attachment still permits immediate durable intake, without posting canned replies (47.845291ms)
+✔ an edited remark preserves unaffected bindings; bot diagrams survive bad graph syntax (17.967916ms)
+✔ restart reconciles an accepted mutation by message ID instead of generating twice (12.548209ms)
+✔ unvalidated persisted sessions cannot relay personal output or execute commands (5.941375ms)
+✔ withdrawn evidence invalidates its consumer while unrelated edits keep the session (7.050583ms)
+✔ ambiguous Slack final delivery preserves model completion and fences resends (5.455ms)
+✔ Slack internal_error may have committed: quarantine until authenticated message echo (3.609417ms)
+✔ recovery relays desktop-only turns after the shared checkpoint, once (11.017041ms)
+✔ unadorned greeting stays silent; a greeting plus a real request gets one final (8.338667ms)
+✔ an unaddressed side conversation may stay quiet without leaking the model control marker (3.430041ms)
+(node:79710) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ reconnect imports every page as passive context, including replies on older roots (15.732459ms)
+✔ process restart revalidates exact edits and deletes without saving unauthorized users (9.701375ms)
+✔ unavailable Slack replies keep the checkpoint pending and fail closed until retried (7.020083ms)
+✔ disconnection invalidates an in-flight history scan before it can commit (2.871875ms)
+✔ Slack bot metadata reconciles delivered output without resurrecting command secrets (15.137125ms)
+✔ an exhausted timestamp window claiming more data cannot withdraw cached sources (4.979083ms)
+✔ new loss of channel access blocks history received earlier in the scan (5.897417ms)
+✔ a file unshared during a gap is withdrawn even when the message still mentions it (9.433792ms)
+✔ binds one session, delivers and steers a real Unix-socket session, reports public output (48.990333ms)
+✔ actual MCP stdio handshake, channel notification and Claude report tool round-trip (472.60275ms)
+✔ team launcher blocks reads outside its project and removes inherited secret env (490.080542ms)
+✔ discovers the exact local thread without sending a message (24.571083ms)
+✔ steers the active turn using the discovered owner and returns its receipt (17.310834ms)
+✔ starts one turn after the owner explicitly reports the steer target is idle (9.391666ms)
+✔ inline vision input is included both in desktop steering and in the idle retry (8.123292ms)
+✔ leaves one delivery attempt after router timeout (11.4675ms)
+✔ leaves one delivery attempt after socket disconnect (8.315167ms)
+✔ leaves one delivery attempt after owner mismatch (9.624625ms)
+✔ leaves one delivery attempt after receipt missing the turn ID (5.698042ms)
+✔ matches concurrent responses, streams events and rejects pending RPC on disconnect (67.987292ms)
+✔ keeps an @ without a request quiet (26.557666ms)
+✔ opens a thread for a substantive mention (0.271375ms)
+✔ accepts a mention preserved on a regular Slack event (0.144417ms)
+✔ accepts short follow-ups from the active participant (0.1235ms)
+✔ records a new participant after they explicitly address the bot (0.08475ms)
+✔ accepts an attachment with no prompt after a mention or an active reply (1.550875ms)
+✔ keeps unrelated messages and human sidechat out of the coding session (0.281917ms)
+✔ accepts another human mention as context when the bot is explicitly addressed (0.072083ms)
+✔ does not treat edits, deletes or bot echoes as new requests (0.096666ms)
+✔ mute blocks prompts until an explicit resume (7.135084ms)
+✔ mention-only keeps requiring explicit mentions across later requests (0.834625ms)
+✔ progress commands update only the preference without entering the coding session (0.146166ms)
+✔ status is a local control, including an explicit status request in a muted thread (0.057916ms)
+(node:79715) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a pending exact grant immediately retires the old owner and the newest grant replays durable input (36.67275ms)
+✔ a handoff fences a sampled answer and an operator report already waiting to send (21.700625ms)
+✔ owner Slack text interrupts the original turn and the reply receipt uses the incoming thread (33.473625ms)
+✔ owner attachments and terse follow-ups use the desktop turn, with evidence from the actual Slack parent (78.880291ms)
+✔ explicit local grant replaces a runner with the original thread; any authenticated member can send and receive only contextual answers from that same source (9.762417ms)
+✔ exact source delegates requested tools to the shared project only, once, and records actual result (12.905375ms)
+✔ busy original turn: steer once and reply from the original while its task stays active (3.509ms)
+✔ a new Slack message signals an active turn while the preceding side answer is pending (10.806625ms)
+(node:79716) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ exact-thread mute, mentions and opt-in progress apply only to their participant and discussion (41.734ms)
+✖ a second client adds a turn to the existing shared conversation with its history (2784.831459ms)
+(node:79731) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a withdrawn queued message stays withdrawn when Slack redelivers it during and after handoff (35.046334ms)
+✔ a first-arriving deletion or edit suppresses stale delivery during handoff (15.088834ms)
+✔ withdrawing a control before arrival cannot mute the new session (20.412709ms)
+✔ attachments revoked before or during handoff cannot reach the replacement session (13.459333ms)
+✔ withdrawing the only queued attachment does not start an empty turn (27.449208ms)
+✔ resuming a handoff rechecks a file withdrawal recorded before the queue was cleaned (15.136458ms)
+✔ withdrawing the only attachment while an active delivery is loading does not start a turn (17.622917ms)
+(node:79732) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ default request stays quiet while attachment work is pending and sends only the final answer (51.566709ms)
+✔ default request stays quiet while agent work is pending and sends only the final answer (28.187958ms)
+✔ explicit show progress allows public commentary without an automatic acknowledgement (12.405792ms)
+✔ bare English and Chinese greetings produce no Slack delivery or model submission (8.973709ms)
+✔ benchmark measures the backend and final delivery in both modes, and progress only by request (60.992375ms)
+✔ summary uses nearest-rank percentiles and preserves missing samples in the denominator (1.707083ms)
+✔ owner-only Unix socket forwards the exact session and only exposes link and reply (96.465625ms)
+✔ server rejects malformed requests and workspace overrides before calling onLink (60.534958ms)
+✔ server refuses a shared parent directory and a socket path symlink (117.487875ms)
+✔ macOS operator directory also rejects ACL exceptions to mode 0700 (70.756542ms)
+✔ a second listener preserves an active socket and startup can recover a stale socket (260.370959ms)
+✔ CLI selects this coding session or an explicit ID without guessing (663.231583ms)
+✔ CLI requires explicit Claude mode and selects only the Claude session and socket (866.560166ms)
+✔ CLI sends a report through the current source session to its explicit Slack destination (988.253875ms)
+✔ operator wire rejects invalid reports before calling the link or report handler (28.287416ms)
+✔ control emits intentional operator errors and hides unexpected backend details (71.2555ms)
+✔ quoted Slack content includes its source; unsafe URLs never get a token (46.984333ms)
+✔ vision inputs retain verified image bytes until cleanup (497.085209ms)
+✔ declares whole-file refusal rather than truncating a source (8.990708ms)
+✔ graph renderer accepts only valid node indexes (4.468959ms)
+✔ native audio input is normalized with ffmpeg and removed on cleanup (331.30375ms)
+✔ spreadsheet cells carry sheet and cell coordinates; PDF carries its page number (1037.467542ms)
+✔ Word paragraphs and reordered PowerPoint slides have user-visible source order (543.448167ms)
+(node:79739) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ service entry point requires credentials and rejects a second instance before contacting Slack (1159.798041ms)
+✔ enrollment persists and only the owner can bind a Claude session with an unused CLI code (602.047667ms)
+✔ ambiguous Slack delivery survives restart, then reconciles only with the matching bot echo (16.267042ms)
+✔ status CLI reports persisted p95 and pending deliveries without message text (365.4465ms)
+✔ status reports pending work from secondary channels without including message bodies (249.743125ms)
+(node:79768) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ extracts generated-file declarations without exposing the manifest in the Slack body (7.188083ms)
+✔ uploads actual generated PNG and WAV bytes to their thread and persists file IDs exactly once (596.983542ms)
+✔ rejects paths outside the request, disguised media, and symlinks or hard links (35.562666ms)
+✔ rejects oversized media without opening it for upload (12.508625ms)
+✔ fences uncertain uploads and missing receipts while other files can still be sent (25.021834ms)
+✔ a definite Slack rejection leaves the file eligible for a safe retry (16.317708ms)
+✔ a revoked source never reaches the Slack upload boundary (10.162917ms)
+✔ Bridge outputs only declared generated media and downloads distinct same-name files by Slack receipt (1183.672792ms)
+(node:79780) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: Detected unsettled top-level await at file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/slack-codex-bridge/test/support/crash-worker.mjs:37
+await checkpoint('before-input');
+^
+
+
+
+(node:79796) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ process restart at before-input preserves a single external effect or an explicit unknown (399.407333ms)
+(node:79830) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:79883) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ process restart at pre-ack preserves a single external effect or an explicit unknown (483.575417ms)
+(node:79921) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:79932) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ process restart at acked preserves a single external effect or an explicit unknown (387.968541ms)
+(node:79975) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:80011) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ process restart at submitted preserves a single external effect or an explicit unknown (396.589167ms)
+(node:80055) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: Detected unsettled top-level await at file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/slack-codex-bridge/test/support/crash-worker.mjs:43
+await checkpoint('accepted');
+^
+
+
+
+(node:80067) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ process restart at accepted preserves a single external effect or an explicit unknown (376.616333ms)
+(node:80108) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: Detected unsettled top-level await at file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/slack-codex-bridge/test/support/crash-worker.mjs:51
+  await router.reportFromSource({threadId:'source',target:ticket.token,text:'Done.'});
+  ^
+
+
+
+(node:80124) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ process restart at slack-post preserves a single external effect or an explicit unknown (481.531ms)
+(node:80154) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:80157) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ process restart at slack-receipt preserves a single external effect or an explicit unknown (302.850834ms)
+(node:79772) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ retrying a channel link reuses the same Slack root and coding session (13.292542ms)
+✔ retrying a link with a missing Slack root receipt does not post or start another session (10.390167ms)
+✔ local source reports post only to the linked target selected by the operator (21.773458ms)
+✔ progress controls change the current turn and stay in its Slack discussion (70.223708ms)
+✔ progress requested with /to follows the one-off session inside the same Slack root (58.989167ms)
+✔ one coding source links to multiple Slack audiences with distinct execution sessions (76.2625ms)
+✔ a private Codex session connects through a fresh shared session (20.150958ms)
+✔ two coding sources share one discussion while /use stays per user and /to applies once (51.852333ms)
+✔ redelivery of /use does not overwrite the newer default (18.130041ms)
+✔ redelivery after a user switches aliases does not reroute the original Slack message (13.359625ms)
+✔ both coding sessions can use passive discussion from their shared Slack root (9.022875ms)
+✔ bound threads isolate history and send completions only to their channel and thread (23.685416ms)
+✔ channel progress reports live state without exposing stale answers or routing IDs (8.385625ms)
+(node:79794) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ diagram examples survive as literal code and only exact standalone declarations upload (419.7825ms)
+✔ unsupported graph JSON stays hidden without masking the receipt for successful text and images (365.252125ms)
+✔ a missing upload receipt fences the uncertain image while another image reaches the thread (1079.256792ms)
+✔ first-line skill attribution variants stay out of public post and code samples stay intact (14.341291ms)
+✔ a long fenced code example preserves exact literal content across public chunks (7.793542ms)
+✔ native generated-media examples stay literal inside an outer code fence (1.386542ms)
+✔ native crash recovery replays pending prose without publishing pending upload titles (3.726459ms)
+✔ splitting a code line does not turn its literal backticks into a closing fence (2.858417ms)
+✔ removing a media manifest does not promote a leading indented example into an upload (2.717125ms)
+✔ a literal attribution label is preserved at a later public chunk boundary (4.305291ms)
+✔ already-staged long answers keep their original outbox chunks through deployment (4.716459ms)
+✔ long runs of both fence characters keep their code styling within Slack limits (4.403833ms)
+(node:79881) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ architecture answers render text and PNG to the same thread with independent receipts (1161.56675ms)
+✔ resolves names, IDs and channel URLs using the authenticated workspace (8.137583ms)
+✔ rejects DMs, external or ambiguous channel addresses and mismatched workspace URLs (6.4955ms)
+✔ an existing reply URL resolves to its verified root and returns only coordinates (6.169125ms)
+✔ rejects a reply link that claims the wrong thread root (1.807875ms)
+✔ lookup cannot enroll a new channel or send a root until local registration (5.371ms)
+✔ root creation neither trusts a mismatched receipt nor repeats an ambiguous write (3.850375ms)
+✔ unjoined, archived, shared and non-channel conversations fail closed (2.170584ms)
+✔ each registered channel keeps its own ingress, egress, media and history scope (9.551792ms)
+✔ an external share revokes only the affected channel and blocks new writes there (4.301917ms)
+✔ events pending author lookup cannot cross a concurrent channel revocation (15.524541ms)
+✔ the first enrollment does not admit an event from a competing channel (3.59425ms)
+✔ file revocation without a channel fans out with independent scope keys (1.5935ms)
+✔ Slack answers exclude transcript attribution and preserve skill references in the actual answer (8.66075ms)
+✔ authorized mention is cleaned, carries file references, accepted before ACK (7.198709ms)
+✔ internal workspace, audience and person are checked (8.424375ms)
+✔ only original mentions dispatch; own echoes and edited mentions remain context (4.210208ms)
+✔ failed persistence leaves envelope unacknowledged (0.9835ms)
+✔ Unicode chunks preserve every character and leave room for Slack escaping (62.954167ms)
+✔ delivery uses bound thread and prevents automatic mentions; blocks channel after external sharing (4.905083ms)
+✔ posts and updates render Markdown with native Slack blocks (11.193334ms)
+✔ links show their true address and untrusted Slack syntax stays inert (12.403333ms)
+✔ bot echoes restore the original fallback once while legacy and member messages stay intact (18.57675ms)
+✔ cached Slack file IDs must still be shared into the selected audience (6.598417ms)
+✔ only a verified owner can activate an unconfigured bridge; enrollment code never enters memory (18.859333ms)
+✔ missing is_member falls back to paginated membership evidence (1.243125ms)
+✔ passive and active event variants store identical text; own @ cannot start work (0.774541ms)
+(node:80118) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ durable intake and exact bot delivery survive a process restart (21.643375ms)
+✔ late edits cannot resurrect a deleted source; stale revisions cannot replace a correction (13.487208ms)
+✔ CJK search finds earlier exact evidence through unrelated channel noise and isolates destinations (93.96375ms)
+✔ a shared agent thread cannot be attached to a different audience (2.853ms)
+✔ attachment intent, delivery and source revocation reconcile independently of chat timestamps (9.980459ms)
+✔ retention watermark blocks late expired events and unknown deliveries cannot be retried blindly (2.774833ms)
+✔ a channel message arriving before app_mention preserves cleaned actionable commands (2.431625ms)
+✔ progress edit uses the actual Slack receipt for the same public message (11.603458ms)
+✔ incremental topic projections separate a promised test date from a corrected release decision (13.008208ms)
+✔ RPC message identity, read cursor and exact source dependencies survive restart (19.892125ms)
+✔ deleting quoted evidence invalidates both provider sessions and their local derived replies (16.524833ms)
+(node:80122) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ edit of request during native member sampling stops the stale answer (11.687209ms)
+✔ delete of request during native member sampling stops the stale answer (7.340417ms)
+✔ delete of quoted context during native member sampling stops the stale answer (7.736542ms)
+✔ a live plain-message mention starts work and its app_mention cannot execute it again (14.620125ms)
+✔ dual Slack event delivery shows status once and reports the available sessions once (5.32425ms)
+ℹ tests 174
+ℹ suites 0
+ℹ pass 173
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3662.773
+
+✖ failing tests:
+
+test at test/exact-thread.test.js:20:1
+✖ a second client adds a turn to the existing shared conversation with its history (2784.831459ms)
+  [Error: ENOTEMPTY: directory not empty, rmdir '/tmp/slack-codex-test-fE5mIr/home/.tmp/plugins-clone-LlL2Bz/plugins'] { errno: -66, code: 'ENOTEMPTY', syscall: 'rmdir', path: '/tmp/slack-codex-test-fE5mIr/home/.tmp/plugins-clone-LlL2Bz/plugins' }

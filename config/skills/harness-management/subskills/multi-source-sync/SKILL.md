@@ -1,96 +1,100 @@
 ---
 name: multi-source-sync
-description: "harness-management 内部 subskill(伪 skill,经其路由 Read):Claude/Cursor/Codex/Trae 四源 harness 同步 + 仓快照 + GitHub push/pull。触发:同步三源/四源、sync skills、deploy harness、agent-config sync/deploy/pull、从 GitHub 更新并推到四工具。任意 cwd 可调,不必 cd 进仓库。"
+description: "Internal harness-management subskill for syncing the Claude, Cursor, Codex and Trae harnesses, repository snapshots and GitHub. Read via the parent router for three- or four-source sync, sync skills, deploy harness, agent-config sync/deploy/pull, or propagating GitHub updates to all four tools. Works from any directory."
 ---
 
-# multi-source-sync — 四源 harness 同步(agent-config + GitHub)
+# Multi-source harness sync with agent-config and GitHub
 
-> harness-management 内部伪 skill。把 `ai-coding-config` 的 `./agent-config` 变成**任意工作目录可调用**的操作面;仓内唯一配置树 = `$REPO/config/`;**每次完整同步默认含 GitHub**(仓有改动则 commit+push;从远端更新则先 pull)。
+Use `ai-coding-config`'s `./agent-config` entry point from any working directory. The single repository configuration tree is `$REPO/config/`. A full sync includes GitHub by default: commit and push repository changes, and pull first when updating from the remote.
 
-## 路径解析(禁止写死本机绝对路径)
+## Resolve the repository path
 
-按序解析仓库根 `REPO`,任一命中即停:
+Never hardcode a machine-specific absolute path. Resolve `REPO` in this order, stopping at the first match:
 
-1. 环境变量 `AI_CODING_CONFIG`(指向仓根,含 `agent-config` 入口)
-2. 枢纽定位卡 `agent-harness-config`(hub 检索 / 读卡)里的本地路径
-3. 与 `global-memory` 同级:`realpath(<hub runtime 软链>)/../ai-coding-config`(hub 常见链到 `…/global-memory/hub`)
-4. 当前 cwd 向上找含 `agent-config` + `config/skills/` 的目录
+1. The `AI_CODING_CONFIG` environment variable pointing at the repository root with the `agent-config` entry point.
+2. The local path in the hub's `agent-harness-config` locator card. Search the hub or read the card.
+3. The repository next to `global-memory`: `realpath(<hub runtime symlink>)/../ai-coding-config`. The hub link commonly targets `…/global-memory/hub`.
+4. Walk up from the current directory until reaching a directory containing both `agent-config` and `config/skills/`.
 
-**CLI**(无需 `cd $REPO`):
+Run the CLI without `cd $REPO`:
 
 ```bash
 "$REPO/agent-config" <command> [options]
 ```
 
-验仓:`test -x "$REPO/agent-config" && test -d "$REPO/config/skills"`。找不到 → 停,报告解析步骤,请用户给出仓根或设 `AI_CODING_CONFIG`。
+Verify with `test -x "$REPO/agent-config" && test -d "$REPO/config/skills"`. If the repository cannot be found, stop, report the resolution steps and ask for its root or for `AI_CODING_CONFIG` to be set.
 
-Live runtime(工具 home,非仓):
-
-| 工具 | 根 |
+| Live tool | Home |
 |---|---|
 | Claude Code | `~/.claude` |
 | Cursor | `~/.cursor` |
 | Codex | `~/.codex` |
-| Trae (IDE + CLI/`traecli`) | `~/.trae` |
+| Trae (IDE and CLI/`traecli`) | `~/.trae` |
 
-**Canonical live 源默认 = Claude**(`~/.claude`)。仓内快照 = `$REPO/config/`。远端 = GitHub `yuanyunchen/ai-coding-config`。Trae CLI 与 Trae IDE 共用 `~/.trae`（skills/commands/agents/AGENTS.md 同构于 cursor/claude）。
+Claude (`~/.claude`) is the default canonical live source. Keep the repository snapshot in `$REPO/config/`. The GitHub remote is `yuanyunchen/ai-coding-config`. The Trae CLI and IDE share `~/.trae`, with the same skills/commands/agents/AGENTS.md layout as Cursor and Claude.
 
-## 仓内配置树纪律
+## Repository configuration tree
 
-- **唯一树 = `config/`**：浏览、编辑、git 快照都走这里；不要再维护平行的 `config-links` 或其它副本目录。
-- **`config/` 本身不用软链**(跨设备不可移植);改内容直接改 `config/`。
-- sync/deploy 用 rsync 物化到各工具 home 是预期行为;不要为「省一份拷贝」把 `~/.claude/skills/X` 软链到仓内 `config/skills/X`(除脚本已跳过的「目标已指向源」情形)。
+- Browse, edit and snapshot the single `config/` tree in git. Keep no parallel `config-links` or other copy directory.
+- Edit `config/` directly. A symlink for the tree itself would not be portable across devices.
+- Sync and deploy intentionally use rsync to materialize files in each tool's home. Do not replace `~/.claude/skills/X` with a symlink to the repository's `config/skills/X` to save a copy. The scripts already skip a destination that points to the source.
 
-## 命令速查(在任意 cwd 执行)
+## Command reference
 
-| 意图 | 命令 |
+Run these from any working directory.
+
+| Intent | Command |
 |---|---|
-| 预览四源增量同步 | `"$REPO/agent-config" sync --dry-run` |
-| Claude → Cursor+Codex+Trae | `"$REPO/agent-config" sync --source claude` |
-| 指定源/目标 | `"$REPO/agent-config" sync --source cursor --target trae` |
-| 镜像对齐(会删目标多余) | `"$REPO/agent-config" sync --source claude --mirror` |
-| 仓 → Claude(+默认再 sync) | `"$REPO/agent-config" deploy` |
-| 只部署不跨工具 sync | `"$REPO/agent-config" deploy --no-sync` |
-| live → 仓快照 | `"$REPO/agent-config" pull` |
-| 插件开关/portable | `"$REPO/agent-config" plugins …` |
-| 全局记忆 git 同步 | `"$REPO/agent-config" memory …` |
+| Preview an incremental four-source sync | `"$REPO/agent-config" sync --dry-run` |
+| Claude → Cursor, Codex and Trae | `"$REPO/agent-config" sync --source claude` |
+| Select source and destination | `"$REPO/agent-config" sync --source cursor --target trae` |
+| Mirror, deleting destination-only entries | `"$REPO/agent-config" sync --source claude --mirror` |
+| Repository → Claude, followed by sync by default | `"$REPO/agent-config" deploy` |
+| Deploy only, skipping cross-tool sync | `"$REPO/agent-config" deploy --no-sync` |
+| Live files → repository snapshot | `"$REPO/agent-config" pull` |
+| Plugin enablement and portable packages | `"$REPO/agent-config" plugins …` |
+| Global-memory git sync | `"$REPO/agent-config" memory …` |
 
-各命令 `-h` 看完整参数。默认 sync = **增量只加不删**;`--mirror` 才删齐。覆盖前默认备份到目标根 `.claude-sync-backup-<时间戳>/`。
+Use each command's `-h` for all parameters. Incremental sync is the default and does not delete destination-only files. Only `--mirror` prunes them. Before overwrites, the default backup location is `.claude-sync-backup-<timestamp>/` under the destination root.
 
-## 完整同步(默认;含 GitHub)
+## Platform-specific entry points
 
-用户说「同步三源 / 同步四源 / sync skills / 推三工具 / 推四工具」且未声明 `--dry-run` /「只本地」时,按序执行**整条管道**(缺一步不算完成):
+Follow “Platform-specific entry points” in `../../SKILL.md`. `scripts/sync.sh` excludes `qa-loop` from both shared-skill copying and mirror pruning. `scripts/pull.sh` excludes the adapter from shared `config/skills/` and `config/skills-disabled/`. Preserve each tool's existing command files. Never copy the Codex adapter to Claude, Cursor or Trae, or delete Codex's own entry point because the sync source lacks it.
 
-1. **四 live**:`"$REPO/agent-config" sync --source <canonical>`(默认 `claude`;可按用户指定改源/目标/`--mirror`)
-2. **回仓**:若改动源自 live → `"$REPO/agent-config" pull`;若改动已在 `$REPO/config/` → 跳过 pull,直接确保 live 已 deploy/sync
-3. **GitHub**:在 `$REPO` 内 `git status` / `git diff`;有改动 → 按用户 git 规范 add(禁 secrets)→ commit(HEREDOC)→ `git push`;无改动但 ahead → 只 push;behind → 先 `git pull --rebase`(或报告冲突)再 push。**调用本 subskill 的「同步三源/四源 / sync」即视为用户已授权本次 commit+push**(2026-07-12 明示);与「平时未经要求不擅自 commit」的通用 git 纪律不冲突——授权范围仅限本管道。`--dry-run` / 用户明确「不要推 GitHub」/「只本地」才跳过本步。
-4. **验收**:四 home 目标文件存在且工具根路径已改写;`git status` 显示与远端一致(或已说明未推原因)。
+## Full sync (the default, including GitHub)
 
-同时动全局记忆时:另对 `global-memory` 走同等 git 同步(或 `"$REPO/agent-config" memory push`)。
+A request to sync three or four sources, “sync skills”, or propagate to three or four tools invokes the whole procedure below unless the user requests `--dry-run` or “local only”. Every applicable step is required for completion.
 
-## 场景路由
+1. **Sync all four live homes.** Run `"$REPO/agent-config" sync --source <canonical>`, defaulting to `claude`. Honor the user's source, destination and `--mirror` selection.
+2. **Update the repository.** For changes originating in a live installation, run `"$REPO/agent-config" pull`. For changes already in `$REPO/config/`, skip pull and ensure the live copies were deployed/synced.
+3. **Update GitHub.** In `$REPO`, inspect `git status` and `git diff`. Add changed files according to the user's git rules, exclude secrets, commit using a HEREDOC and run `git push`. If clean and ahead, push only. If behind, run `git pull --rebase` first or report conflicts, then push. Under the explicit user ruling of 2026-07-12, invoking this subskill for a three-/four-source sync or “sync” authorizes commit and push for this pipeline alone. The normal rule against unrequested commits still applies elsewhere. Skip this step only for `--dry-run` or an explicit “do not push to GitHub” or “local only”.
+4. **Verify.** Target files must exist in all four homes with tool-root paths rewritten. Confirm with `git status` that local and remote align, or state why the changes were not pushed.
 
-| 场景 | 步骤 |
+When global memory also changed, apply the same git sync separately to `global-memory`, or use `"$REPO/agent-config" memory push`.
+
+## Scenario routing
+
+| Scenario | Procedure |
 |---|---|
-| **同步四源(默认;口语「三源」亦走此)** | 走上方「完整同步」整条管道(含 GitHub) |
-| **仅预览** | `sync --dry-run`(不写 live、不 commit、不 push) |
-| **仓快照恢复/新机** | `git pull` → `deploy` → 若本地仍有未推提交则 push;失败时看个人化脚本 Python 版本(Codex TOML 需 3.11+ `tomllib`);Trae 需已装 IDE 或 `traecli` 且存在 `~/.trae` |
-| **从 GitHub 更新并推四源** | 走下方「多源协议」 |
+| Four-source sync, including requests informally called “three-source sync” | Run the complete full-sync procedure above, including GitHub. |
+| Preview only | Use `sync --dry-run`. Do not write live files, commit or push. |
+| Restore a repository snapshot or set up a new machine | Run `git pull`, then `deploy`. Push any remaining local unpushed commits. On failure, check the personalization scripts' Python version. Codex TOML requires Python 3.11+ with `tomllib`. Trae requires the IDE or `traecli` installed with `~/.trae` present. |
+| Update from GitHub and distribute to all four homes | Follow the multi-source protocol below. |
 
-## 多源 harness 同步协议(GitHub ↔ 仓 ↔ 四 live)
+## Multi-source protocol for GitHub, repository and four live homes
 
-用户要求从 GitHub 更新 harness/skills/rules 并同步到各工具时,按序:
+When the user requests updates from GitHub for harness, skills or rules followed by sync to the tools, proceed in order:
 
-1. **拉仓**:在 `$REPO` `git fetch` / `pull`;不要先覆盖 live。
-2. **看冲突**:对比 GitHub、仓本地未提交改动、四 live(`~/.claude`/`~/.codex`/`~/.cursor`/`~/.trae`);标出必须保留的本地化(路径、工具差、用户未提交)。
-3. **报告**:冲突面 + 拟策略;用户已授权「冲突自己看着改」可继续,但不得回退仍有效的 harness 更新。
-4. **合并**:在仓内合并/本地化;再 `deploy` 或先写入 Claude live 再 `sync`。
-5. **GitHub**:有本地提交或合并结果 → **必须** commit(若尚未)并 push;若同时动全局记忆,另推 `global-memory`。
-6. **验四源**:目标文件在四 home 均存在;正文工具根路径已改写;远端与本地对齐。
+1. **Fetch the repository.** In `$REPO`, use `git fetch` / `pull` before overwriting any live files.
+2. **Inspect conflicts.** Compare GitHub, local uncommitted repository changes, and the four live homes (`~/.claude`, `~/.codex`, `~/.cursor`, `~/.trae`). Identify local paths, tool differences and uncommitted user work that must survive.
+3. **Report.** Describe conflicts and the proposed resolution. If the user has authorized autonomous conflict resolution, proceed while preserving still-valid harness updates.
+4. **Merge.** Merge/localize in the repository, then `deploy`. Alternatively write to the live Claude home first and then `sync`.
+5. **GitHub.** For local commits or merged results, commit if needed and **push**. Separately push `global-memory` if it also changed.
+6. **Verify all four sources.** Check target files in all four homes, rewritten tool-root paths in their contents, and alignment between the remote and local repository.
 
-## 边界
+## Boundaries
 
-- 本 subskill = **执行层**(跑 CLI + 协议)。改 skill/规则正文仍先走 harness `modules/update.md` 判桶/判层/冲突/审批,再视需要调本 subskill 做四源+GitHub 传播。
-- `agent-config sync` ≠ `plugins sync`(后者管插件开关/portable 包)。
-- hook 型 Claude 插件命令不同步到 Cursor/Codex/Trae;Codex 无 subagents;增量模式下部分 skill 对 codex 跳过(见 `scripts/sync.sh`)。
-- 详细仓库约定以 `$REPO/CLAUDE.md` 为准;本文件只保留可执行摘要。
+- This is the execution layer for the CLI and synchronization protocols. Before changing a skill or rule, follow harness `modules/update.md` for classification, placement, conflict checks and approval. Invoke this subskill for four-source and GitHub propagation as needed.
+- `agent-config sync` and `plugins sync` have distinct scopes. The latter manages plugin enablement and portable packages.
+- Do not sync hook-based Claude plugin commands to Cursor, Codex or Trae. Codex has no subagents in the sync layout. Incremental mode skips some skills for Codex. See `scripts/sync.sh`.
+- `$REPO/CLAUDE.md` is authoritative for detailed repository conventions. This file contains the executable summary.

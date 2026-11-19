@@ -1,11 +1,11 @@
-model = "gpt-6.1-sol"
+model = "gpt-6.2-astra"
 model_context_window = 1050000
 model_auto_compact_token_limit = 900000
-model_reasoning_effort = "xhigh"
+model_reasoning_effort = "high"
 personality = "pragmatic"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
-service_tier = "fast"
+service_tier = "ultrafast"
 
 [tui]
 status_line_use_colors = false

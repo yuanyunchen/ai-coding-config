@@ -6,6 +6,8 @@
 
 你被派来完成一个任务，输入是一个 `task.md`，它所在的目录就是你的工作目录。
 
+For dispatches under `.agent/`, follow the [v3 working-language rule](v3-legacy.md#在-v3-工作区里怎么做) for records and messages between agents.
+
 1. **先读完再动手。** 读 task.md 全文（包括末尾的「追加」）和「必读」里的每个路径。你不继承主会话的上下文，也不会自动加载 skill；task.md 点名的规范和 skill 逐个读。
 2. **只在授权范围内写。** 可写的只有你的工作目录和「可写范围」里列出的路径。工作目录里可以随意放草稿、中间结果、你自己的 plan.md 和 progress.md。不改 AGENTS.md、上层节点的任何文件、其他派发目录；没有授权不跑 git 写操作。**不制造审批弹窗、不碰别人的进程**：删除用固定路径（变量加 `${D:?}` 守卫），不用通配；只结束自己启动的进程（按 PID），不按名字 `pkill`。原因：posthog-dashboard 里通配删除反复弹窗要用户批准，宽匹配 `pkill` 三次误杀主会话的预览服务。
 3. **新知识写进 memory 时标草稿。** 只有「可写范围」允许时，才在 `.agents/memory/<主题>/` 新建文件；frontmatter 写 `status: draft`、`source: <你的派发 ID>`、summary、type。改已有的 memory 文件也要得到授权。
@@ -22,10 +24,10 @@
 
 ## 二、给主 agent
 
-0. **模型分流**（总则见全局 AGENTS.md「subagent (dispatch)」，最低 sonnet，Explore/Plan 等内置类型同规）：
-   - 要它做判断、核心开发、质量把关 → Opus（缺省）；
-   - 要它给意见、做最终检查 → 继承主模型，只给结论所需的最少材料，必读清单控制在个位数；
-   - 要它照单执行（批量替换、格式化、采集、跑命令）→ Sonnet。
+0. **模型分流**（总则见全局 AGENTS.md「subagent (dispatch)」，最低 sonnet，Explore/Plan 等内置类型同规；2026-11-16 用户裁决）：
+   - 缺省继承主模型：派发时不传 model；用户没说要分流就不分流；
+   - 用户说明要分流时按任务难度：影响功能质量的核心部分（判断、核心开发、质量把关、最终检查）仍继承；不影响功能质量的基础部分（批量替换、格式化、采集、跑命令）沿 fable → opus → sonnet 降一档；
+   - 思考 effort 跟随模型：继承模型的派发同时继承 effort，降档的派发一律用 medium；每次派发都只给所需的最少材料，必读清单控制在个位数。
    - **该不该开子智能体**：要读文件、用工具、多步操作的才派发。输入给定、输出很小的单次判断（打分、两两比较、分类）用脚本批量调用模型，或交给一个子智能体批量做完。原因：posthog-dashboard 每次两两比较都开一个子智能体，读约 42KB、产出不到 1KB，评审类派发占四成，90 分钟的作业做了 7 小时。
 1. **派发步骤。**
    - `ws dispatch <节点ID> <slug> --stdin`，从 stdin 传入四节：任务与背景、成功标准、必读、可写范围；同一节点多次派发共用的说明写进节点的 `brief.md`，会被自动列进必读；

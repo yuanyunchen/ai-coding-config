@@ -77,11 +77,11 @@ Codex's interactive slash commands (`/model`, `/diff`, `/undo`, `/review`, `/app
 
 ## Models (do NOT hardcode)
 
-The model lineup drifts fast and differs by auth tier; the current best on your tier is chosen automatically when you omit `-m`. As of this capture the local config default is `gpt-5.5`, and config.toml records migrations `gpt-5-codex → gpt-5.3-codex → gpt-5.4`. Public docs and community posts disagree on which models are ChatGPT-only vs API-key-only (they change month to month) — so **let it default**, and only pass `-m` when you have a specific speed/cost tradeoff. To see what's actually available, check `codex --help` / the model picker / `codex doctor`. Reasoning effort is a separate axis: `--config model_reasoning_effort="minimal|low|medium|high|xhigh"` (default medium).
+Resolve the requested selector once per new task. Reuse the full ID for CLI fallback. Keep Fast in the Codex service tier configuration. Resume with the original model unless the user explicitly requests a switch.
 
 ## Config precedence (config.toml)
 
-CLI `-c key=value` overrides > `--profile` block > base `~/.claude/config.toml`. Relevant keys seen in practice: `model`, `model_reasoning_effort`, `approval_policy`, `sandbox_mode`, `model_reasoning_summary` (`"none"` to drop explanations in CI), `project_doc_max_bytes` (AGENTS.md byte cap, default ~32 KiB — oversized files silently truncate). `[profiles.<name>]` blocks let you snapshot approval+sandbox combos, e.g. a `ci` profile (`never` + `workspace-write`) vs a `paranoid` profile (`untrusted` + `read-only`).
+CLI `-c key=value` overrides > `--profile` block > base `~/.codex/config.toml`. Relevant keys seen in practice: `model`, `model_reasoning_effort`, `approval_policy`, `sandbox_mode`, `model_reasoning_summary` (`"none"` to drop explanations in CI), `project_doc_max_bytes` (AGENTS.md byte cap, default ~32 KiB — oversized files silently truncate). `[profiles.<name>]` blocks let you snapshot approval+sandbox combos, e.g. a `ci` profile (`never` + `workspace-write`) vs a `paranoid` profile (`untrusted` + `read-only`).
 
 ## Sources
 - Official: developers.openai.com/codex/cli/reference, /codex/noninteractive, /codex/config-reference, /codex/cli/features

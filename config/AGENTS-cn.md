@@ -149,7 +149,7 @@
 > 任务的文件系统。以下核心逻辑不加载 skill 也要遵守。
 
 - **识别与入口**:从当前目录往上找(不到 `$HOME`),最近有 `.agents/ws.json` 的目录是 v4 工作区;根上的 `AGENTS.md` 是 agent 维护的入口和地图,其中「工作协议」区块对主 agent 和每个子智能体都有约束力。有 `.agent/MEMORY.md` 或 `.agent/memory/` 的目录是 v3 工作区:按 `workspace-management references/v3-legacy.md` 办,未经要求不转换。`~/.agents/skills` 是 lark-cli 托管的 skill 副本,不是工作区。
-- **结构归 `ws`,内容归 agent**:任务、派发、编号、索引都由 `ws` 命令行生成;hook 把用户每条消息和每轮最终回答记进 `.agents/conversation.md`(用户消息另记 `.agents/inbox.md`);需求类消息原样归档进节点 `task.md` 的「原文记录」(只追加),并当轮合进结构化的「任务说明」(`ws task spec`)。根上只有 `AGENTS.md` 和 `.agents/`;临时文件进 scratchpad。
+- **结构归 `ws`,内容归 agent**:任务、派发、编号、索引都由 `ws` 命令行生成;hook 把用户每条消息和每轮最终回答记进 `.agents/conversation.md`(用户消息另记 `.agents/inbox.md`);设定当前节点后(`ws focus <ID>`),同一个 hook 把每条用户消息原样追加进该节点 `task.md` 的「原文记录」(只追加),不逐条归档或分类;需求变化合进结构化的「任务说明」(`ws task spec`)。根上只有 `AGENTS.md` 和 `.agents/`;临时文件进 scratchpad。
 - **派发留档**:工作区内每次派发子智能体都用 `ws dispatch` 建在任务节点的 `subagent/NN-<名>/` 下(task.md 进,result.md 由子智能体自己写);跳过它的派发会被 hook 拦下。
 - **加载时机**:长任务、用户说建工作区/收尾/归档、在工作区里做 AGENTS.md 没覆盖到的事、/project-* 命令 → invoke workspace-management;轻任务不建工作区。
 
@@ -180,12 +180,13 @@
 - **核心规则文件默认传入**;上下文优先以**引用文件路径**给出,不重复表述;复用内容先写成 md,再分发给多个子智能体。
 - **点名该用哪些 skill**:子智能体有时不会自己 invoke,需要在 prompt 里列清需要用的 skill。
 
-**模型分流(三档,最低 sonnet;内置 agent 类型 Explore/Plan 等同规)**:
+**模型分流(缺省继承;内置 agent 类型 Explore/Plan 等同规;2026-11-16 用户裁决,取代「缺省 = Opus」)**:
 
-- **缺省 = Opus**:涉及决策、质量把关、核心开发等需要自主判断的任务。
-- **high-level = 继承主模型(允许 fable)**:方案讨论、最终结果检查等;上下文要省——只给结论所需最小材料,引用路径不贴全文,必读清单个位数。
-- **Sonnet**:操作性、低自主性任务(机械执行明确指令:批量替换、格式化、采集汇总、跑命令)。
-- **低于最低档的唯一认可例外**:上游 `/code-review` 命令里的 Haiku 分诊代理(资格检查、列文件、摘要)。
+- **缺省 = 继承主模型**:每次派发都不传 `model`。用户没说要分流就不分流。
+- **只有用户说明时才分流,且按任务难度分**:核心部分——凡影响功能质量的(决策、质量把关、核心开发、最终检查)——仍继承;不影响功能质量的基础部分(机械执行明确指令:批量替换、格式化、采集汇总、跑命令)沿 fable → opus → sonnet 降一档。
+- **思考 effort 跟随模型**:继承模型的派发同时继承 effort;降档的派发一律用 `medium`。
+- **每次派发上下文都要省**:只给所需最小材料,引用路径不贴全文,必读清单个位数。
+- **最低档 = Sonnet;低于它的唯一认可例外**:上游 `/code-review` 命令里的 Haiku 分诊代理(资格检查、列文件、摘要)。
 
 派发规约全文 = workspace-management `references/subagent-protocol.md`。
 

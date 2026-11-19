@@ -1,0 +1,15 @@
+(node:69203) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a withdrawn queued message stays withdrawn when Slack redelivers it during and after handoff (14.797625ms)
+✔ a first-arriving deletion or edit suppresses stale delivery during handoff (7.131083ms)
+✔ withdrawing a control before arrival cannot mute the new session (7.303375ms)
+✔ attachments revoked before or during handoff cannot reach the replacement session (9.421708ms)
+✔ withdrawing the only queued attachment does not start an empty turn (6.286125ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 176.840708

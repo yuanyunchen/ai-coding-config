@@ -496,8 +496,6 @@ class Workspace:
                     problems.append(f"子任务 {self.node_id(c)} 状态是 {self.task_status(c)}")
             for rel, fm in self.drafts_for(nid):
                 problems.append(f"memory/{rel} 仍是 draft（source {fm.get('source')}）：转正为 stable 或合并")
-            for e in self.unfiled():
-                problems.append(f"conversation.md 里 {e['id']} 未归档：ws req … --entry {e['id']} 或 ws req --not-req {e['id']}")
         if problems and not force:
             raise WsError("不能设为 " + status + "：\n- " + "\n- ".join(problems))
         with self.lock():
@@ -685,7 +683,28 @@ class Workspace:
         stamp = _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self._append_conv(fmt_q(eid, stamp, (session_id or "-")[:8], prompt))
         self._append_conv(fmt_inbox(eid, stamp, (session_id or "-")[:8], prompt), self.inbox)
+        focus = self.config().get("focus")
+        # secrets stay out of task.md (it may be committed); short prompts carry no requirement
+        if focus and len(prompt.strip()) >= INBOX_MIN_CHARS and not SECRET_RE.search(prompt):
+            try:
+                d = self.resolve_task(focus)
+            except WsError:
+                return eid
+            with self.lock(), open(d / "task.md", "a") as f:
+                f.write(f"\n### {now()} · 用户原文 · {eid}\n\n{prompt.strip()}\n")
+            self._mark(eid, "filed", self.node_id(d))
         return eid
+
+    def set_focus(self, ident=None):
+        """The node every later user message is appended to; None clears it."""
+        cfg = self.config()
+        if ident:
+            cfg["focus"] = self.node_id(self.resolve_task(ident))
+        else:
+            cfg.pop("focus", None)
+        with self.lock():
+            (self.agents / "ws.json").write_text(json.dumps(cfg, ensure_ascii=False, indent=1) + "\n")
+        return cfg.get("focus")
 
     def record_answer(self, session_id, message) -> str | None:
         """Attach the turn's final reply to this session's unanswered questions, else continue the last one."""
@@ -1065,8 +1084,6 @@ class Workspace:
                 t = Path(target).expanduser()
                 if not (t if t.is_absolute() else f.parent / t).exists() and not (self.root / target).exists():
                     add("warn", "dead-link", f"{self.rel(f)} 链接到不存在的 {target}")
-        for e in self.unfiled():
-            add("warn", "inbox", f"conversation.md 里 {e['id']} 未归档：{e['text'][:40]}…")
         return out
 
     def status_text(self) -> str:
@@ -1083,9 +1100,9 @@ class Workspace:
                 lines += [f"    {l[2:][:120]}" for l in logs[-5:]]
         else:
             lines.append("没有 active 节点。新需求：ws req --new <slug> --entry <id>，或 ws task new <slug>。")
-        unf = self.unfiled()
-        if unf:
-            lines.append(f"未归档的用户原文 {len(unf)} 条：" + "、".join(e["id"] for e in unf[:5]) + "（ws inbox 查看）")
+        focus = cfg.get("focus")
+        lines.append(f"当前节点（用户消息自动记入其 task.md）：{focus}" if focus
+                     else "没有设当前节点，用户消息只记入 conversation.md；设定：ws focus <节点ID>")
         issues = self.check()
         errs = [i for i in issues if i.level == "error"]
         warns = [i for i in issues if i.level == "warn"]
@@ -1346,7 +1363,10 @@ def main(argv=None) -> int:
     p.add_argument("--not-req", nargs="+", metavar="ENTRY", help="标记为不是需求")
     p.add_argument("--allow-secret", action="store_true")
 
-    sub.add_parser("inbox", help="列出未归档的用户原文")
+    sub.add_parser("inbox", help="列出没有记入任何节点的用户原文")
+    p = sub.add_parser("focus", help="设定当前节点：之后的用户消息由 hook 自动追加进它的 task.md「原文记录」")
+    p.add_argument("id", nargs="?")
+    p.add_argument("--clear", action="store_true")
     p = sub.add_parser("log", help="在 progress.md 追加一行")
     p.add_argument("id")
     p.add_argument("text")
@@ -1428,6 +1448,9 @@ def main(argv=None) -> int:
                 ws.index()
                 print(f"已归档进 {nid}  {ws.rel(d / 'task.md')}")
                 print(f"下一步：把这条原文的变化合进「任务说明」，整段改写后 ws task spec {nid} --stdin")
+        elif args.cmd == "focus":
+            cur = ws.set_focus(args.id) if args.id or args.clear else ws.config().get("focus")
+            print(f"当前节点：{cur}" if cur else "没有当前节点")
         elif args.cmd == "inbox":
             unf = ws.unfiled()
             if not unf:

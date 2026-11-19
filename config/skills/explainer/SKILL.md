@@ -1,67 +1,67 @@
 ---
 name: explainer
-description: "生成给人看的说明型单页 HTML:代码库导览(模块全景、主流程、改动指南)与工作汇报(进度、结论、待决策)。触发:讲解代码库、代码库导览、架构说明页、工作汇报页、进度汇报、交接说明。默认低档不测试。翻页演示走 frontend-pipeline,飞书文档走 feishu-task-management,关系图探索器走 frontend-pipeline 的 starmap 分支。"
+description: "Build a single-page HTML codebase tour (modules, main flow, change guide) or work report (progress, findings, decisions). Use for requests to explain or tour a codebase, make an architecture explainer, work or progress report, or handoff. Default to low effort with no tests. For slide presentations use frontend-pipeline, for Feishu documents use feishu-task-management, and for relationship explorers use frontend-pipeline's starmap branch."
 ---
 
-# explainer — 说明型 HTML
+# explainer — Single-page HTML explanations
 
-把「理解一个代码库」或「汇报一段工作」做成一页自包含 HTML:单文件、零外部依赖、不跑 JS 也完整可读、亮暗两色。规范一律引用 `design-principles`,本 skill 只装两套骨架、页面模板(含 SVG 组件)、ASCII 规则与检查脚本。
+Explain a codebase or report on a piece of work in one self-contained HTML file. Use no external dependencies, make all content readable without JavaScript, and support light and dark themes. Use `design-principles` for the standards. This skill supplies the two outlines, the page template with SVG components, the ASCII conventions, and the checking script.
 
-## 场景路由
+## Routing
 
-| 我要做 | 读 |
+| Task | Read or use |
 |---|---|
-| 讲清一个代码库 / 模块 / 系统 / 规则包 | [`references/codebase.md`](references/codebase.md) |
-| 汇报进度、排查结论、交付说明、交接 | [`references/report.md`](references/report.md) |
-| 画公式链路、逐步推导的等宽图 | [`references/ascii.md`](references/ascii.md)(画 ASCII 时任何档位都读) |
-| 页面起稿 + SVG 组件 | 复制 [`assets/template.html`](assets/template.html) |
-| 信息密度高的 hero 图原型 | `~/.claude/skills/design-principles/assets/diagrams/`(中、高档) |
-| 写作、配色、作图、数据规则 | `~/.claude/skills/design-principles/SKILL.md`(核心摘要;要展开再按其路由读 references) |
+| Explain a codebase, module, system, or rule package. | [`references/codebase.md`](references/codebase.md) |
+| Report progress, investigation findings, delivery details, or a handoff. | [`references/report.md`](references/report.md) |
+| Draw a formula chain or step-by-step derivation in monospace. | [`references/ascii.md`](references/ascii.md). Read this whenever drawing ASCII, at every tier. |
+| Draft the page and its SVG components. | Copy [`assets/template.html`](assets/template.html). |
+| Prototype a high-density hero diagram. | `~/.claude/skills/design-principles/assets/diagrams/` (medium and high tiers) |
+| Apply writing, color, diagram, and data rules. | `~/.claude/skills/design-principles/SKILL.md` (core summary). Follow its routing table when more detail is needed. |
 
-## 流程
+## Workflow
 
-1. **判骨架**:`codebase` 或 `report`。混合时以读者最想拿走的东西为准(看懂系统 → codebase;知道进展和要做的决定 → report)。
-2. **定读者**:心里定下给谁看,不写进页面。
-3. **定档位**(见下表)并用一句话声明:「本次 explainer {骨架} · {档位}」。
-4. **取材**:codebase 读入口、主流程经过的文件、配置与测试,记下真实的 `文件:行` 与一个真实使用样例;report 收集事实与数字并给每个数字打可信度级别(A/B/C/D)。只读产物需要的,不爬全仓。
-5. **起稿**:中、高档先给用户一份要点大纲 + 图清单,认可后再写(2026-11-04 用户裁决)。复制模板,按骨架填。图用模板里的 SVG 组件起手(复制示例 svg 改坐标与文字),不从零手写样式。
-6. **自查 + 交付**:按下方 6 条自查(低档只读不跑工具),然后交付。
+1. **Choose an outline:** `codebase` or `report`. For a mixed brief, decide what the reader most wants to take away. Understanding the system calls for codebase. Understanding progress and decisions calls for report.
+2. **Choose the reader.** Identify the audience for yourself. Omit that planning note from the page.
+3. **Choose a tier** from the table below and announce it in one sentence: "This explainer: {outline} · {tier}."
+4. **Gather source material.** For a codebase, read its entry point, files on the main execution path, configuration, and tests. Record real `file:line` locations and one actual use case. For a report, gather facts and numbers and assign every number a confidence grade (A/B/C/D). Read only what the artifact needs.
+5. **Draft.** For medium and high tiers, give the user an outline of key points and a list of diagrams, and obtain approval before writing (user decision, 2026-11-04). Copy the template and fill it using the selected outline. Start diagrams from the template's SVG components. Copy an example SVG and adjust coordinates and text rather than hand-writing the styles.
+6. **Check and deliver.** Complete the six checks below and deliver. The low tier uses reading alone, without tools.
 
-## 档位(默认低档)
+## Tiers (low by default)
 
-| 档位 | 何时 | 加载 | 篇幅上限 | 检查 |
+| Tier | When | Load | Size limit | Checks |
 |---|---|---|---|---|
-| **低(默认)** | 用户没提验证 | 本文件 + 对应骨架 + design-principles `SKILL.md` + 模板(画 ASCII 时加 `ascii.md`) | 手绘 SVG ≤ 2 张(全景 + 主流程);模块节 ≤ 4,其余模块并成一张模块表;其他结构用表、列表或 ASCII | 只按 6 条自查过一遍,**不跑脚本、不截图、不开浏览器** |
-| 中 | 用户说「验证 / 检查」,或产物给团队外的人 | 低档 + design-principles `diagrams.md` + hero 原型 | SVG ≤ 4 张;骨架全量 | 跑 `scripts/check.py`;用 `webapp-testing` 截桌面 1440 与手机 390 各一张并亲自看;≤ 2 轮修复 |
-| 高 | 对外、正式、「打磨」 | 中档 + design-principles 全部 references;只读参考 `~/.claude/skills/frontend-pipeline/skills/ui-ux-design-pro/references/` 的 `accessibility.md`、`typography.md`、`cognitive-principles.md`、`critique-protocol.md` | 不设上限,按内容需要 | 中档检查 + design-principles `verification.md` 全量 + ≥ 4 路对抗审查;≤ 4 轮 |
+| **Low (default)** | The user did not request verification. | This file, the relevant outline, design-principles `SKILL.md`, and the template. Add `ascii.md` for ASCII. | ≤2 hand-drawn SVGs (overview and main flow). Use ≤4 module sections and combine remaining modules in one table. Use tables, lists, or ASCII for other structures. | Apply only the six reading checks. **Do not run scripts, take screenshots, or open a browser.** |
+| Medium | The user says "verify" or "check," or the audience includes people outside the team. | Low tier plus design-principles `diagrams.md` and the hero prototypes. | ≤4 SVGs. Use the complete outline. | Run `scripts/check.py`. Use `webapp-testing` to take and personally inspect one desktop screenshot at 1440 and one mobile screenshot at 390. ≤2 rounds of fixes. |
+| High | External-facing, formal, or explicitly requested to be "polished." | Medium tier plus all design-principles references. Consult `accessibility.md`, `typography.md`, `cognitive-principles.md`, and `critique-protocol.md` in `~/.claude/skills/frontend-pipeline/skills/ui-ux-design-pro/references/` as read-only guidance. | No fixed limit. Follow content needs. | Medium checks, the entire design-principles `verification.md`, and ≥4 adversarial review tracks. ≤4 rounds. |
 
-升档只因用户要求或读者范围变化;不因「做得更好」自行升档。
+Raise the tier only for a user request or a change in the audience. A general desire to improve the work does not justify escalation.
 
-## 作图要点(所有档位)
+## Diagram rules (all tiers)
 
-- 图在浅色画布(`.diagram`)里,深色模式下也保持浅色,所以图内**只用模板里的 SVG 组件类**(`.n.up/.main/.focus/.risk/.ok/.neutral`、`.edge`、`.lane`),不用页面 token。
-- 画布 `viewBox` 宽 960,图内文字 ≥ 13(svg 最窄显示 820px,13 约显示 11px)。
-- 圆角胶囊(`.n.data`)= 数据对象,方角 = 模块/过程;每张图配 `.legend` 写清颜色语义。
-- 边:传数据或公式的边写标签;纯「下一步」顺序的流程(如泳道步骤)可在图例里写「箭头 = 下一步」代替逐条标注。
+- Draw inside the light `.diagram` canvas, which stays light even in dark mode. **Use only the template's SVG component classes** inside the diagram: `.n.up/.main/.focus/.risk/.ok/.neutral`, `.edge`, and `.lane`. Keep page tokens out of the diagram.
+- Use a `viewBox` width of 960 and diagram text ≥13. The narrowest SVG display width is 820px, where 13 renders at about 11px.
+- A rounded capsule (`.n.data`) represents a data object. Square corners represent a module or process. Add a `.legend` to every diagram explaining the color meanings.
+- Label edges carrying data or formulas. For flows that show only sequence (such as swimlane steps), one legend entry, "arrow = next step," can replace individual labels.
 
-## 6 条自查(低档也必过,纯阅读)
+## Six checks (required at low tier too, by reading)
 
-1. **首屏**:页眉 + 三问/三个入口 + 第一节默认展开内容里,没有代码片段、成串参数、未解释缩写与专名、「本文/本轮」类自指;原始标识符(仓库、分支、表名)在页眉 `.ids` 里。
-2. **结论先行**:h2 是一句结论或名词短语,正文第一句是判断;`.why` 行(这一节解决什么问题)是阅读理由,不算正文。
-3. **图表都有解释**:每张图有 `figcaption` 读图一句 + 3–5 句正文解释,不复述图上文字;数据图走完读图三拍。表格只需表前一句结论。
-4. **颜色同义**:图和提示块只用语义色,每张图有图例;琥珀出现处写明待谁确认。
-5. **数字诚实**:每个数字可追到来源;推断与待确认的已标注;同一个数全页一致。
-6. **展开区可达**:首屏拿掉的代码位置、命令、日志都在 `<details>` 里,没有被删掉。
+1. **First screen.** The header, three questions or entry points, and initially expanded first section contain no code fragments, strings of parameters, unexplained abbreviations or proper names, or self-references such as "this article" or "this round." Put raw identifiers such as repository, branch, and table names in the header's `.ids`.
+2. **Conclusion first.** Each h2 is a conclusion or noun phrase, and the first body sentence states a judgment. The `.why` line explains why to read the section and what question it answers. It is separate from the body.
+3. **Explain diagrams and tables.** Give each diagram a one-sentence reading cue in `figcaption` and 3–5 sentences of interpretation in the body. Avoid restating the labels. For a data chart, cover the key number, its explanation, and its decision impact. One sentence stating the conclusion before a table is sufficient.
+4. **Consistent color meanings.** Use only semantic colors in diagrams and callouts. Give every diagram a legend. Wherever amber appears, state whose confirmation is pending.
+5. **Honest numbers.** Trace every number to a source. Label inferred and unconfirmed values. Use the same value throughout the page.
+6. **Accessible detail.** Put code locations, commands, and logs moved off the first screen in `<details>`. Preserve all of them.
 
-## 产出
+## Output
 
-- **位置**:当前工作区有 `deliverables/` 就写在那里;没有就写到会话 scratchpad,并把完整路径告诉用户。不写进被讲解的仓库,除非用户要求。
-- **单文件**:CSS 内联、SVG 内联、位图用 base64;外部引用为 0。
-- **发布**:默认不发布。用户要分享、或说明这是给别人看的,才发布为 Artifact(先加载 artifact-design;模板已满足其亮暗 token 与 `<title>` 约定)。
-- **关系节点 > ~30 且关系本身是重点**:主页面放简化全景,另走 frontend-pipeline 的 starmap 分支做探索器并互链。
+- **Location.** Use the current workspace's `deliverables/` if present. Otherwise write to the session scratchpad and give the user the full path. Write to the repository being explained only if the user asks.
+- **Single file.** Inline CSS and SVG, encode bitmaps as base64, and use 0 external references.
+- **Publishing.** Default to local delivery. Publish as an Artifact only when the user asks to share or specifies it is for other people. Load artifact-design first. The template already follows its light/dark token and `<title>` conventions.
+- **More than ~30 relationship nodes, with the relationships themselves central.** Include a simplified overview on the main page, build a separate explorer using frontend-pipeline's starmap branch, and link the two.
 
-## 边界
+## Boundaries
 
-- 不管审美风格创新;要做营销页、dashboard、幻灯片走 frontend-pipeline。
-- 不写飞书文档;要落飞书走 feishu-task-management。
-- 不替代代码注释或 README;页面是给人一次性读懂用的。
+- For aesthetic experimentation, marketing pages, dashboards, and slides, use frontend-pipeline.
+- For a native Feishu document, use feishu-task-management.
+- The page helps a person understand the material in one reading. Maintain code comments and READMEs in their own right.

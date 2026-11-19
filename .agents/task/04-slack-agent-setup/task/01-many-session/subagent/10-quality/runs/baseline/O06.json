@@ -1,0 +1,27 @@
+{
+  "id": "O06",
+  "modelId": "gpt-6.2-sol",
+  "effort": "low",
+  "transport": "local Slack substitute",
+  "turns": [],
+  "events": [
+    {
+      "stage": 3,
+      "inbound": "message",
+      "thread": "1.000000",
+      "sender": "UMAYA",
+      "text": "周五午饭有人一起吗？"
+    },
+    {
+      "stage": 4,
+      "inbound": "message",
+      "thread": "1.000000",
+      "sender": "UOWNER",
+      "text": "<@UMAYA> 你周五方便吗？"
+    }
+  ],
+  "outbound": [],
+  "errors": [],
+  "externalSlackCalls": 0,
+  "windowMs": 26
+}

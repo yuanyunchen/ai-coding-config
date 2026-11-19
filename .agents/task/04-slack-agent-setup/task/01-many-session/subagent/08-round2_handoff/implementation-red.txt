@@ -1,0 +1,120 @@
+(node:64488) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a withdrawn queued message stays withdrawn when Slack redelivers it during and after handoff (16.383ms)
+✖ a first-arriving deletion or edit suppresses stale delivery during handoff (10.451333ms)
+✖ withdrawing a control before arrival cannot mute the new session (7.762708ms)
+✖ attachments revoked before or during handoff cannot reach the replacement session (7.991ms)
+✖ withdrawing the only queued attachment does not start an empty turn (9.148458ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 1
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 199.077042
+
+✖ failing tests:
+
+test at test/handoff-revocation.test.js:92:1
+✖ a first-arriving deletion or edit suppresses stale delivery during handoff (10.451333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      [
+        'new-owner',
+  +     'Deleted before arrival'
+  +   ],
+  +   [
+  +     'new-owner',
+  +     'Stale version before edit'
+  +   ],
+  +   [
+  +     'new-owner',
+        'Valid queued request'
+      ]
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/slack-codex-bridge/test/handoff-revocation.test.js:103:10)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ [ 'new-owner', 'Deleted before arrival' ], [ 'new-owner', 'Stale version before edit' ], [ 'new-owner', 'Valid queued request' ] ],
+    expected: [ [ 'new-owner', 'Valid queued request' ] ],
+    operator: 'deepStrictEqual'
+  }
+
+test at test/handoff-revocation.test.js:109:1
+✖ withdrawing a control before arrival cannot mute the new session (7.762708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'Reply after the withdrawn mute'
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/slack-codex-bridge/test/handoff-revocation.test.js:117:10)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'Reply after the withdrawn mute' ],
+    operator: 'deepStrictEqual'
+  }
+
+test at test/handoff-revocation.test.js:121:1
+✖ attachments revoked before or during handoff cannot reach the replacement session (7.991ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      [
+  +     'FBEFORE',
+        'FKEEP'
+      ],
+      [
+  +     'FBEFORE',
+  +     'FAFTER',
+        'FKEEP'
+      ]
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/slack-codex-bridge/test/handoff-revocation.test.js:134:10)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ [ 'FBEFORE', 'FKEEP' ], [ 'FBEFORE', 'FAFTER', 'FKEEP' ] ],
+    expected: [ [ 'FKEEP' ], [ 'FKEEP' ] ],
+    operator: 'deepStrictEqual'
+  }
+
+test at test/handoff-revocation.test.js:142:1
+✖ withdrawing the only queued attachment does not start an empty turn (9.148458ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   [
+  +     'new-owner',
+  +     {
+  +       currentOwnerMessage: '',
+  +       priorSlackThread: ''
+  +     }
+  +   ]
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/slack-codex-bridge/test/handoff-revocation.test.js:151:10)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ [ 'new-owner', [Object] ] ],
+    expected: [],
+    operator: 'deepStrictEqual'
+  }

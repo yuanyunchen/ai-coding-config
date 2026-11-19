@@ -1,81 +1,83 @@
 ---
 name: design-principles
-description: "用户自有的通用设计规范:信息类元素的视觉编码、图表与数字诚实、作图选型、写作可读性、验证方法。触发:用户说「按我的设计规范 / 设计规范」,或被 explainer、frontend-pipeline 引用时加载。不管审美风格(归 frontend-pipeline),不管飞书落地(归 feishu-task-management)。"
+description: "The user's general design standards for visual encoding, honest charts and numbers, diagram selection, readable writing, and verification. Load when the user asks to follow their design standards or says 'design standards', or when explainer or frontend-pipeline refers here. Use frontend-pipeline for aesthetic style and feishu-task-management for Feishu delivery."
 ---
 
-# design-principles — 通用设计规范
+# design-principles — General design standards
 
-用户自己设计的规范,从飞书文档规范迁出、去掉飞书执行细节后的通用版本。适用于任何给人看的产物:HTML 页面、PDF、幻灯片、dashboard、图。
+The user developed these standards for Feishu documents. This version removes Feishu-specific implementation details and applies to any artifact intended for people, including HTML pages, PDFs, slides, dashboards, and diagrams.
 
-**本文件 = 核心规则摘要**,低成本场景读完本文件即可动手;要展开细节、范例或检查表时按路由表一跳读 references。每条规则的飞书出处见 [`references/provenance.md`](references/provenance.md)。
+**This file summarizes the core rules.** For lightweight work, reading it is enough to begin. Use the routing table to go straight to details, examples, or checklists as needed. The Feishu source for each rule is listed in [`references/provenance.md`](references/provenance.md).
 
-## 总纲(五条,交付前逐条打勾;下方 25 条是它们的展开)
+## Five governing principles
 
-> 2026-11-04 用户裁决(posthog-dashboard 复盘:几轮返工犯的都是下方已写明的规则,缺的是置顶与可查的检查)。
+Check each before delivery. The 25 rules below expand on them.
 
-| 原则 | 交付前怎么查 | 展开 |
+> User decision, 2026-11-04, following the posthog-dashboard retrospective. Several rounds of rework repeated mistakes already covered by the rules. The principles needed to be visible at the top and individually testable.
+
+| Principle | Check before delivery | Details |
 |---|---|---|
-| **直观** | 5 秒测试:看一眼说得出重点与结论 | 规则 23 |
-| **控制文字比例,只说要点** | 每节先图 / 表 / 卡片,后文字;正文 ≤3 个要点或 ≤6 行 | 规则 5–7 |
-| **不重复** | 同一事实全页只出现一次;所有对象取值都一样的元素删掉 | 规则 7 · writing.md §三 |
-| **不用机器腔** | 连读三条,句式不雷同;无元说明 | 规则 8 · writing.md §六 |
-| **重点突出、不散乱** | 每屏一个焦点;每个视觉元素答得出「删掉它,读者少知道什么」,答不出就删 | 规则 12 · visual-encoding.md §五 |
+| **Intuitive** | Five-second test: can someone identify the main point and conclusion at a glance? | Rule 23 |
+| **Control the proportion of text. Keep the key points.** | Start each section with a figure, table, or card, then add prose. Limit the body to ≤3 points or ≤6 lines. | Rules 5–7 |
+| **Avoid repetition** | Each fact appears once per page. Remove any element whose value is identical across all objects. | Rule 7 and writing.md §3 |
+| **Write naturally** | Read three consecutive entries. Vary the sentence patterns and remove commentary about the presentation itself. | Rule 8 and writing.md §6 |
+| **Make the focus clear and cohesive** | Give each screen one focal point. For every visual element, ask what the reader would lose by removing it. Remove elements that add nothing. | Rule 12 and visual-encoding.md §5 |
 
-## 适用范围与优先级
+## Scope and precedence
 
-- **管什么**:承载信息的元素——正文、标题、数字、图表、关系图、状态标记、图例、折叠区。
-- **不管什么**:版面审美(风格方向、字体个性、动效、装饰)→ 按 frontend-pipeline 的审美子 skill;飞书文档落地 → 按 feishu-task-management。
-- **与其他 skill 重叠时**:信息类元素以本规范为准。具体包括:frontend-pipeline 审美子 skill 的配色方案用于版面,图表/状态色仍按本规范语义色;内置 dataviz skill 与本规范冲突时,以本规范的数据诚实与语义配色为准;theme-factory 主题只给版面底色与字体。
+- These standards govern information-bearing elements: body text, titles, numbers, charts, relationship diagrams, status markers, legends, and expandable sections.
+- For layout aesthetics (style direction, font personality, motion, decoration), use the aesthetic subskills in frontend-pipeline. For Feishu document implementation, use feishu-task-management.
+- These standards take precedence for information-bearing elements. Use frontend-pipeline's aesthetic palettes for layout and the semantic colors below for charts and status. Where the built-in dataviz skill conflicts, follow this skill's data honesty and semantic color conventions. Apply theme-factory themes only to layout backgrounds and fonts.
 
-## 场景路由
+## Routing
 
-| 我要做 | 读 |
+| Task | Read |
 |---|---|
-| 写正文 / 标题 / 首屏、压字数、去 AI 味 | [`references/writing.md`](references/writing.md) |
-| 定配色、字号、图例、状态色、控件克制度 | [`references/visual-encoding.md`](references/visual-encoding.md)(克制度校准参照 [`assets/demo-recall-metrics.html`](assets/demo-recall-metrics.html)) |
-| 做人物 / 实体卡片、dashboard 总览页、详情抽屉 | [`references/visual-encoding.md`](references/visual-encoding.md) §八 |
-| 画统计图、写数字、讲数据结论 | [`references/data-honesty.md`](references/data-honesty.md) |
-| 画关系图 / 流程图 / 架构图 / hero 图,选图型 | [`references/diagrams.md`](references/diagrams.md) |
-| 交付前检查、对抗审查派单 | [`references/verification.md`](references/verification.md) |
+| Write body text, titles, or the first screen. Reduce word count or remove formulaic AI language. | [`references/writing.md`](references/writing.md) |
+| Set colors, type sizes, legends, status colors, or the visual prominence of controls. | [`references/visual-encoding.md`](references/visual-encoding.md). Use [`assets/demo-recall-metrics.html`](assets/demo-recall-metrics.html) to calibrate restraint. |
+| Design person or entity cards, dashboard overviews, or detail drawers. | [`references/visual-encoding.md`](references/visual-encoding.md) §8 |
+| Make statistical charts, present numbers, or explain data findings. | [`references/data-honesty.md`](references/data-honesty.md) |
+| Choose a diagram type or draw relationship, process, architecture, or hero diagrams. | [`references/diagrams.md`](references/diagrams.md) |
+| Check the deliverable or brief adversarial reviewers. | [`references/verification.md`](references/verification.md) |
 
-## 核心规则摘要
+## Core rules
 
-### 写作(展开见 writing.md)
+### Writing (details in writing.md)
 
-1. **先定读者**:一句话写下给谁看。两条互相制衡的判据同时成立——首屏念给非目标读者听不会被打断问「这是什么意思」;删到这个程度,真要用它的人仍拿得到他要的。
-2. **结论先行**:全文与每节先给判断,再给论据;标题用名词短语或一句结论,不用「XX 分析」这类话题名。
-3. **深度有下限**:读者读完一个结论仍要问「为什么 / 凭什么」就是不够;按「主张 → 机制 → 证据/例子 → 边界」展开,不跳机制层。
-4. **具体**:抽象结论后跟一个真实例子或一组真实数值;「39 亿行」优于「量很大」。
-5. **先判信息结构再定版式**:同字段横向对比 → 表;独立对象 → 列表;顺序是重点 → 时间线/流程图;结构性关系 → 图。
-6. **两层**:首屏(自然语言,回答是什么、怎么来的、有什么、能不能用)+ 展开区(代码、参数、完整清单)。下沉不是删除,展开区完整可达。
-7. **降字数按序**:删重复 → 搬进图 → 折叠 → 降精度(影响判断的数字不降)→ 最后才删内容。
-8. **去 AI 味**:无元说明(「本文」「如图所示」「一图带走」);连读三段检查句式模板化;改自然时准确、具体、字数不增三条不许牺牲。
+1. **Define the reader first.** Write one sentence identifying the intended reader. Pass both checks: read the first screen to someone outside the audience without prompting "What does this mean?" Then check that someone who needs the material can still get what they came for after those cuts.
+2. **Lead with the conclusion.** Open the whole piece and each section with the judgment, then give the evidence. Use a noun phrase or conclusion as a title. Avoid generic topic names like "Analysis of X."
+3. **Give the reasoning enough depth.** If readers still have to ask "Why?" or "On what grounds?", follow the claim through the mechanism, the evidence or example, and the limits. Include the mechanism.
+4. **Be specific.** Follow an abstract conclusion with a real example or real values. Prefer "3.9 billion rows" to "a large volume."
+5. **Choose the format from the structure.** Compare the same fields across objects in a table. List independent items. Use a timeline or flowchart when sequence matters, and a diagram for structural relationships.
+6. **Use two layers.** The first screen explains in natural language what the thing is, where it came from, what it contains, and whether it can be used. Put code, parameters, and full inventories in an expandable layer. Everything moved there must remain accessible.
+7. **Reduce word count in order.** Remove repetition, move information into diagrams, collapse detail, then reduce precision where it cannot affect a judgment. Cut substantive content only as the last resort.
+8. **Write naturally.** Remove metacommentary such as "this article," "as shown in the figure," or "one picture says it all." Read three consecutive paragraphs for repetitive sentence patterns. Preserve accuracy and specificity, and do not increase word count when revising for naturalness.
 
-### 视觉编码(展开见 visual-encoding.md)
+### Visual encoding (details in visual-encoding.md)
 
-9. **同色同义**:一种颜色只表示一种语义,全产物一致,图例必写语义。默认语义色:上游/输入 = 靛蓝,主线/处理 = 青,焦点/待定 = 琥珀,风险/负向 = 红,产出/达成 = 绿,横切/中性 = 灰(虚线)。
-10. **形状表达语义**:数据对象与计算过程用不同形状或底色;过程不能画成与对象相同的卡片。
-11. **字号**:同一图 ≤3 个字号层级;按**实际显示像素**判断可读性,正文与标签显示后 ≥ 11px(图被缩放时,逻辑字号 × 缩放系数才是显示字号)。
-12. **克制**:元素响度匹配其重要性;一屏不堆多个高亮块;强调色用得少才有效。
-13. **颜色不独立表意**:红绿表示正负时同时带 ↑↓ 或 +/-;状态色配文字或图标。
+9. **One color, one meaning.** Keep each meaning consistent throughout the deliverable and explain it in the legend. Default meanings: upstream/input = indigo, main path/processing = cyan, focus/pending = amber, risk/negative = red, output/achievement = green, cross-cutting/neutral = gray with a dashed line.
+10. **Give shapes meaning.** Use different shapes or fills for data objects and computations. Give a process a visibly different treatment from an object card.
+11. **Type size.** Use ≤3 type-size levels per diagram. Judge legibility in **actual displayed pixels**. Body text and labels must display at ≥11px. For a scaled diagram, multiply the logical type size by the scale factor.
+12. **Restraint.** Match the visual prominence of each element to its importance. Avoid multiple competing highlight blocks on a screen. Use accent colors sparingly.
+13. **Reinforce color with another cue.** When red and green indicate negative and positive values, add ↑↓ or +/-. Pair status colors with text or icons.
 
-### 数据诚实(展开见 data-honesty.md)
+### Data honesty (details in data-honesty.md)
 
-14. 柱状图 Y 轴从 0 起;轴标题带单位;趋势缺点就断开并标记,不插值、不补 0。
-15. 采样估计在首次出现处标口径;只报比率或标「≈ / 上界」;有反例就摆出来;推导值写出算式。
-16. **数字可信度分级**:A 原文确证 / B 从图读出待复核 / C 推断(标「推断」)/ D 待确认(标「待确认」或省略)。拿不准不编。
-17. **读图三拍**:每张数据图配一段——关键数字 → 为什么是这个数 → 对决策意味着什么。
+14. Start the Y axis of a bar chart at 0. Include units in axis titles. Mark gaps in a trend and break the line at missing points. Do not interpolate or substitute 0.
+15. At the first mention of a sampling estimate, explain how it was obtained. Report ratios only or label the figure "≈" or "upper bound" as appropriate. Show counterexamples when they exist and write out the calculation for derived values.
+16. **Grade numerical confidence.** A = confirmed in the original source. B = read from a chart and awaiting verification. C = inferred, labeled "inferred." D = unconfirmed, labeled "pending confirmation" or omitted. Never invent an uncertain value.
+17. **Explain a chart in three steps.** Add a paragraph to each data chart giving the key number, why it has that value, and what it means for the decision.
 
-### 作图(展开见 diagrams.md)
+### Diagrams (details in diagrams.md)
 
-18. 先判信息结构再选图型(12 类信号对应图型见 diagrams.md);对比用表不用图。
-19. **主图简、分图细**:全景图只画模块与关系,细节放分图;一张图塞进全部对象、参数、时序就是层级失败,拆图。
-20. 每条边写清传了什么或用了什么公式,不画无标签箭头(纯顺序流程可在图例写「箭头 = 下一步」);每个输入画出它的提供者,无凭空变量。
-21. 连线横平竖直,不穿卡片;≤8 条逐条画,9–15 条取代表,>15 条改层到层。
-22. 每张图后有一段自然语言解释,不只放图,也不逐句复述图。
+18. Identify the structure before choosing a diagram. See diagrams.md for mappings from 12 types of signal to diagram types. Use a table when making a comparison.
+19. **Keep the overview simple and the subdiagrams detailed.** Show only modules and their relationships in the overview. Split a diagram that tries to show every object, parameter, and event sequence together.
+20. Label every edge with what passes along it or the formula it applies. For a purely sequential flow, the legend may say "arrow = next step." Draw the source for every input so no variable appears from nowhere.
+21. Use horizontal and vertical connectors, routed around cards. Draw ≤8 edges individually. For 9–15 edges, select representative connections. Above 15, connect layers.
+22. Follow every diagram with a natural-language explanation. Interpret it without repeating its text line by line.
 
-### 验证(展开见 verification.md)
+### Verification (details in verification.md)
 
-23. **5 秒测试**:看一眼能否说出层级、主流向、结论。
-24. 按读者实际看到的尺寸检查,渲染后自己看截图;本地清楚不代表嵌入后清楚。
-25. 高要求场景派 ≥4 路子代理对抗审查(内容、视觉、结构、质疑),只报告不改文件,修进单一来源后重审。
+23. **Five-second test.** Can the reader identify the hierarchy, main direction of flow, and conclusion at a glance?
+24. Inspect a rendered screenshot at the size the reader will see. A diagram that looks clear locally may become illegible when embedded.
+25. For demanding work, assign ≥4 independent adversarial review tracks covering content, visuals, structure, and skeptical challenge. Reviewers report findings without editing files. Apply fixes to the single source, then review again.

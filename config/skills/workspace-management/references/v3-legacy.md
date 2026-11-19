@@ -8,6 +8,8 @@
 
 ## 在 v3 工作区里怎么做
 
+**Working language.** Write new or updated agent-authored records under `.agent/` in English, including task briefs, goals, plans, progress, decisions, memory entries and results. Use English for messages between agents (parent to child, child to parent and peer to peer), including dispatches, follow-ups, questions and handoffs. Include this language instruction in every delegation brief, including external CLI tasks. Preserve verbatim user requests, quotes and raw evidence in their original language. Address the user in their language.
+
 - **入口**：先读 `.agent/MEMORY.md`，再按它的核心索引读 goal/progress、note、requirement。头部模式行 `模式:workspace=… · harness=…` 决定更新纪律：none 不自动更新，auto 大模块结束时更新，full 先写后做。
 - **结构**：`.agent/memory/{goal,plan,progress}.md`、`note/`、`requirement/`、`task/<子任务>/`；派发留档 `.agent/subagent/<模块>/<实例>/{task.md,result.md}`；私有资料 `.agent/files/`；能力层 `.agent/skills|agents`，经 MEMORY.md「能力层路由表」加载。根上的 context/ 是人给的输入，deliverables/ 是交付。
 - **派发**：按 v4 的 `subagent-protocol.md` 执行即可（结果写 result.md、四种状态、停下条件），只是目录放在 `.agent/subagent/<模块>/<实例>/`。v3 工作区里 hook 不做派发把关。

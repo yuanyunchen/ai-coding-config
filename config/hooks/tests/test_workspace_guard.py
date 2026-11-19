@@ -100,12 +100,10 @@ class TestActivation(GuardTest):
 
 
 class TestPrompts(GuardTest):
-    def test_typed_prompt_captured_with_hint(self):
+    def test_typed_prompt_captured_silently(self):
         msg = "把导出的报表改成按周汇总，并且加上环比的列"
-        out = self.run_hook(fixture("UserPromptSubmit-typed", cwd=str(self.root), prompt=msg))
-        entries = self.ws.questions()
-        self.assertEqual([e["text"] for e in entries], [msg])
-        self.assertIn(entries[0]["id"], out["hookSpecificOutput"]["additionalContext"])
+        self.assertIsNone(self.run_hook(fixture("UserPromptSubmit-typed", cwd=str(self.root), prompt=msg)))
+        self.assertEqual([e["text"] for e in self.ws.questions()], [msg])
 
     def test_short_prompt_captured_silently(self):
         self.assertIsNone(self.run_hook(fixture("UserPromptSubmit-typed", cwd=str(self.root), prompt="继续")))

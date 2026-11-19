@@ -1,0 +1,12 @@
+{
+  "transport": "real local Codex RPC",
+  "model": "gpt-6.2-sol",
+  "effort": "high",
+  "sqliteReopenedAfterDrain": true,
+  "recoveredSameThread": true,
+  "state": "completed",
+  "modelSubmissions": 1,
+  "turnsInThread": 1,
+  "syntheticSlackFinals": 1,
+  "externalSlackPosts": 0
+}

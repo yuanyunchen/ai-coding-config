@@ -1,8 +1,8 @@
 {
   "pluginId": "skill-creator@claude-plugins-official",
   "platform": "claude",
-  "installPath": "/Users/yuanyunchen/.claude/plugins/cache/claude-plugins-official/skill-creator/a7ba5b93db0c",
-  "version": "a7ba5b93db0c",
+  "installPath": "/Users/yuanyunchen/.claude/plugins/cache/claude-plugins-official/skill-creator/b5b01ac4f889",
+  "version": "b5b01ac4f889",
   "hasHooks": false,
-  "copiedAt": "2026-11-05T00:49:09Z"
+  "copiedAt": "2026-11-19T05:09:27Z"
 }

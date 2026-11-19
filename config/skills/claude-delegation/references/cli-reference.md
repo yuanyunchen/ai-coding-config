@@ -13,7 +13,7 @@ Verified against the local binary `claude 2.1.201 (Claude Code)` via `claude --h
 | `-p, --print` | Non-interactive: run the loop, print result, exit. The delegation entry point. |
 | `--output-format <fmt>` | `text` (default) · `json` (a JSON **array** of the run's messages; result is the final `type:"result"` element) · `stream-json` (JSONL event stream). Print-only. |
 | `--input-format <fmt>` | `text` (default) · `stream-json` (realtime streaming input). Print-only. |
-| `--model <alias\|id>` | `opus`/`sonnet`/`haiku`/`fable` alias, or full id (e.g. `claude-fable-5`). Omit to inherit config default. |
+| `--model <alias\|id>` | `opus`/`sonnet`/`haiku`/`fable` alias, or full id (e.g. `claude-fable-5`). Pass `default` when unspecified. |
 | `--effort <lvl>` | `low` · `medium` · `high` · `xhigh` · `max`. |
 | `--permission-mode <mode>` | `acceptEdits` · `auto` · `bypassPermissions` · `manual` · `dontAsk` · `plan`. |
 | `--dangerously-skip-permissions` | Bypass all permission checks. Sandboxes/trusted repos only. |

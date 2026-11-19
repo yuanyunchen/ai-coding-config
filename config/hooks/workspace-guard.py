@@ -68,7 +68,7 @@ def active_ids(ws, limit=3):
 
 def on_session_start(ws, wslib, data):
     context("SessionStart", ws.status_text() + "\n本会话在 v4 工作区内，规则见 AGENTS.md「工作协议」："
-            "用户消息和每轮回答自动记入 conversation.md，需求当轮用 ws req 归档；派发先 ws dispatch；子智能体的结果以 result.md 为准。")
+            "用户消息和每轮回答自动记入 conversation.md，并自动追加进当前节点（ws focus <ID> 设定）的 task.md，不用逐条归档；派发先 ws dispatch；子智能体的结果以 result.md 为准。")
 
 
 def interactive(data):
@@ -99,10 +99,7 @@ def on_prompt(ws, wslib, data):
         return
     if not prompt.strip() or prompt.lstrip().startswith(NON_TYPED_PREFIXES):
         return
-    eid = ws.record_question(data.get("session_id"), data.get("prompt_id"), prompt)
-    if len(prompt.strip()) >= wslib.INBOX_MIN_CHARS:
-        context("UserPromptSubmit", f"（ws）本条已记入 conversation.md：{eid}。是需求或方向变化就归档：ws req <节点ID> --entry {eid}"
-                f"（新任务：ws req --new <slug> --entry {eid}）；不是需求：ws req --not-req {eid}。")
+    ws.record_question(data.get("session_id"), data.get("prompt_id"), prompt)
 
 
 def on_pre_agent(ws, wslib, data):

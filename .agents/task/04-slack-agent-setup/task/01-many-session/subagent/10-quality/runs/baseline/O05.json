@@ -1,0 +1,80 @@
+{
+  "id": "O05",
+  "modelId": "gpt-6.2-sol",
+  "effort": "low",
+  "transport": "local Slack substitute",
+  "turns": [],
+  "events": [
+    {
+      "stage": 3,
+      "fixture": "running"
+    },
+    {
+      "stage": 4,
+      "inbound": "message",
+      "thread": "1.000000",
+      "sender": "UOWNER",
+      "text": "有进展告诉我"
+    },
+    {
+      "stage": 5,
+      "fixture": "milestone",
+      "value": "本地通过"
+    },
+    {
+      "stage": 6,
+      "fixture": "milestone",
+      "value": "本地通过"
+    },
+    {
+      "stage": 7,
+      "inbound": "message",
+      "thread": "1.000000",
+      "sender": "UOWNER",
+      "text": "不用再同步了"
+    },
+    {
+      "stage": 8,
+      "fixture": "milestone",
+      "value": "Slack 验收通过"
+    }
+  ],
+  "outbound": [
+    {
+      "stage": 5,
+      "operation": "post",
+      "thread": "1.000000",
+      "text": "本地通过",
+      "ts": "15.000000",
+      "receipt": "synthetic_confirmed",
+      "blocks": [
+        {
+          "type": "rich_text",
+          "block_id": "bridge-format-v1:26e0cbd48f8fd8d99a65096c836f61c49fd5f82ef2594de632de042eb5d42789:a2cc74eb-b694-4129-9246-f0de2beb0adb",
+          "elements": [
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "本地通过"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stage": 6,
+      "operation": "update",
+      "thread": "1.000000",
+      "text": "本地通过",
+      "ts": "15.000000",
+      "receipt": "synthetic_confirmed"
+    }
+  ],
+  "errors": [],
+  "externalSlackCalls": 0,
+  "windowMs": 41
+}

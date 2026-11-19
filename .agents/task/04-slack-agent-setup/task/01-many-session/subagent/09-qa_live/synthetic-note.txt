@@ -1,0 +1,2 @@
+Synthetic QA fixture
+Text checkpoint: T-LUMA-082

@@ -1,193 +1,169 @@
 ---
 name: starmap
-description: 构建 Starmap 风格的全屏交互式数据可视化 app —— 深空底 + 冰蓝发光 + 玻璃拟态面板的画布星图，节点/关系可点可拖，带检视抽屉、小地图、自动取景。凡是要把实体与关系做成"能探索的图"而不是"能滚动的报告"时都用它：数据血缘图、依赖/架构拓扑、知识图谱、嵌入空间星图、系统关系地图、实体关系浏览器。用户说"数据地图""血缘图""关系图谱""星图""starmap""节点图""交互式可视化""做成 app 不要网页""深色炫酷的图"时应当触发；用户只是描述"想让人看懂这些表/服务/实体之间的关系"而没点名图形时也应当触发。不要用于统计图表（柱状/折线/散点）、仪表盘、或静态文档型报告。
+description: "Build a full-screen relationship explorer for data maps, lineage, dependency/architecture topologies, knowledge graphs, embedding star maps, system maps, and entity browsers. Use for 'starmap', 'node graph', 'interactive visualization', 'make it an app, not a web page', 'a striking dark graph', or requests to explain relationships among tables, services, or entities, even without naming a graph. Excludes statistical charts, dashboards, and static reports."
 ---
 
-# Starmap 交互式数据可视化
+# Starmap interactive data visualization
 
-把一组实体和它们的关系做成**能探索的 app**：全屏画布、不滚动页面、
-点击展开详情、拖拽有惯性、缩放有下限。视觉是深空 + 冰蓝发光 + 玻璃拟态。
+Turn entities and relationships into an explorable app. Use a full-screen canvas with no page scrolling, clickable nodes and relationships with detail drawers, inertial dragging, a zoom floor, a minimap, and automatic framing. The visual style combines a deep-space background, ice-blue glow, and glass panels.
 
-这个 skill 里的常量、算法和内容规则都是实战调出来的，不是从设计稿抄的。
-照着做能跳过一轮轮"太灵敏 / 太长了 / 看不懂这是什么"的返工。
+The constants, algorithms, and content rules were tuned in actual use. Follow them to avoid repeated revisions over interactions that feel too sensitive, panels that are too long, or an entity whose purpose remains unclear.
 
-## 先判断：是不是该做 starmap
+## Decide whether a starmap fits
 
-**该做**：实体之间有**关系结构**，而且关系本身是信息 —— 血缘、依赖、
-调用拓扑、知识图谱、嵌入空间。人需要"从一个点走到相邻点"来理解。
+Use a starmap when relationships carry the information: lineage, dependencies, call topologies, knowledge graphs, or embedding spaces. The reader needs to move from one node to a neighbor to understand the system.
 
-**不该做**：
-- 要看趋势、分布、对比 → 是图表，不是星图
-- 实体之间没关系，只是一堆记录 → 是表格
-- 关系有但读者只关心一条路径 → 是流程图
-- 节点 > 300 → 画布挤不下，先做聚合层或改成可下钻的两级
+Use these alternatives when appropriate:
 
-不确定时问一句：**去掉所有连线之后，这张图还成立吗？** 成立就别做星图。
+- For trends, distributions, or comparisons, use a chart (for example a bar, line, or scatter plot).
+- For a collection of unrelated records, use a table.
+- When the reader cares about a single path, use a flowchart.
+- Above 300 nodes, the canvas becomes too crowded. Aggregate first or provide two levels with drill-down.
 
-**与 `frontend-pipeline` 的分工**：通用前端产物（落地页、dashboard、幻灯片、设计型 PDF、
-生成艺术）走 `frontend-pipeline` 的路由；只有「实体—关系图的探索器」这一类走本 skill。
-判据是产物的主体是不是一张**可探索的关系图**：是就用 starmap，
-是别的形态（哪怕也深色、也交互、也叫"数据可视化"）就回 `frontend-pipeline`。
+When uncertain, ask: **Would the diagram still make sense if all the edges disappeared?** If yes, choose a different format.
 
-## 流程
+**Relationship to `frontend-pipeline`.** Route general frontend artifacts (landing pages, dashboards, slides, designed PDFs, generative art) through `frontend-pipeline`. Use this skill specifically for entity–relationship explorers. The main artifact must be an **explorable relationship graph**. For other forms, return to `frontend-pipeline`, even if the artifact is dark, interactive, or described as "data visualization."
 
-### 1. 定形态与内容清单
+## Workflow
 
-先想清楚三件事，再写一行代码：
+### 1. Define the form and inventory the content
 
-- **节点是什么**，分几类？每类用什么形状？（形状编码类型，颜色不够用）
-- **边是什么**，有几种语义？证据强度分几档？
-- **面板里放什么** —— 直接照 `references/content.md` 的固定结构列一遍，
-  缺哪块就去补数据。**这一步决定成败**：面板内容想不清楚，
-  做出来一定是一张漂亮但没人看第二遍的图。
+Answer three questions before writing code:
 
-产出一个 `{nodes: {id: {...}}, links: [{s, t, ...}]}` 的 JSON。
+- **What is a node?** How many types are there, and what shape represents each? Encode type with shape as well as color.
+- **What is an edge?** What meanings does it support, and how many grades of evidence distinguish them?
+- **What belongs in the panel?** List each part using the fixed structure in `references/content.md`, and collect missing data. **This decision determines whether the graph is worth revisiting.** A beautiful graph with poorly defined panel content rarely gets a second look.
 
-### 2. 先量布局，再写渲染
+Produce JSON shaped like `{nodes: {id: {...}}, links: [{s, t, ...}]}`.
 
-别急着开浏览器。用脚本把布局质量算出来：
+### 2. Measure layout before writing the renderer
+
+Before opening a browser, use the script to measure layout quality:
 
 ```bash
 python3 ~/.claude/skills/frontend-pipeline/skills/starmap/scripts/check_layout.py data.json \
   --label-fields raw_name,name --label-px 11 --ignore "a>b,c>d"
 ```
 
-看四个数：**回边必须为 0**；长宽比落在 2.0–3.0；边长标准差 < 均值 ×0.45；
-标签最小余量 > 0。不达标先调 `xgap`/`ygap`，调不动就看
-`references/layout.md` 的"标签宽度是硬约束"一节 —— 那通常才是真正的瓶颈。
+Check four values: **back edges must be 0**, aspect ratio 2.0–3.0, edge-length standard deviation < mean × 0.45, and minimum label clearance > 0. If the layout misses a target, adjust `xgap`/`ygap` first. If this stalls, read the section on label width as a hard constraint in `references/layout.md`. Label width is usually the underlying bottleneck.
 
-### 3. 接线
+### 3. Wire up the app
 
-**从 `assets/example.html` 起步**，不要从空模板起步 —— 它是一份已验证可运行的
-完整接线（两类实体、四档证据强度、圆环构成、新鲜度点、三层标签），
-照着改比从零填快得多。只要纯骨架时才用 `assets/shell.template.html`。
+**Start from `assets/example.html`.** This verified, runnable implementation wires together two entity types, four grades of evidence, ring composition, freshness dots, and three label levels. Adapting it is much faster than starting from scratch. Use `assets/shell.template.html` only when you need a bare skeleton.
 
-要填的业务钩子只有六个：`drawNode` / `tooltip` / `inspectNode` /
-`inspectLink` / `linkStyle` / `labelBox`。引擎负责相机、布局、拖拽弹簧、
-渲染循环、小地图、命中、键盘、抽屉，你不用碰。
+Fill in just six domain-specific hooks: `drawNode` / `tooltip` / `inspectNode` / `inspectLink` / `linkStyle` / `labelBox`. Leave the camera, layout, drag springs, render loop, minimap, hit testing, keyboard, and drawer to the engine.
 
-完整钩子清单见 `assets/starmap.js` 文件末尾的注释。
+See the comments at the end of `assets/starmap.js` for the complete hook inventory.
 
-### 4. 打包成单文件
+### 4. Build a single file
 
 ```bash
 python3 ~/.claude/skills/frontend-pipeline/skills/starmap/scripts/build_page.py \
   --shell app.html --data data.json --out dist/index.html
 ```
 
-自动内联 CSS、引擎、base64 字体。**产物必须是单文件**：要能拷到别人机器上
-双击打开，不依赖 http 服务、不依赖 CDN。
+The build inlines the CSS, engine, and base64-encoded fonts. **Deliver a single file** that someone can copy to another computer and open by double-clicking. It must run without an HTTP server or CDN.
 
-字体放 `--fonts` 指向的目录（`syne-latin.woff2` / `grotesk-latin.woff2` /
-`mono-latin.woff2`，只要拉丁子集）。没有字体也能跑，退化到系统栈。
+Put the fonts in the directory passed to `--fonts`: `syne-latin.woff2` / `grotesk-latin.woff2` / `mono-latin.woff2`. Only the Latin subsets are needed. Without these fonts, the app falls back to the system font stack.
 
-### 5. 在真浏览器里验收
+### 5. Verify in a real browser
 
-**注意**：很多预览环境会把 `requestAnimationFrame` 节流到 0，动效根本不跑。
-动效相关的验收必须在真实浏览器里做。
+Many preview environments throttle `requestAnimationFrame` to 0, so animations never run. Check motion in an actual browser. Work through each item below.
 
-按下面的清单逐条过。
+## Acceptance checklist
 
-## 验收清单
+**Visuals**
 
-**视觉**
-- [ ] 关掉所有发光后信息仍然完整（发光是装饰，不是信息载体）
-- [ ] 全局只有一个强调色表示"可点/当前"，其余颜色都绑定了具体语义
-- [ ] 所有标识符、数字、枚举值走等宽字体
-- [ ] 节点上直接显示**原始标识符**，不是只有中文别名
-- [ ] 颗粒 + 渐晕两层都在
+- [ ] All information remains intact with the glow turned off. The glow is decorative.
+- [ ] One global accent color means "clickable/current." All other colors have explicit semantics.
+- [ ] All identifiers, numbers, and enumerated values use a monospace font.
+- [ ] Nodes show their **original identifiers** directly, including when Chinese aliases are available.
+- [ ] Both grain and vignette layers are present.
 
-**布局**
-- [ ] 回边 0、交叉尽量少、长宽比 2.0–3.0
-- [ ] 全景下没有标签重叠，自动缩放 k ≥ 0.55
-- [ ] 入场动效结束后节点固定，刷新两次位置一致
+**Layout**
 
-**交互**
-- [ ] 双击节点放大、再双击同一节点收回全景
-- [ ] 双击空白 / F 恢复全景，ESC 逐级退出
-- [ ] 拖节点时邻居跟随有从中心向外的波感，松手后自然收住、不飘走
-- [ ] 抽屉宽度可拖，打开时自动取景会避让它
-- [ ] 小地图点击回中、双击全景，白框指示当前视野
-- [ ] 边也可点，有独立的关系面板
+- [ ] 0 back edges, as few crossings as possible, and aspect ratio 2.0–3.0.
+- [ ] No labels overlap in the overview and the automatic zoom factor k ≥ 0.55.
+- [ ] Nodes settle into fixed positions after the entrance animation. Refresh twice and confirm the positions match.
 
-**内容**
-- [ ] 面板第一屏是**这个实体的**概述，不是系统总述
-- [ ] 第一屏的定位**不依赖它在链路里的位置**（`content.md` 第零原则末节）
-- [ ] 念给一个不懂这套系统的人听，第一屏没有会被打断提问的地方
-- [ ] 反向也成立：删到这个程度，真要用它的人还拿得到他要的
-- [ ] 收进折叠区的内容**完整可达**，指向它的引用仍然成立
-- [ ] 把所有百分比删掉后人仍能看懂这个实体是什么
-- [ ] 数据实例里没有 ID / hash / 内部状态码
-- [ ] JSON、map、事件序列这类嵌套字段展开成了键清单
-- [ ] 每节有可见边界；统计明细收在折叠区
-- [ ] 有"排除了什么"一节，有观测时间戳
+**Interaction**
 
-## 设计系统速查
+- [ ] Double-click a node to zoom in. Double-click that node again to return to the overview.
+- [ ] Double-click the background or press F to restore the overview. ESC backs out one level at a time.
+- [ ] Dragging a node makes its neighbors follow in a wave moving outward from the center. On release they settle naturally without drifting away.
+- [ ] The drawer width is adjustable by dragging, and automatic framing makes room for the open drawer.
+- [ ] Click the minimap to recenter and double-click for the overview. A white rectangle marks the current viewport.
+- [ ] Edges are clickable and have a dedicated relationship panel.
 
-完整规范见 `references/visual-system.md`。
+**Content**
+
+- [ ] The first screen of the panel gives an overview of **this entity**. Put system-level exposition elsewhere.
+- [ ] The initial explanation of the entity's purpose **stands independently of its position in the chain** (final subsection of principle zero in `content.md`).
+- [ ] Read the first screen to someone unfamiliar with the system. Nothing should require them to interrupt for clarification.
+- [ ] After simplifying that far, those who need the details can still get what they came for.
+- [ ] Content moved into expandable sections remains **fully accessible**, and references to it still work.
+- [ ] Readers can understand the entity even if all percentages are removed.
+- [ ] Data examples contain no IDs, hashes, or internal status codes.
+- [ ] Nested fields such as JSON, maps, and event sequences are expanded into key lists.
+- [ ] Give each section a visible boundary. Put detailed statistics in expandable sections.
+- [ ] Include a "What was excluded" section and an observation timestamp.
+
+## Design system quick reference
+
+Full specification: `references/visual-system.md`.
 
 ```
-底色  --void #060913        主强调  --ice #8fc6ff（全局唯一）
-面板  rgba(13,19,38,.72) + backdrop-filter:blur()  ← 两者缺一不可
-文字  --starlight #e9eefb / --dim #9aa7c9 / --faint #5d6a8f
-语义  --ember 注意 · --rose 异常 · --lime 健康 · --violet 第二类实体
-字体  Syne 标题 · Space Grotesk 正文 · JetBrains Mono 一切标识符与数字
+Background  --void #060913        Main accent  --ice #8fc6ff (one global accent)
+Panels      rgba(13,19,38,.72) + backdrop-filter:blur()  (both required)
+Text        --starlight #e9eefb / --dim #9aa7c9 / --faint #5d6a8f
+Semantics   --ember attention · --rose anomaly · --lime healthy · --violet second entity type
+Type        Syne for headings · Space Grotesk for body copy · JetBrains Mono for all identifiers and numbers
 ```
 
-Canvas 两趟绘制：`lighter` 画连线+粒子+光晕，`source-over` 画节点本体+文字。
-**文字绝不能在加色层里** —— 会和背后的光叠成灰白糊。
+Draw the canvas in two passes: `lighter` for edges, particles, and halos, then `source-over` for node bodies and text. **Keep text out of the additive pass.** Light underneath would blend into the letters and turn them into a gray-white blur.
 
-发光用预渲染精灵缓存，不用 `shadowBlur`（几十个节点就掉帧）。
-渐变在 `.16` 处陡降是"像光源"而不是"像棉花"的关键。
+Cache prerendered glow sprites. `shadowBlur` already drops frames with a few dozen nodes. A steep falloff in the gradient at `.16` gives the appearance of a light source rather than a ball of cotton.
 
-## 已整定的常量
+## Tuned constants
 
-改之前先读 `references/interaction.md` 的"症状对照表"。
+Before changing these, read the symptom table in `references/interaction.md`.
 
-| 常量 | 值 | 管什么 |
+| Constant | Value | Purpose |
 |---|---|---|
-| `panGain` | `1.25` | 平移增益。1.0 钝，1.5 起飘 |
-| `zoomGain` | `.0042` | 滚轮连续缩放。不要改成离散档位 |
-| `clickDelay` | `240ms` | 单击延时；双击在窗口内撤销它 |
-| `hopWeight` | `[1,.46,.18,.062]` | 拖拽跟随幅度（按跳数） |
-| `hopStiff` | `[1,.028,.019,.013]` | 跟随刚度。**必须与幅度分开衰减** |
-| `damping` | `.68` | 弹簧阻尼。>.8 会甩过头 |
-| `minLegible` | `.55` | 自动取景下限；低于此宁可水平溢出 |
-| `bow` | `.085` | 连线弓度。压小 = 图更紧凑 |
-| `xgap/ygap` | `202/200` | 分层列距/行距。下限由最长标签决定 |
+| `panGain` | `1.25` | Pan gain. 1.0 feels sluggish and 1.5 starts to drift. |
+| `zoomGain` | `.0042` | Continuous scroll-wheel zoom. Preserve continuous zoom rather than switching to discrete steps. |
+| `clickDelay` | `240ms` | Single-click delay. A double-click within the window cancels it. |
+| `hopWeight` | `[1,.46,.18,.062]` | Drag-follow amplitude by hop count. |
+| `hopStiff` | `[1,.028,.019,.013]` | Follow stiffness. **Decay stiffness separately from amplitude.** |
+| `damping` | `.68` | Spring damping. Values >.8 cause overshoot. |
+| `minLegible` | `.55` | Lower bound for automatic framing. Prefer horizontal overflow to going below it. |
+| `bow` | `.085` | Edge curvature. Reduce it for a tighter graph. |
+| `xgap/ygap` | `202/200` | Column and row spacing in the layered layout. The longest label sets the lower bound. |
 
-## 三条最容易翻车的地方
+## Three common failure modes
 
-**一、把统计当内容。** 做出来满屏覆盖率和基数，人看完仍不知道这是什么。
-判据：删掉所有百分比后还能看懂吗？详见 `references/content.md`。
+**1. Substituting statistics for content.** A screen full of coverage percentages and counts can leave the reader unable to say what the entity is. Test whether it is understandable with all percentages removed. See `references/content.md`.
 
-**二、让力场在用户面前收敛。** 开场跑力导向很酷，代价是每次刷新布局都不一样，
-人建立不起空间记忆 —— 而空间记忆是图相对于表格的唯一优势。
-布局要算出来、算完就固定，只有用户拖拽才动。
+**2. Letting a force simulation converge in front of the user.** An animated force-directed opening can look impressive, but different layouts on each refresh prevent people from building spatial memory. Spatial memory is the graph's one advantage over a table. Compute the layout, fix the result, and move nodes only when the user drags them.
 
-**三、写没查过的事。** 星图的深色、发光、精确数字会让内容显得权威，
-所以每句话都必须可追溯。曾经把一个叫 `richText` 的字段写成"富文本描述"——
-听起来完全合理，实测 200 条全部有键、全部为空。
-**不能从键名推断语义。**
+**3. Publishing an unchecked claim.** The dark palette, glow, and precise numbers lend a starmap authority, so every statement must be traceable. A field called `richText` was once described as a "rich-text description." Tests of 200 records found the key present in every one and empty in every one. **A key name alone cannot establish its meaning.**
 
-## 目录
+## Directory
 
 ```
 assets/
-  starmap.css            设计令牌 + 全部组件样式（数据无关）
-  starmap.js             引擎：相机/布局/拖拽弹簧/渲染/小地图/交互
-  example.html           已验证可运行的完整接线 ← 从这里开始
-  shell.template.html    纯骨架（只在需要从零搭时用）
+  starmap.css            Design tokens and all component styles (data independent)
+  starmap.js             Camera, layout, drag springs, rendering, minimap, and interaction engine
+  example.html           Verified and runnable complete implementation. Start here.
+  shell.template.html    Bare skeleton, only for building from scratch
 scripts/
-  build_page.py          装配单文件 HTML（内联 CSS/JS/字体）
-  check_layout.py        布局质量度量 + 参数扫描
+  build_page.py          Assemble a single HTML file with inline CSS, JS, and fonts
+  check_layout.py        Measure layout quality and sweep parameters
 references/
-  visual-system.md       配色、排版、材质、发光渲染、节点解剖
-  interaction.md         交互契约、常量来历、症状对照表
-  layout.md              分层算法、参数整定、什么时候改用力导向
-  content.md             面板内容设计、事实纪律
+  visual-system.md       Color, typography, materials, glow rendering, and node anatomy
+  interaction.md         Interaction contract, origins of constants, and symptom table
+  layout.md              Layering algorithm, parameter tuning, and when to use force-directed layout
+  content.md             Panel content and factual discipline
 ```
 
-按需读：调视觉读 `visual-system.md`，调手感读 `interaction.md`，
-图排得不好看读 `layout.md`，**面板写不出东西读 `content.md`（最常被跳过、
-也最影响成品）**。
+Read references as needed. Use `visual-system.md` for visual changes, `interaction.md` to tune how interactions feel, and `layout.md` for poorly arranged graphs. **Read `content.md` if you struggle to write the panels.** It is the reference most often skipped and the one with the greatest effect on the finished artifact.

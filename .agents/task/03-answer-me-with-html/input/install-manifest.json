@@ -1,0 +1,16 @@
+{
+  "repository": "https://github.com/QingYunA/answer-me-with-html",
+  "commit": "c4919922ad2f323e33c33ee8d0c3f85bfd84f60e",
+  "version": "0.6.1",
+  "runtime": "/Users/yuanyunchen/.codex/skills/answer-me-with-html",
+  "snapshot": "/Users/yuanyunchen/Desktop/AI Programing/Play for Fun/ai-coding-config/config/skills/answer-me-with-html",
+  "scope": "Codex only; repository snapshot retained; other runtimes not synchronized",
+  "always_on": false,
+  "files": {
+    "SKILL.md": "f813e1d50d89c3cfd30f2e75b5b6ee236e3d9a7a4010be40058375879b2572eb",
+    "licenses/OFL-Bangers.txt": "09ef36fcae68a2ba21cc319fd44c09ba40f43163076bcafc14fdfe4cc033e7a2",
+    "references/settings.md": "5bd7371ad64479dbc0adb4734ca964332de4c11fd28ddda9182eabcf99c11996",
+    "references/video.md": "07bc890d308519a55a385790955acf192132889711d7075368a112e5905b2e4d",
+    "scripts/am.mjs": "239e44a804f1562ccc4218cfe6141e87334c7a6d6226286b50c818b800487da3"
+  }
+}

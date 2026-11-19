@@ -1,0 +1,43 @@
+(node:65993) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a pending exact grant immediately retires the old owner and the newest grant replays durable input (26.032ms)
+✔ a handoff fences a sampled answer and an operator report already waiting to send (9.360583ms)
+✔ owner Slack text interrupts the original turn and the reply receipt uses the incoming thread (21.550708ms)
+✔ owner attachments and terse follow-ups use the desktop turn, with evidence from the actual Slack parent (36.918667ms)
+✔ explicit local grant replaces a runner with the original thread; any authenticated member can send and receive only contextual answers from that same source (5.980125ms)
+✔ exact source delegates requested tools to the shared project only, once, and records actual result (6.539083ms)
+✔ busy original turn: steer once and reply from the original while its task stays active (3.431959ms)
+✔ a new Slack message signals an active turn while the preceding side answer is pending (7.757292ms)
+(node:65994) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ exact-thread mute, mentions and opt-in progress apply only to their participant and discussion (21.023166ms)
+(node:65995) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a withdrawn queued message stays withdrawn when Slack redelivers it during and after handoff (20.296583ms)
+✔ a first-arriving deletion or edit suppresses stale delivery during handoff (13.57625ms)
+✔ withdrawing a control before arrival cannot mute the new session (8.421709ms)
+✔ attachments revoked before or during handoff cannot reach the replacement session (10.778459ms)
+✔ withdrawing the only queued attachment does not start an empty turn (7.895041ms)
+(node:65996) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ retrying a channel link reuses the same Slack root and coding session (10.17ms)
+✔ retrying a link with a missing Slack root receipt does not post or start another session (4.498167ms)
+✔ local source reports post only to the linked target selected by the operator (14.281042ms)
+✔ progress controls change the current turn and stay in its Slack discussion (24.758833ms)
+✔ progress requested with /to follows the one-off session inside the same Slack root (13.00475ms)
+✔ one coding source links to multiple Slack audiences with distinct execution sessions (7.863875ms)
+✔ a private Codex session connects through a fresh shared session (5.705ms)
+✔ two coding sources share one discussion while /use stays per user and /to applies once (15.615958ms)
+✔ redelivery of /use does not overwrite the newer default (7.49675ms)
+✔ redelivery after a user switches aliases does not reroute the original Slack message (8.003625ms)
+✔ both coding sessions can use passive discussion from their shared Slack root (7.809959ms)
+✔ bound threads isolate history and send completions only to their channel and thread (12.400166ms)
+✔ channel progress reports live state without exposing stale answers or routing IDs (5.790042ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 580.23525

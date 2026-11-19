@@ -8,14 +8,14 @@ Self-sufficient guide to running a delegated Claude Code process. Assumes auth i
 claude -p "<TASK PROMPT>" \
   --output-format json \
   --permission-mode bypassPermissions \
-  --model sonnet --effort high \
+  --model "${MODEL:-default}" --effort "${EFFORT:-high}" \
   --session-id "$(uuidgen)"
 ```
 
 - **`-p` is the delegation switch.** It runs the loop non-interactively and exits. Everything else tunes it.
 - **Prompt goes first, right after `-p`.** Several flags are variadic (`--add-dir`, `--tools`, `--disallowedTools`, `--allowedTools` take `<...>`) and will greedily consume the positional prompt if it trails them — the run then dies with "Input must be provided either through stdin or as a prompt argument." Prompt-first avoids it; piping also works: `echo "<prompt>" | claude -p ...`. With the prompt as an arg, stdin is not otherwise read, so no `< /dev/null` guard is needed (that only matters when piping or with `--input-format stream-json`).
-- **Model — pass an alias or omit.** `opus`/`sonnet`/`haiku`/`fable`, or a full id, or omit to inherit the config default. Match model to task; don't burn opus on mechanical edits.
-- **Effort — default `high`.** `--effort low|medium|high|xhigh|max`. Drop only for trivial mechanical work.
+- **Model**: pass the requested native alias or full ID verbatim. Use explicit `default` if unspecified.
+- **Effort — default `high`.** `--effort low|medium|high|xhigh|max`. Honor user overrides.
 - **`--session-id "$(uuidgen)"`** — pin the id you'll resume by. Cleaner than parsing it back out of the result. One fresh UUID per parallel job.
 
 ## Output formats
@@ -29,7 +29,7 @@ claude -p "<TASK PROMPT>" \
 With `--output-format json` this build prints a JSON **array**; the last element (`type:"result"`) carries the fields that matter — don't assume a bare object. Select it robustly:
 
 ```bash
-claude -p "..." --output-format json | jq '.[] | select(.type=="result")'
+claude -p "..." --model "${MODEL:-default}" --effort "${EFFORT:-high}" --output-format json | jq '.[] | select(.type=="result")'
 ```
 
 The result element:
@@ -57,7 +57,7 @@ Check `is_error` first, then read `result`. `permission_denials` non-empty means
 - **Unattended writes** → `bypassPermissions` (or the flag `--dangerously-skip-permissions`). No prompts. House default for delegated edit tasks in a trusted repo. On some setups the flag must first be made available with `--allow-dangerously-skip-permissions`.
 - **Read-only investigation** → keep the default mode and remove write tools instead, so edits are structurally impossible (prompt first — these are variadic flags):
   ```bash
-  claude -p "Diagnose the failing test; report file:line and mechanism. Do not modify files." \
+  claude -p "Diagnose the failing test; report file:line and mechanism. Do not modify files." --model "${MODEL:-default}" --effort "${EFFORT:-high}" \
     --output-format json --disallowedTools Edit Write NotebookEdit
   ```
   Or scope the toolset positively: `--tools Read,Grep,Glob,Bash`. `plan` mode also prevents edits but steers the delegate toward producing a plan rather than freely investigating — prefer tool restriction for pure investigation.
@@ -75,7 +75,7 @@ Check `is_error` first, then read `result`. `permission_denials` non-empty means
 Anything beyond a couple of minutes: don't block.
 
 1. **Via Bash**: run the canonical command with `run_in_background: true`, redirecting JSON to an **absolute scratchpad path** (`... > /abs/scratchpad/job1.json 2> /abs/scratchpad/job1.log`). Keep working; read the file on completion.
-2. **Native detach**: `claude --bg "<prompt>"` starts a background agent and returns immediately. Manage it with:
+2. **Native detach**: `claude --bg "<prompt>" --model "${MODEL:-default}" --effort "${EFFORT:-high}"` starts a background agent and returns immediately. Manage it with:
    ```bash
    claude agents            # human view of running/recent background sessions
    claude agents --json     # scriptable array: pid, cwd, kind, startedAt, sessionId, name
@@ -89,7 +89,7 @@ Anything beyond a couple of minutes: don't block.
 ```bash
 for t in task1 task2 task3; do
   id=$(uuidgen)
-  claude -p "$(cat prompts/$t.md)" \
+  claude -p "$(cat prompts/$t.md)" --model "${MODEL:-default}" --effort "${EFFORT:-high}" \
     --output-format json --permission-mode bypassPermissions \
     --session-id "$id" --worktree "wt-$t" \
     > "/abs/scratchpad/$t.json" 2> "/abs/scratchpad/$t.log" &

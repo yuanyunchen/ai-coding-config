@@ -1,152 +1,152 @@
 ---
 name: feishu-task-management
-description: "飞书/Lark 操作的单一入口。仅在用户要求操作飞书、提供待操作的飞书资源，或当前任务已有明确飞书目标时使用；内部按需读取 lark-* 与业务子技能。普通文档、Markdown、表格、幻灯片、作图、开发、部署、工作区管理不触发；字节业务知识检索不等于飞书操作。"
+description: "Entry point for Feishu/Lark operations. Use only when the user requests a Feishu action, supplies a Feishu resource to operate on, or the task has a confirmed Feishu destination. Read lark-* and domain subskills on demand. General documents, Markdown, sheets, slides, diagrams, development, deployment, workspace management and ByteDance knowledge searches do not trigger it."
 ---
 
-# 飞书 / Lark 工作区(入口索引 + 执行规约)
+# Feishu / Lark workspace index and operating rules
 
-## 适用范围
+## Scope
 
-先确认当前任务要操作的资源或交付目标属于飞书/Lark，再使用本入口。只是在审查规则、引用历史飞书项目，或出现 docx、sheets、wiki、drive、slides、Markdown 等通用词，不构成平台依据；不加载飞书执行记忆、不检查飞书鉴权、不创建云端交付。ByteDance 内网开发、SQL 与实验任务按对应业务能力处理，不因能力文件存放在本目录而加载飞书执行链。
+Confirm the resource or delivery destination belongs to Feishu/Lark before using this entry point. Reviewing rules, citing historical Feishu projects or mentioning generic terms such as docx, sheets, wiki, drive, slides or Markdown does not establish a platform. In those cases, skip Feishu execution memory, authentication checks and cloud delivery. Route ByteDance intranet development, SQL and experiments to their business capabilities. The location of a capability file in this directory does not trigger the Feishu workflow.
 
-**发现层隔离**：子目录不是隔离机制。Codex 只保留本入口自动可见；本目录下其余 SKILL.md 和 `~/.agents/skills/lark-*/SKILL.md` 通过 `skills.config` 禁用自动注册，仍可由本入口按路径读取。配置仓 `scripts/codex-skill-isolation.py` 在 sync/deploy 中按实际文件重建禁用项；新增子技能须通过实际 skills/list 验收。
+**Discovery isolation.** Subdirectories alone do not provide isolation. Codex automatically exposes only this entry point. `skills.config` disables automatic registration of the other SKILL.md files here and `~/.agents/skills/lark-*/SKILL.md`. This router can still read them by path. During sync/deploy, the configuration repository's `scripts/codex-skill-isolation.py` rebuilds disabled entries from the actual files. Verify every new subskill against the actual skills/list.
 
-## (0) 执行避坑路由表(钉死,执行类操作前必查)
+## (0) Required lookup before execution
 
-做任何飞书「执行类操作」(建块/嵌图/导入导出/Drive下载/读私聊/改文档结构/调白名单外能力)之前,先在下表按「你正在做的操作 / 撞到的现象」**一跳定位 → 只 `Read` 对应 `references/exec-*.md` 那一个文件**,再动手。不要凭记忆建块/嵌图/下载——已记录的坑不重查必重犯。执行细坑全量已 reference 化,本表是入口;完整后端事实在 `references/`,完整 CLI 语法在 `cli.md`。
+Before executing any Feishu operation (creating blocks, embedding images, importing/exporting, downloading from Drive, reading private chats, changing document structure or using capabilities outside the allowlist), match the operation or symptom below, then **`Read` only the corresponding `references/exec-*.md` file** before acting. Building blocks, embedding images or downloading from memory repeats known failures. The table indexes detailed pitfalls. Backend facts live in `references/` and full CLI syntax in `cli.md`.
 
-> **派子智能体做任何飞书任务(全文唯一通则)**:子智能体不自动 invoke skill——把本 SKILL.md 路径 + 任务所需子技能 SKILL.md / `references/exec-*.md` 的文件路径写进它的 prompt 让它 `Read`;写文档加 lark-doc-writer(+适用时 doc-trio),字节工作让它先 `<repo>/bin/bm tool search-notes --project bytedance`。见全局 AGENTS.md Harness 板块「subagent(派发)」。
+> **Delegating any Feishu task.** Subagents do not invoke skills automatically. Include this SKILL.md path and the relevant subskill SKILL.md or `references/exec-*.md` path in the prompt, and tell the agent to `Read` them. Include lark-doc-writer for document writing and doc-trio where applicable. For ByteDance work, have it search first with `<repo>/bin/bm tool search-notes --project bytedance`. See the subagent dispatch section under Harness in the global AGENTS.md.
 
-| 我正在做 / 撞到 | 一跳读 | 关键坑(一句话,够判断要不要展开) |
+| Operation or symptom | Read | Pitfall |
 |---|---|---|
-| 建表格(docx table) | `references/exec-blocks.md` | 树里塞 cell 必 **1770041**;table **裸建+回填**,逐列 patch 设宽;要真表头走原始 REST |
-| 建 callout / 设 emoji | `references/exec-blocks.md` | callout 别塞显式子块(撞 1770041);emoji 经原始 REST `children` 带 emoji_id 可设;**只用 MCP 路径退化为默认 🎁**——详见文件 |
-| 建嵌套块树 / 多处插入 | `references/exec-blocks.md` | descendant 一次建树;多处插入**先大 index 再小 index** |
-| 往 docx 嵌图 | `references/exec-blocks.md` | **先试 `docs +media-insert --file … --selection-with-ellipsis "<caption 原文>"`**(一条命令封完四步 + 回滚,插到 caption 之下);它够不着时(插进 callout/表格内部、替换已有图块)才回落 curl 管线 —— upload_all 绑 `parent_node=图片块ID`(不是文档ID),绑错 **1770013**。嵌前一律先 `Read` 看 PNG 防裁切 |
-| 往「非 app owner / UAT 建的」文档插图,写报 **1061004** | `references/exec-blocks.md`(配方在 `references/exec-permission.md`) | UAT 建的文档 owner 是用户。**三步**:`GET /bot/v3/info` 取 bot open_id → UAT `permissionMember_create` 加 bot 为 `full_access` 协作者 → tenant 推图 → tenant `DELETE …/permissions/{token}/members/{bot}?type=docx&member_type=openid` 自删 |
-| 复用他人/源文档的图 | `references/exec-blocks.md` | 跨文档不能直接复用图片 token(relation mismatch);下字节用 user token 重新 upload |
-| **跨租户**原图复用拿不到(空数组) | `references/exec-blocks.md` | `.us.` token 对 CN/.sg 源图**静默返回空**;做不到 → 高质量重绘标「(重绘)」或让用户截图 |
-| 建文件夹/文档报 **99991679 / 1255002** | `references/exec-permission.md` | 在用户 Drive 建须 `--as user`(UAT);新增 scope **必重新 OAuth** 才进旧 token |
-| md 导入 docx(mermaid/callout 没渲染) | `references/exec-import-export.md` | import 只吃**标准 markdown**;mermaid→纯代码块、`<callout>/<lark-table>` XML 被**拍平成纯文本**;画图用 ASCII / 走 block API |
-| 想数文档有没有图 | `references/exec-import-export.md` | markdown 导出**吞 image/whiteboard 块**;数图用 block API 按 `block_type==27`,别信 markdown |
-| 下载云盘**图片/内嵌素材(media)** | `references/exec-import-export.md` | `media.batchGetTmpDownloadUrl`(UAT)拿临时链;media token 从 image 块取 |
-| 下载云盘**独立文件(type=file)**;私有文件 403/空数组 | `references/exec-import-export.md`(授权配方在 `references/exec-permission.md`) | 走 `GET /files/{token}/download`;对 file token 调 media 接口**静默返回空数组**(假阴性)。用户私有文件须 bot `full_access`:**三步** UAT `permissionMember_create`(perm=full_access,type=file)→ tenant 下载 → tenant `DELETE …?type=file&member_type=openid` 自删(`view` 不够) |
-| 读**用户私聊 / 机器人不在的群**的消息 | `references/exec-im-browser.md` | `search_v2`(UAT)只给 message_id 无正文;`message.get/list` 都 bot 身份进不去(230002);**唯一解 = Chrome 插件开飞书网页版** |
-| 要看渲染后的文档/表格、核对刚建效果 | `references/exec-im-browser.md` | Chrome 插件 SOP;默认选「浏览器1(bytedance)」;`data.tiktok-row.net` 渲染空白 |
-| 重排章节 / 跨节移图 / 改文档结构 | `references/exec-docstruct.md` | **`block_move` 大块移动 = OT 合并冲突、静默失败**;改用 create(目标位重建)+ delete(删原)+ 一步一 re-fetch;验真用 raw-dump 别信单 agent 总结 |
-| HTML 作附件嵌进 docx | `references/exec-docstruct.md` | `docs +media-insert --type file --file-view card` |
-| 调冷门子能力(sheets 单元格/calendar 会议室/contact 搜人…) | `references/exec-workflow-internal.md`(§5 白名单) | 多数冷门能力不在 MCP 白名单;官方 lark-cli 无白名单全可达,查 `cli.md` |
-| 已确认在飞书中「找文档/文件」 | `references/exec-workflow-internal.md`(§6.1 检索语义) | 仅当前飞书范围内默认=Drive 飞书 doc;先查「🤖 个人知识库索引(AI)」doc,别盲扫云盘 |
-| 建任务文件夹 / 判断「这是什么任务」 | 全局 `workspace-management` skill(结构唯一权威)+ `references/exec-workflow-internal.md` §6.2 | 双侧结构与新老规范细则归 workspace-management,不在此复述;中间过程/记忆不上飞书;**理解任务唯一入口=任务输入材料+当前 prompt**,不去消息里猜 |
-| 内部任务卡住 / 要权限 / 找表 / 跑 SQL | `references/exec-workflow-internal.md`(§10 求助阶梯) | 阶梯:lark-cli→Chrome→页面内 Agent→Knowledge AI(ask.feishu.cn)→oncall;门户 SYS360/Coral/Dorado/Megatron/TCC |
-| 想知道飞书后端历史上有哪些 MCP 能力 | `references/exec-appendix-legacy.md` | 纯历史参照;MCP 已退役,执行走 lark-cli |
+| Create a docx table | `references/exec-blocks.md` | Cells in the creation tree always cause **1770041**. Create the empty table, populate it, and patch column widths individually. Use raw REST for a true header row. |
+| Create a callout or set its emoji | `references/exec-blocks.md` | Explicit child blocks cause 1770041. Raw REST `children` with emoji_id can set the emoji. **Only the MCP path falls back to the default 🎁.** See the reference for details. |
+| Create nested blocks or insert at several locations | `references/exec-blocks.md` | Use descendant to build the tree in one operation. Insert in **descending index order**. |
+| Embed an image in docx | `references/exec-blocks.md` | **First try `docs +media-insert --file … --selection-with-ellipsis "<exact caption text>"`.** It wraps four steps plus rollback and inserts below the caption. Fall back to the curl pipeline only for unsupported placements (inside a callout/table or replacing an existing image block). Bind upload_all to `parent_node=<image block ID>`, not the document ID, or it returns **1770013**. Always `Read` the PNG before embedding to catch cropping. |
+| Insert an image in a user-owned/UAT-created document when writes return **1061004** | `references/exec-blocks.md` (procedure in  `references/exec-permission.md`) | A UAT-created document belongs to the user. Fetch the bot open_id with `GET /bot/v3/info`. Then use the three-step sequence: UAT `permissionMember_create` adds the bot as a `full_access` collaborator, tenant uploads the image, and tenant removes its own access with `DELETE …/permissions/{token}/members/{bot}?type=docx&member_type=openid`. |
+| Reuse an image from another person or source document | `references/exec-blocks.md` | Image tokens cannot be reused across documents (relation mismatch). Download the bytes and re-upload with a user token. |
+| **Cross-tenant** original image retrieval returns an empty array | `references/exec-blocks.md` | A `.us.` token **silently returns empty** for a CN/.sg source image. If retrieval is impossible, create a high-quality redraw labeled “(重绘)” (redrawn) or ask for a screenshot. |
+| Folder/document creation returns **99991679 / 1255002** | `references/exec-permission.md` | Creating in the user's Drive requires `--as user` (UAT). Repeat OAuth to grant new scopes to an existing token. |
+| Markdown import into docx leaves Mermaid/callouts unrendered | `references/exec-import-export.md` | Import accepts **standard Markdown only**. Mermaid becomes plain code blocks and `<callout>/<lark-table>` XML is flattened into plain text. Use ASCII diagrams or the block API. |
+| Count images in a document | `references/exec-import-export.md` | Markdown export omits image/whiteboard blocks. Count images through the block API with `block_type==27`. |
+| Download a Drive **image or embedded media** | `references/exec-import-export.md` | Use `media.batchGetTmpDownloadUrl` (UAT) for a temporary link. Read the media token from the image block. |
+| Download a **standalone Drive file (type=file)**, or a private file returns 403/an empty array | `references/exec-import-export.md` (authorization procedure in  `references/exec-permission.md`) | Use `GET /files/{token}/download`. Calling the media endpoint with a file token **silently returns an empty array** (false negative). A private user file requires bot `full_access`. UAT `permissionMember_create` (perm=full_access,type=file), then tenant download, then tenant removes its own access with `DELETE …?type=file&member_type=openid`. `view` is insufficient. |
+| Read **a user's private chat or a group the bot has not joined** | `references/exec-im-browser.md` | `search_v2` (UAT) returns message_id only, without the body. Bot identity cannot access `message.get/list` (230002). The only supported route described here is the Chrome extension with the Feishu web client. |
+| View rendered documents/sheets or check a newly created result | `references/exec-im-browser.md` | Follow the Chrome extension procedure. Default to “浏览器1(bytedance)” (Browser 1, bytedance). `data.tiktok-row.net` renders blank. |
+| Reorder sections, move images across sections or change document structure | `references/exec-docstruct.md` | Large `block_move` operations can silently fail from OT merge conflicts. Recreate at the destination, delete the original, and re-fetch after each step. Verify the raw dump independently of a single agent's summary. |
+| Embed HTML as a docx attachment | `references/exec-docstruct.md` | `docs +media-insert --type file --file-view card` |
+| Use a less common capability (sheet cells, calendar rooms, contact search) | `references/exec-workflow-internal.md` (§5 allowlist) | Most are outside the MCP allowlist. Official lark-cli exposes all capabilities without an allowlist. See `cli.md`. |
+| Confirmed Feishu document/file search | `references/exec-workflow-internal.md` (§6.1 search semantics) | Within confirmed Feishu scope, the default is a Feishu doc in Drive. Look in “🤖 个人知识库索引(AI)” (personal knowledge base index) before scanning Drive. |
+| Create a task folder or identify the task | Global `workspace-management` skill (sole layout authority) and `references/exec-workflow-internal.md` §6.2 | workspace-management owns the two-sided layout and old/new conventions. Keep interim work and memory off Feishu. **Interpret the task solely from its input materials and current prompt.** Do not infer it from messages. |
+| Internal task blocked, need permission, locate a table or run SQL | `references/exec-workflow-internal.md` (§10 escalation ladder) | Escalate in order: lark-cli → Chrome → in-page agent → Knowledge AI (ask.feishu.cn) → oncall. Portals include SYS360/Coral/Dorado/Megatron/TCC. |
+| Look up historical Feishu backend MCP capabilities | `references/exec-appendix-legacy.md` | Historical reference only. MCP is retired. Execute via lark-cli. |
 
-## (1) 整体介绍
+## (1) Overview
 
-飞书相关的技能与规则**独立隔离**在工作区,不与通用技能混在一起。本技能是它们的**唯一全局入口**:任何与飞书相关的任务都先到这里,再由本目录路由到对应子技能。
+Feishu skills and rules are isolated from general skills in the workspace. This skill is their **sole global entry point**. Start every Feishu task here, then follow the route to its subskill.
 
-**三层模型(全部懒加载,按需打开):**
+**Three layers, all loaded on demand**
 
-1. **入口索引(本 skill)** — 登记所有子技能的用途与位置,给出执行规约。先到这里,再路由。
-2. **技能方法论(子技能 `SKILL.md` + `references/`)** — 每个子技能讲清"某类飞书工作怎么做"(写文档/建表/作图/各业务域/流程元)。**具体子技能不预加载**,按下面 (2) 的目录用文件路径 `Read` 按需打开。
-3. **执行层(官方 `lark-cli`)** — 真正读写飞书;技能给规则,CLI 执行(三层命令/鉴权/踩坑见同目录 `cli.md`)。
+1. **Index (this skill).** Find a subskill's purpose and location, and the execution rules. Start here.
+2. **Methods (subskill `SKILL.md` and `references/`).** Each describes a kind of Feishu work (documents, tables, diagrams, business domains or workflow components). **Do not preload individual subskills.** Use section (2) to `Read` the relevant path as needed.
+3. **Execution (official `lark-cli`).** Skills supply rules and the CLI reads/writes Feishu. See the adjacent `cli.md` for its three command levels, authentication and pitfalls.
 
-**⭐ 写飞书文档 = 强制调用链(2026-06-24 钉死,违反即返工)** — 任何「写 / 改飞书文档」的任务,**包括方案 / 分析 / 总结 / 报告这类非 doc-trio 五类的文档**,动手前**必须**:① 调用并遵守 `lark-doc-writer` §0 通用写作通则(可读性 · 文字密度 · 语言自然去 AI 味 · 作图按文档类型分层；学习文档用双收口，技术数据链路交付读其 transcript + 三图金标准);② 属 doc-trio 五类(学习 / 操作 / checklist / 会议 / AI handoff)的**必须**先 `doc-trio` 判型取骨架;③ 执行落地用 `lark-cli docs`;④ 除非用户明确指定其他范围，Agent 新建文档在交付链接前按 `lark-doc-writer` 的 L2 步骤设为“ByteDance 内获得链接的人可查看”，保持外部访问关闭，并 fresh readback。**禁止**绕过 lark-doc-writer 直接 `docs +create` markdown 导入、或拿自定义 recipe 替代写作通则。
+**Mandatory Feishu document writing workflow (fixed 2026-06-24, rework required if skipped).** Every task to write or edit a Feishu document, including proposals, analyses, summaries and reports outside doc-trio's five types, must follow this sequence. (1) Before writing, invoke `lark-doc-writer` and follow §0 on readability, text density, natural language and diagram choices by document type. Use the two-part close for learning documents and consult the transcript and three-diagram standard for technical data-pipeline delivery. (2) For learning documents, operating guides, checklists, meeting notes and AI handoffs, first use `doc-trio` to classify the document and obtain its outline. (3) Execute with `lark-cli docs`. (4) Unless the user specifies another audience, before delivering a link to an agent-created document, follow lark-doc-writer L2 to set “ByteDance 内获得链接的人可查看” (anyone at ByteDance with the link can view), keep external access closed, and verify with a fresh readback. Never bypass lark-doc-writer by importing Markdown directly with `docs +create` or substituting a custom recipe for the writing rules.
 
-**`memory.md` 必读** — 飞书执行记忆与所有踩坑(权限/建块/嵌图/导入导出/白名单边界)都在本技能同目录的 `memory.md` 里。**已确认要执行飞书文档/表格/图片操作时才必看**,否则会重复踩已记录的坑。另:飞书写作硬规则在 `lark-doc-writer` 技能(§0 General 写作规则 + §1 飞书 XML 硬规则,为写作规则的唯一权威入口)。
+**Required `memory.md` reading.** The adjacent `memory.md` records Feishu execution pitfalls for permissions, blocks, images, import/export and allowlist boundaries. Read it **only when confirmed to be performing Feishu document, spreadsheet or image operations** to avoid repeating known issues. The sole authority for Feishu writing is `lark-doc-writer`, §0 General writing rules and §1 Feishu XML requirements.
 
-**`bytedance` 知识库先查(记忆优先)** — 字节广告算法工作知识在统一仓 `global-memory` 的 BM project **`bytedance`**（目录 `bytedance/`,原 feishu-memory）。**任务确实依赖字节广告工作知识时才先查它；普通飞书操作和日常任务不查**——解析仓库根(hub 的 parent)后跑 `<repo>/bin/bm tool search-notes --project bytedance "<你的问题>"`(或 MCP `search_notes`,`project=bytedance`):平台用途 / 指标口径 / 实验结论 / 机制原理 / 历史决策,命中就直接用、并核对该事实 `source.quote` 的时效,**避免重复研究**;拿不准的字节背景,**先搜它、再外求**。命中率最高是带名字/实体的查询。与本技能 `memory.md` 区分:`memory.md` = 飞书**执行踩坑**; `bytedance` = **工作知识**——分域按需读取，不因加载其中一个而自动加载另一个。
+**Check the `bytedance` knowledge base first when relevant.** ByteDance advertising algorithm knowledge lives in BM project **`bytedance`** in the unified `global-memory` repository (directory `bytedance/`, formerly feishu-memory). **Search it first only for tasks that depend on ByteDance advertising knowledge. Skip it for ordinary Feishu operations and everyday tasks.** Resolve the repository root (the hub's parent) and run `<repo>/bin/bm tool search-notes --project bytedance "<your question>"`, or MCP `search_notes` with `project=bytedance`. For platform purposes, metric definitions, experimental findings, mechanisms and historical decisions, use matches directly after checking that the fact's `source.quote` remains current. Search here before seeking uncertain ByteDance background elsewhere to avoid duplicate research. Name/entity queries work best. Read `memory.md` for execution pitfalls and `bytedance` for work knowledge independently, as needed.
 
-**执行层规约:**
+**Execution rules**
 
-- 读写飞书**一律用官方 `lark-cli`**(`@larksuite/cli`,已装且在 PATH;绝对路径与版本见探针 `~/Library/Logs/harness/probe.md`,勿硬编码);**旧 `mcp__feishu__*` MCP 已退役,不再是执行路径**(全文唯一声明;MCP 时代台账见 `mira-sync-archive.md`)。三层调用法/自助发现(`schema`/`skills`)/鉴权/App 与 brand 细节/踩坑表全在同目录 `cli.md`;查全接口面用 `lark-cli <域> --help` / `lark-cli <域> schema` / `lark-cli skills read lark-<域>`(旧的 `~/feishu-cli/deliverables/cli-interface.md` 已随该任务区删除,不再存在)。
-- **身份**:`--as bot`(租户)/ `--as user`(用户 UAT);在用户 Drive/My Space 建东西走 `--as user`(tenant 撞 1255002)。**写类先 `--dry-run`**(高层 shortcut 无确认门会真执行)。
-- **权限审批催办（IM 二次确认特例）**:用户在当前任务中授权申请权限并催办时，提交后读取真实审批流，按审批人做全局去重；同一审批人即使关联多个资源，也只合并申请一次、只发一条私信。仅联系外部审批人，不联系用户的 mentor Yi Li（`liyi.turing`）。消息固定为“麻烦帮忙审批下工单，感谢。”并附当前有效工单链接；没有有效链接不发送。该场景可按用户授权直接执行，其他 IM 仍遵守 `memory.md` §15 的二次确认规则。
-- 起步只读体检:`lark-cli doctor` / `auth status`;两身份 `ready` 即可干活,不 ready 才按 `cli.md §4` 重登。
+- Always use the official `lark-cli` (`@larksuite/cli`, installed on PATH) to read and write Feishu. Look up the absolute path and version in `~/Library/Logs/harness/probe.md` rather than hardcoding them. The old `mcp__feishu__*` MCP is retired as an execution path. Its historical ledger is in `mira-sync-archive.md`. The adjacent `cli.md` documents three invocation levels, self-discovery (`schema`/`skills`), authentication, app and brand details and troubleshooting. Explore the full interface with `lark-cli <domain> --help`, `lark-cli <domain> schema` or `lark-cli skills read lark-<domain>`. The old `~/feishu-cli/deliverables/cli-interface.md` was deleted with its task area.
+- Identities are `--as bot` (tenant) and `--as user` (user UAT). Use `--as user` to create items in a user's Drive/My Space (tenant gets 1255002). **Run `--dry-run` before writes.** High-level shortcuts can execute without a confirmation gate.
+- **Permission approval reminders (exception to IM reconfirmation).** When the user authorizes requesting access and sending reminders in the current task, read the actual approval workflow after submission. Deduplicate across all resources by approver, merging requests to the same approver into one request and one private message. Contact external approvers only. Exclude the user's mentor Yi Li (`liyi.turing`). Send the exact message “麻烦帮忙审批下工单，感谢。” (“Please approve the ticket, thank you.”) with the current valid ticket link. Send nothing without a valid link. This specific case may proceed directly under the user's authorization. All other IM follows the second-confirmation rule in `memory.md` §15.
+- Start with read-only checks: `lark-cli doctor` / `auth status`. Proceed when both identities are `ready`. Reauthenticate via `cli.md §4` only if needed.
 
-**Mira 同步已冻结(2026-07-03)** — 迁移完结、双向同步停用;资产映射/层级真相/同步协议与未输出活队列全文冻结在同目录 `mira-sync-archive.md`,恢复同步时从彼解冻。改飞书系统不再登同步台账。
+**Mira sync frozen (2026-07-03).** Migration is complete and bidirectional sync is off. The full asset map, authoritative hierarchy, sync protocol and outstanding unpublished queue are frozen in the adjacent `mira-sync-archive.md`. Resume there if sync restarts. Feishu system changes no longer update the sync ledger.
 
-## (2) 子技能目录
+## (2) Subskill directory
 
-按需路由用。**具体子技能不预加载**,按本目录用文件路径 `Read` 按需打开它的 `SKILL.md`(及其 `references/`)再干活。
+Route on demand. **Do not preload individual subskills.** Use this directory to `Read` the required `SKILL.md` and its `references/` before acting.
 
-> 写文档 / 作图这组子技能(原飞书 workspace 子技能)已内迁本 skill 下 `subskills-workspace/`,不再远程引用工作区(旧 `feishu-mira-workspace/` 已归档)。用法同 lark-*:`Read subskills-workspace/<域>/SKILL.md`(及其 `references/`)再干活。下表「位置」列 `subskills-workspace/…` 均相对本 skill 根 `~/.claude/skills/feishu-task-management/`。通用工具(非飞书专属)单列一组,与飞书域分开。
+> Document and diagram subskills from the former Feishu workspace now live in `subskills-workspace/` under this skill. The old `feishu-mira-workspace/` is archived and no longer referenced remotely. As with lark-*, `Read subskills-workspace/<domain>/SKILL.md` and its `references/` before acting. All `subskills-workspace/…` locations are relative to `~/.claude/skills/feishu-task-management/`. General tools have a separate group.
 
-### 写文档 / 内容
-| 技能 | 一句话用途 | 位置(SKILL.md) |
+### Writing and content
+| Skill | Purpose | Location (SKILL.md) |
 |---|---|---|
-| `lark-doc-writer` | 飞书文档写作总入口 + 排版/格式权威规则 + 可读性方法；技术数据链路交付需读取其金标准 transcript 与三图模板。 | `subskills-workspace/lark-doc-writer/SKILL.md` |
-| `doc-trio` | 写飞书 5 类文档(学习/操作指南/checklist/会议 note/AI handoff)的判型 + 骨架 + 完整性查漏;写这五类前必须先调用判型取骨架(见 §1 调用链),写作通则再走 `lark-doc-writer`。 | `subskills-workspace/doc-trio/SKILL.md` |
-| `feishu-doc-gotchas` | 读写飞书文档/表格/画板遇到格式/blockID/颜色/上传/导入异常时查阅。 | `subskills-workspace/feishu-doc-gotchas/SKILL.md` |
-| `whiteboard-design` | 架构图/流程图/漏斗/金字塔/鱼骨/组织架构等结构化图示的设计方法论(原名 lark-whiteboard;落地=渲染 PNG 嵌 Image(27),ASCII 兜底;官方同名执行技能=伪 skill `lark-whiteboard`)。 | `subskills-workspace/whiteboard-design/SKILL.md` |
-| `data-analysis-report` | 字节内网数据分析**端到端编排**(SQL 取数→多窗/控池分析→飞书 docx 交付,可选 core/full 双版 HTML 走 analytical-report + 内网托管);编排 sql-query / analytical-report / bytedance-internal-hosting / lark-doc-writer,不重复其细节。 | `subskills-workspace/data-analysis-report/SKILL.md` |
+| `lark-doc-writer` | Entry point for Feishu writing, authoritative layout/format rules and readability methods. For technical data pipelines, read its reference transcript and three-diagram template. | `subskills-workspace/lark-doc-writer/SKILL.md` |
+| `doc-trio` | Classify five Feishu document types (learning, operating guides, checklists, meeting notes and AI handoffs), select the outline and check completeness. Invoke before writing these five types (§1), then apply lark-doc-writer's general rules. | `subskills-workspace/doc-trio/SKILL.md` |
+| `feishu-doc-gotchas` | Consult for formatting, blockID, color, upload or import anomalies while reading/writing documents, spreadsheets and whiteboards. | `subskills-workspace/feishu-doc-gotchas/SKILL.md` |
+| `whiteboard-design` | Design architecture diagrams, flows, funnels, pyramids, fishbones and org charts. Formerly lark-whiteboard. Render a PNG and embed Image(27), with ASCII fallback. The official execution subskill is `lark-whiteboard`. | `subskills-workspace/whiteboard-design/SKILL.md` |
+| `data-analysis-report` | Orchestrate ByteDance intranet analysis end to end, from SQL extraction through multi-window/controlled-pool analysis to Feishu docx. Optional core/full HTML uses analytical-report and internal hosting. Coordinates sql-query, analytical-report, bytedance-internal-hosting and lark-doc-writer without repeating their mechanics. | `subskills-workspace/data-analysis-report/SKILL.md` |
 
-### 作图 / 图表
-| 技能 | 一句话用途 | 位置 |
+### Diagrams and charts
+| Skill | Purpose | Location |
 |---|---|---|
-| `ascii-strategy-diagram` | 算法/竞价/计费/排序/链路 的 ASCII 纯文本全景框架图(公式化、多阶段链路首选)。 | `subskills-workspace/ascii-strategy-diagram/SKILL.md` |
-| `dag-flow-diagram` | DAG:变量依赖 / 端到端流程 / 技术数据链路三图 / 概念关系。 | `subskills-workspace/dag-flow-diagram/SKILL.md` |
-| `chart-gen` | 把数据/指标画成干净自包含的静态 SVG 图表(柱/折线/饼/桑基…),需要时再上传飞书。 | `subskills-workspace/chart-gen/SKILL.md` |
+| `ascii-strategy-diagram` | Plain-text ASCII overview diagrams for algorithms, bidding, billing, ranking and pipelines. Preferred for formulas and multistage flows. | `subskills-workspace/ascii-strategy-diagram/SKILL.md` |
+| `dag-flow-diagram` | DAGs for variable dependencies, end-to-end workflows, the three technical data-pipeline diagrams and concept relationships. | `subskills-workspace/dag-flow-diagram/SKILL.md` |
+| `chart-gen` | Generate clean standalone static SVG charts (bars, lines, pies, Sankey and others) from data/metrics. Upload to Feishu if needed. | `subskills-workspace/chart-gen/SKILL.md` |
 
-### 飞书各业务域 = 官方 `lark-*` 伪 skill(经 `subskills/` 软链,不注册全局)
-> 源文件在 lark-cli 托管的 `~/.agents/skills/`,经软链 `subskills/` 可达,只经本表路由。用法:按下表定位 → `Read subskills/lark-<域>/SKILL.md`(等价 `lark-cli skills read lark-<域>`);完整触发词与边界在各自 frontmatter。字节租户/行为坑(IM 232043 建群、发消息前二次确认、Calendar 禁心算+主日历、1255002/`--as user`、gmail/1063001)见 `memory.md` §13/§15 与 `references/exec-permission.md`。
+### Official Feishu domain subskills (`lark-*`, linked through `subskills/` without global registration)
+> The sources in `~/.agents/skills/` are managed by lark-cli and reachable via the `subskills/` symlink. Route only through this table, then `Read subskills/lark-<domain>/SKILL.md` (equivalent to `lark-cli skills read lark-<domain>`). Each frontmatter defines the full triggers and boundaries. See `memory.md` §13/§15 and `references/exec-permission.md` for ByteDance tenant/behavior pitfalls (IM 232043 group creation, reconfirming sends, Calendar's ban on mental date calculations and its primary calendar requirement, 1255002/`--as user`, gmail/1063001).
 
-| 伪 skill | 管什么(边界) |
+| Subskill | Scope |
 |---|---|
-| `lark-doc` | 云文档 Docx/Wiki 读取编辑、插图、下载附件;文档 URL/token(含 doubao.com 的 /docx 与 /wiki 路径);内嵌表格/Base/画板先取 token 转对应 skill |
-| `lark-base` | 多维表格 Base:建表/字段/记录/视图/统计/公式 lookup/表单/仪表盘/workflow/角色权限;/base/ 链接;文件导入→lark-drive |
-| `lark-sheets` | 电子表格:创建/工作表结构/单元格读写(值公式样式批注)/查找替换/原子批量/图表透视表条件格式/金融建模;按名搜文件→lark-drive |
-| `lark-drive` | 云空间:上传下载/文件夹/复制移动删除/元数据/评论权限/版本;Word/MD/Excel/CSV/PPTX/.base 导入为在线文档;内容编辑→lark-doc 等 |
-| `lark-im` | 即时通讯:收发回复/搜聊天记录/群管理/文件图片上传下载(大文件分片)/表情/加急/交互卡片与 card.action.trigger 回调/Feed 置顶 |
-| `lark-calendar` | 日历:查建改日程/参会人/忙闲推荐/会议室预定;已结束会议→lark-vc;待办→lark-task |
-| `lark-task` | 任务:待办/清单/子任务/分配/附件/任务智能体注册与记录 |
-| `lark-mail` | 邮箱:起草/发送/回复/转发/查阅/搜索/文件夹标签/邮件联系人/收信规则;仅 mail 意图 |
-| `lark-wiki` | 知识库:知识空间/成员/节点层级/文档与快捷方式组织;上传文件→lark-drive;内容编辑→lark-doc 等 |
-| `lark-minutes` | 妙记:搜索/基础信息/音视频上传下载/产物内容编辑/换说话人;本地音视频转纪要优先走它(不用 ffmpeg/whisper) |
-| `lark-vc` | 已结束视频会议:搜历史/纪要(总结待办章节逐字稿)/参会人快照;未来日程→lark-calendar;会中→lark-vc-agent |
-| `lark-vc-agent` | 会中能力:bot 真实入会离会/会中事件/发会中消息表情/发现进行中会议 ID |
-| `lark-contact` | 通讯录:姓名邮箱↔open_id 互查、部门邮箱状态签名;部门树遍历/组织架构→原生 OpenAPI |
-| `lark-okr` | OKR:周期/目标/KR/对齐/量化指标/进展记录 |
-| `lark-approval` | 审批:待办已办/实例/搜可发起定义/发起原生审批;非审批待办→lark-task;不建审批定义 |
-| `lark-attendance` | 考勤:查自己打卡记录 |
-| `lark-apps` | 妙搭 Spark/Miaoda:应用开发托管/HTML 静态站点发布/本地全栈/云端迭代/日志 Trace 监控 PV UV/环境变量(*.aiforce.cloud) |
-| `lark-event` | 实时事件监听:`lark-cli event consume` NDJSON 流(IM/任务/VC/妙记/画板事件),bot 长驻订阅 |
-| `lark-markdown` | Markdown 文件:查看/创建/上传/编辑/局部 patch/diff;导入为在线文档→lark-drive |
-| `lark-note` | 会议纪要 Note 直查:已知 note_id 查详情/关联 doc token/unified 原始逐字稿 |
-| `lark-whiteboard` | 画板(执行):导出预览图/原始节点/更新内容;设计方法论→工作区 whiteboard-design |
-| `lark-slides` | 幻灯片:创建/读取/页面管理/局部替换(含 doubao /slides/) |
-| `lark-shared` | lark-cli 装机鉴权:auth login/status/logout、user vs bot、--domain 权限、缺 scope、_notice |
-| `lark-openapi-explorer` | 现有 skill/CLI 覆盖不了时,从官方文档库挖原生 OpenAPI |
-| `lark-skill-maker` | 把飞书 API 封装成自定义 lark-cli Skill(执行层;持久变更走 harness-management update 流程) |
-| `lark-workflow-meeting-summary` | 时间范围内会议纪要汇总→结构化报告 |
-| `lark-workflow-standup-report` | 指定日期日程 + 未完成任务摘要 |
+| `lark-doc` | Read/edit cloud Docx/Wiki, insert images and download attachments by document URL/token, including doubao.com /docx and /wiki paths. For embedded sheets/Base/whiteboards, extract the token and route to the corresponding skill. |
+| `lark-base` | Base multidimensional tables, fields, records, views, statistics, formulas/lookups, forms, dashboards, workflows, role permissions and /base/ links. File import goes to lark-drive. |
+| `lark-sheets` | Create spreadsheets, structure worksheets, read/write cell values, formulas, styles and comments, find/replace, atomic batches, charts, pivot tables, conditional formatting and financial modeling. Search files by name with lark-drive. |
+| `lark-drive` | Cloud storage uploads/downloads, folders, copy/move/delete, metadata, comments, permissions and versions. Import Word/MD/Excel/CSV/PPTX/.base as online documents. Edit content with lark-doc or another relevant skill. |
+| `lark-im` | Send, receive, reply, search chat history, manage groups, upload/download files and images (multipart for large files), reactions, urgent messages, interactive cards and card.action.trigger callbacks, and Feed pinning. |
+| `lark-calendar` | Find/create/edit events, attendees, availability suggestions and room bookings. Completed meetings go to lark-vc. To-dos go to lark-task. |
+| `lark-task` | Tasks, lists, subtasks, assignment, attachments, task-agent registration and records. |
+| `lark-mail` | Email intent only: draft, send, reply, forward, read, search, folders, labels, contacts and incoming-mail rules. |
+| `lark-wiki` | Knowledge spaces, members, node hierarchy, documents and shortcuts. Upload files with lark-drive. Edit content with lark-doc or the relevant content skill. |
+| `lark-minutes` | Search Minutes, inspect basic details, upload/download audio/video, edit output and change speaker labels. Prefer it for local audio/video to minutes, without ffmpeg/whisper. |
+| `lark-vc` | Completed video meetings: search history, minutes (summaries, to-dos, chapters and transcripts) and participant snapshots. Future events go to lark-calendar. Live meetings go to lark-vc-agent. |
+| `lark-vc-agent` | Live meetings: have the bot actually join/leave, handle in-meeting events, send messages/reactions and discover active meeting IDs. |
+| `lark-contact` | Resolve names/email addresses and open_id in both directions. Look up departments, email, status and signatures. Use native OpenAPI for department-tree traversal and org structure. |
+| `lark-okr` | OKR cycles, objectives, KRs, alignment, quantitative metrics and progress records. |
+| `lark-approval` | Pending/completed approvals, instances, finding definitions open for submission and initiating native approvals. Use lark-task for other to-dos. Excludes creating approval definitions. |
+| `lark-attendance` | Look up your own attendance punches. |
+| `lark-apps` | Spark/Miaoda app development and hosting, static HTML publishing, local full-stack work, cloud iteration, logs/Trace/PV/UV monitoring and environment variables (*.aiforce.cloud). |
+| `lark-event` | Real-time `lark-cli event consume` NDJSON stream for IM, tasks, VC, Minutes and whiteboard events. Persistent bot subscriptions. |
+| `lark-markdown` | View, create, upload, edit, patch and diff Markdown files. Use lark-drive to import as an online document. |
+| `lark-note` | Direct meeting Note lookup using a known note_id for details, associated doc token or unified raw transcript. |
+| `lark-whiteboard` | Whiteboard execution: export previews/raw nodes and update content. Use workspace whiteboard-design for design methodology. |
+| `lark-slides` | Create/read slides, manage pages and replace selected content, including doubao /slides/. |
+| `lark-shared` | lark-cli installation/authentication, auth login/status/logout, user vs bot, --domain permissions, missing scopes and _notice. |
+| `lark-openapi-explorer` | Find native OpenAPI endpoints in official documentation when existing skills and CLI coverage are insufficient. |
+| `lark-skill-maker` | Wrap Feishu APIs as custom lark-cli skills at the execution layer. Use harness-management update for persistent changes. |
+| `lark-workflow-meeting-summary` | Compile meeting minutes in a date range into a structured report. |
+| `lark-workflow-standup-report` | Summarize a specified day's schedule and outstanding tasks. |
 
-### 飞书任务域本地伪 skill(`subskills-local/`)
-> **构建规则(钉死)**:凡飞书任务域的 skill,一律建成本 skill 内部伪 skill——物理放 `subskills-local/<skill>/` + 在本表登一行路由;**禁止**注册为 `~/.claude/skills/` 直属全局 skill(新建走 harness-management update 流程)。用法同 lark-*:`Read subskills-local/<域>/SKILL.md`,触发词/边界在各自 frontmatter。
+### Local Feishu task subskills (`subskills-local/`)
+> **Required layout.** Every Feishu task-domain skill must be an internal subskill physically located in `subskills-local/<skill>/` with one routing row here. Never register it directly under `~/.claude/skills/` as a global skill. Create it through harness-management update. As with lark-*, `Read subskills-local/<domain>/SKILL.md`. Triggers and boundaries live in its frontmatter.
 
-| 伪 skill | 管什么(边界) |
+| Subskill | Scope |
 |---|---|
-| `sql-query` | 字节内网 SQL 取数统一入口:固定优先级 bytedcli CLI → Aeolus 网页 → iDA;覆盖鉴权、队列、单次/异步查询、并行、采样校验、方言、CSV 与降级条件。 |
-| `building-dorado-hive-tables` | Dorado/DataLeap Hive生产链路:建表、权限、smoke、正式任务、历史回填、bootstrap、首日接力和生产验收；业务SQL设计和通用取数走 `sql-query`。 |
-| `bitcode-repository-publishing` | BitCode/Codebase 建仓与本地代码发布的经验型决策指南:按目标域、权限、CLI/UI 能力、Git/保护分支状态选路径；不固定流程，命令能力复用全局 `bytedcli`。 |
-| `analytical-report` | 严肃数据分析报告引擎:自包含离线 HTML(core/full 双版、SVG 图表、可折叠 SQL、读图三拍、诚实口径)+ starter-kit + build→Playwright→对抗审查闭环。通用 HTML 报告引擎;端到端飞书数据分析编排走 `data-analysis-report` |
-| `bytedance-internal-hosting` | 把 HTML 报告/网页/交互产物托管到字节内网拿可分享 link 的双平台权威:Goofy 快速预览(gf-preview URL,create/redeploy 保 link,**≤50MB 死限**)vs 飞书云盘 Preview(单文件报告+真 ACL,Upload New Version 保 link);含决策树、file_upload 注入、大文件分层瘦身、keychain/误判成功/大文件冻结等踩坑 |
-| `libra-experiment-weekly-report` | 按上一周/0721 模板原位更新 Libra 实验周会报告：读取实验记录与页面，采集决策 ADVV 和点击后的 p 值，按最后完整数据日计算 0.5d/关后回流，生成正确区域截图并保持飞书排版一致。 |
-| `libra-ad-recall-metrics` | Libra 广告召回实验指标只读查看与归因：查决策 ADVV/P值、Travel Recall 支路、pid 商品召回消耗/计费比和 Travel Catalog Event 转化事件；日常/临时指标分析走它，周会写入与链路异常分别路由专用 skill。 |
-| `building-feishu-bots` | 飞书群机器人端到端构建与长期运行：创建应用、权限/事件、群内 @ + reaction + 回复、定时推送、独立日报子工作区、订阅、LaunchAgent 托管和真实群测试；具体业务查数仍走对应领域 skill。 |
-| `ad-recall-experiment-debugging` | 广告召回实验端到端异常排查与证据整理:Libra 无 AID/CID 打点、召回量异常、Intent 有点但倒排无结果、跨 ROW/TTP/EU 差异,逐层查 Link / Intent Center / Engine / Targeting / DAG / TCC / 链路指标 / 源码,只做诊断和证据链(发布、改实验、改 TCC/代码须另行授权);日常指标查看走 `libra-ad-recall-metrics`,周会报告走 `libra-experiment-weekly-report`。 |
+| `sql-query` | ByteDance intranet SQL extraction. Fixed priority: bytedcli CLI → Aeolus web → iDA. Covers authentication, queues, one-off/async queries, parallel execution, sampling validation, dialects, CSV and fallback conditions. |
+| `building-dorado-hive-tables` | Dorado/DataLeap Hive production pipelines: table creation, permissions, smoke tests, production tasks, historical backfill, bootstrap, first-day handoff and production acceptance. Use `sql-query` for business SQL design and general extraction. |
+| `bitcode-repository-publishing` | Decision guide for BitCode/Codebase repository creation and local code publishing. Choose based on destination domain, permissions, CLI/UI capabilities, Git and protected branch state. No fixed workflow. Reuse global `bytedcli` commands. |
+| `analytical-report` | General-purpose engine for rigorous analysis in self-contained offline HTML (core/full versions, SVG charts, collapsible SQL, three-part chart reading and honest metric definitions), with a starter kit and build → Playwright → adversarial review loop. For end-to-end Feishu analysis use `data-analysis-report`. |
+| `bytedance-internal-hosting` | Authoritative guide to shareable intranet hosting of HTML reports, pages and interactive artifacts. Goofy fast preview (gf-preview URL, create/redeploy preserves link, **hard limit ≤50MB**) or Feishu Drive Preview (single-file reports, real ACLs, Upload New Version preserves link). Covers the decision tree, file_upload injection, layered size reduction, keychain issues, false success and large-file freezes. |
+| `libra-experiment-weekly-report` | Update the Libra weekly experiment report in place using last week's/0721 template. Read experiment records and pages, collect decision ADVV and p-values after clicking, compute 0.5d/post-closure return flow from the last complete data day, capture the correct regions and preserve Feishu layout. |
+| `libra-ad-recall-metrics` | Read-only review and attribution of Libra ad recall metrics: decision ADVV/p-values, Travel Recall branches, pid product recall spend/billing ratios and Travel Catalog Event conversions. Use for daily/ad hoc metrics. Route weekly report edits and pipeline anomalies to their dedicated skills. |
+| `building-feishu-bots` | Build and operate Feishu group bots end to end: create apps, configure permissions/events, group mentions/reactions/replies, scheduled pushes, a dedicated daily-report subworkspace, subscriptions, LaunchAgent hosting and real-group tests. Business data queries remain with their domain skills. |
+| `ad-recall-experiment-debugging` | Diagnose ad recall experiments end to end and collect evidence: missing Libra AID/CID instrumentation, abnormal recall volumes, Intent events with empty inverted index results and differences across ROW/TTP/EU. Inspect Link / Intent Center / Engine / Targeting / DAG / TCC / pipeline metrics / source code layer by layer. Diagnosis and evidence only. Release, experiment, TCC and code changes require separate authorization. Route ordinary metrics to `libra-ad-recall-metrics` and weekly reports to `libra-experiment-weekly-report`. |
 
-### 通用工具(非飞书专属)
-> 已删/已迁物(long-task-workflow、choice-card、daily-report 拆分、frontend-design-pro 并入 frontend-pipeline)见 `mira-sync-archive.md` §1 沿革台账,不再占本表。
-| 技能 | 一句话用途 | 位置 |
+### General tools (also used outside Feishu)
+> See the change history in `mira-sync-archive.md` §1 for removed or moved items (long-task-workflow, choice-card, the daily-report split and frontend-design-pro's move into frontend-pipeline).
+| Skill | Purpose | Location |
 |---|---|---|
-| `workspace-management` | Agent 工作区文件系统唯一权威(双侧结构:本地 tasks/<kebab名> + 飞书 Task/<中文名>);建任务夹、收尾、归档、判断「这是什么任务」走它。 | `~/.claude/skills/workspace-management/SKILL.md`(全局) |
-| `harness-management` | harness 层(skill/command/hook/规则)一切变更的唯一入口;沉淀偏好/流程走其 update 流程。 | `~/.claude/skills/harness-management/SKILL.md`(全局) |
-| `feishu-daily-report` | **整理日报**(飞书域):口述清单 + 回读产出 → compile 成飞书日报落 Drive `Daily Report/WeekN`;「记录日报」走全局 `memory-management` 时间索引库。 | `subskills-workspace/feishu-daily-report/SKILL.md` |
+| `workspace-management` | Sole authority on the agent workspace filesystem (two-sided layout: local tasks/<kebab-name> and Feishu Task/<Chinese name>). Use for creating task folders, wrap-up, archiving and identifying a task. | `~/.claude/skills/workspace-management/SKILL.md` (global) |
+| `harness-management` | Sole entry for harness changes (skills, commands, hooks and rules). Preserve preferences/processes via its update workflow. | `~/.claude/skills/harness-management/SKILL.md` (global) |
+| `feishu-daily-report` | **Compile a daily report** (Feishu scope): compile a dictated list and verified outputs into a Feishu daily report in Drive `Daily Report/WeekN`. For “记录日报” (record a daily report), use the global `memory-management` time index. | `subskills-workspace/feishu-daily-report/SKILL.md` |
 
-### 其他全局技能
-非飞书任务回全局技能体系(`~/.claude/skills/` 注册表,按各自 description 触发),不经本入口、本表不复刻。
+### Other global skills
+Route non-Feishu tasks directly through the global `~/.claude/skills/` registry using each skill's description. This index does not duplicate those entries.
 
-## 注意
-- 这些飞书子技能源文件只在工作区一份(非全局软链)。Codex/Cursor 在工作区目录下工作时,读工作区的 `AGENTS.md` 获得同样索引。
-- 拿不准的命令/参数先 `lark-cli <域> +<shortcut> --help` 或 `lark-cli schema ...` 查准,别杜撰(`cli.md §3` 自助发现)。
+## Notes
+- These Feishu subskill sources have a single workspace copy, without global symlinks. When working in the workspace, Codex/Cursor can read its `AGENTS.md` for the same index.
+- For unfamiliar commands or parameters, check `lark-cli <domain> +<shortcut> --help` or `lark-cli schema ...` first (self-discovery in `cli.md §3`).

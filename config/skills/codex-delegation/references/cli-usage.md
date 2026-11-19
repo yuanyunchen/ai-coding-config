@@ -7,13 +7,12 @@ The prompt-writing discipline and "when NOT to use" rules in the main skill appl
 ## Canonical invocation (write tasks — house default)
 
 ```bash
-codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check \
-  -c model_reasoning_effort="high" \
+codex exec -m "$MODEL_ID" -c "model_reasoning_effort=${EFFORT:-high}" --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check \
   -o codex_out.txt \
   "<TASK PROMPT>" < /dev/null
 ```
 
-- **Model — never pass `-m`.** The config default is already the best available model; the lineup drifts month to month, so let it default.
+- **Model**: Resolve the requested selector once per new task. Reuse the full ID for CLI fallback. Keep Fast in the Codex service tier configuration. Resume with the original model unless the user explicitly requests a switch.
 - **Reasoning effort — default `high`.** Bump to `xhigh` for the hardest problems; drop to `medium` only for genuinely trivial mechanical tasks.
 - **Bypass mode is the house default.** `--dangerously-bypass-approvals-and-sandbox` = no approvals, no sandbox — fully unattended on this machine. Only switch to sandboxed modes (`-s` / `-a`, see cli-reference.md) when running untrusted code.
 - `--skip-git-repo-check` — allow running outside a git repo.
@@ -28,7 +27,7 @@ codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check \
 When Codex should *inspect but not touch* your files — code review, "find the bug", explain-this — use `-s read-only` instead of the bypass default. It guarantees no edits regardless of what Codex decides.
 
 ```bash
-codex exec -s read-only --skip-git-repo-check -o review.txt \
+codex exec -m "$MODEL_ID" -c "model_reasoning_effort=${EFFORT:-high}" -s read-only --skip-git-repo-check -o review.txt \
   "Review buggy.py for correctness bugs, with line numbers. Do not modify any files." < /dev/null
 ```
 

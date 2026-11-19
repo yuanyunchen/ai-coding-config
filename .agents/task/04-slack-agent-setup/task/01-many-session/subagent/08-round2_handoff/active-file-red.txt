@@ -1,0 +1,40 @@
+(node:68235) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ withdrawing the only attachment while an active delivery is loading does not start a turn (12.820375ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 149.748667
+
+✖ failing tests:
+
+test at test/handoff-revocation.test.js:185:1
+✖ withdrawing the only attachment while an active delivery is loading does not start a turn (12.820375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   [
+  +     'new-owner',
+  +     {
+  +       currentOwnerMessage: '',
+  +       priorSlackThread: '',
+  +       withdrawnAttachments: 1
+  +     }
+  +   ]
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///Users/yuanyunchen/Desktop/AI%20Programing/Play%20for%20Fun/slack-codex-bridge/test/handoff-revocation.test.js:199:10)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ [ 'new-owner', [Object] ] ],
+    expected: [],
+    operator: 'deepStrictEqual'
+  }

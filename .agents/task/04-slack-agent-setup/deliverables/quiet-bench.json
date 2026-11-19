@@ -1,0 +1,3418 @@
+{
+  "node": "v24.1.0",
+  "options": {
+    "rounds": 48,
+    "slackMs": 8,
+    "attachmentMs": 80,
+    "agentMs": 150
+  },
+  "summary": [
+    {
+      "metric": "arrival_to_backend_accept",
+      "samples": 48,
+      "delivered": 48,
+      "missing": 0,
+      "p50Ms": 95,
+      "p95Ms": 162,
+      "maxMs": 165
+    },
+    {
+      "metric": "arrival_to_final",
+      "samples": 48,
+      "delivered": 48,
+      "missing": 0,
+      "p50Ms": 135,
+      "p95Ms": 199,
+      "maxMs": 206
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "samples": 48,
+      "delivered": 48,
+      "missing": 0,
+      "p50Ms": 11,
+      "p95Ms": 165,
+      "maxMs": 165
+    }
+  ],
+  "samples": [
+    {
+      "key": "mention-1",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 1,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957991733,
+      "completedAtMs": 1794957991821,
+      "durationMs": 88,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-1/mock-turn-1/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 1,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957991733,
+      "completedAtMs": 1794957991833,
+      "durationMs": 100,
+      "attempts": 1
+    },
+    {
+      "key": "mention-2",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 2,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957991835,
+      "completedAtMs": 1794957991989,
+      "durationMs": 154,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-2/mock-turn-2/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 2,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957991835,
+      "completedAtMs": 1794957992001,
+      "durationMs": 166,
+      "attempts": 1
+    },
+    {
+      "key": "mention-3",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 3,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957992003,
+      "completedAtMs": 1794957992092,
+      "durationMs": 89,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-3/mock-turn-3/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 3,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957992003,
+      "completedAtMs": 1794957992138,
+      "durationMs": 135,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-3/mock-turn-3",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 3,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957992091,
+      "completedAtMs": 1794957992107,
+      "durationMs": 16,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-3/mock-turn-3",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 3,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957992111,
+      "completedAtMs": 1794957992124,
+      "durationMs": 13,
+      "attempts": 1
+    },
+    {
+      "key": "mention-4",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 4,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957992140,
+      "completedAtMs": 1794957992298,
+      "durationMs": 158,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-4/mock-turn-4/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 4,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957992140,
+      "completedAtMs": 1794957992332,
+      "durationMs": 192,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-4/mock-turn-4",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 4,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957992146,
+      "completedAtMs": 1794957992309,
+      "durationMs": 163,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-4/mock-turn-4",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 4,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957992310,
+      "completedAtMs": 1794957992321,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "mention-5",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 5,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957992334,
+      "completedAtMs": 1794957992418,
+      "durationMs": 84,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-5/mock-turn-5/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 5,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957992334,
+      "completedAtMs": 1794957992429,
+      "durationMs": 95,
+      "attempts": 1
+    },
+    {
+      "key": "mention-6",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 6,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957992430,
+      "completedAtMs": 1794957992583,
+      "durationMs": 153,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-6/mock-turn-6/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 6,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957992430,
+      "completedAtMs": 1794957992593,
+      "durationMs": 163,
+      "attempts": 1
+    },
+    {
+      "key": "mention-7",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 7,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957992594,
+      "completedAtMs": 1794957992679,
+      "durationMs": 85,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-7/mock-turn-7/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 7,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957992594,
+      "completedAtMs": 1794957992711,
+      "durationMs": 117,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-7/mock-turn-7",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 7,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957992679,
+      "completedAtMs": 1794957992689,
+      "durationMs": 10,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-7/mock-turn-7",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 7,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957992690,
+      "completedAtMs": 1794957992700,
+      "durationMs": 10,
+      "attempts": 1
+    },
+    {
+      "key": "mention-8",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 8,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957992712,
+      "completedAtMs": 1794957992868,
+      "durationMs": 156,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-8/mock-turn-8/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 8,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957992712,
+      "completedAtMs": 1794957992900,
+      "durationMs": 188,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-8/mock-turn-8",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 8,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957992715,
+      "completedAtMs": 1794957992879,
+      "durationMs": 164,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-8/mock-turn-8",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 8,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957992879,
+      "completedAtMs": 1794957992889,
+      "durationMs": 10,
+      "attempts": 1
+    },
+    {
+      "key": "mention-9",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 9,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957992901,
+      "completedAtMs": 1794957992986,
+      "durationMs": 85,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-9/mock-turn-9/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 9,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957992901,
+      "completedAtMs": 1794957992997,
+      "durationMs": 96,
+      "attempts": 1
+    },
+    {
+      "key": "mention-10",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 10,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957992998,
+      "completedAtMs": 1794957993154,
+      "durationMs": 156,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-10/mock-turn-10/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 10,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957992998,
+      "completedAtMs": 1794957993167,
+      "durationMs": 169,
+      "attempts": 1
+    },
+    {
+      "key": "mention-11",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 11,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957993170,
+      "completedAtMs": 1794957993257,
+      "durationMs": 87,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-11/mock-turn-11/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 11,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957993170,
+      "completedAtMs": 1794957993289,
+      "durationMs": 119,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-11/mock-turn-11",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 11,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957993257,
+      "completedAtMs": 1794957993267,
+      "durationMs": 10,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-11/mock-turn-11",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 11,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957993268,
+      "completedAtMs": 1794957993278,
+      "durationMs": 10,
+      "attempts": 1
+    },
+    {
+      "key": "mention-12",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 12,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957993290,
+      "completedAtMs": 1794957993446,
+      "durationMs": 156,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-12/mock-turn-12/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 12,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957993290,
+      "completedAtMs": 1794957993484,
+      "durationMs": 194,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-12/mock-turn-12",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 12,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957993293,
+      "completedAtMs": 1794957993456,
+      "durationMs": 163,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-12/mock-turn-12",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 12,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957993459,
+      "completedAtMs": 1794957993468,
+      "durationMs": 9,
+      "attempts": 1
+    },
+    {
+      "key": "mention-13",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 13,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957993488,
+      "completedAtMs": 1794957993580,
+      "durationMs": 92,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-13/mock-turn-13/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 13,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957993488,
+      "completedAtMs": 1794957993592,
+      "durationMs": 104,
+      "attempts": 1
+    },
+    {
+      "key": "mention-14",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 14,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957993597,
+      "completedAtMs": 1794957993757,
+      "durationMs": 160,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-14/mock-turn-14/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 14,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957993597,
+      "completedAtMs": 1794957993769,
+      "durationMs": 172,
+      "attempts": 1
+    },
+    {
+      "key": "mention-15",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 15,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957993773,
+      "completedAtMs": 1794957993866,
+      "durationMs": 93,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-15/mock-turn-15/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 15,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957993773,
+      "completedAtMs": 1794957993903,
+      "durationMs": 130,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-15/mock-turn-15",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 15,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957993866,
+      "completedAtMs": 1794957993877,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-15/mock-turn-15",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 15,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957993878,
+      "completedAtMs": 1794957993889,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "mention-16",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 16,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957993906,
+      "completedAtMs": 1794957994068,
+      "durationMs": 162,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-16/mock-turn-16/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 16,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957993906,
+      "completedAtMs": 1794957994104,
+      "durationMs": 198,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-16/mock-turn-16",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 16,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957993914,
+      "completedAtMs": 1794957994079,
+      "durationMs": 165,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-16/mock-turn-16",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 16,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957994081,
+      "completedAtMs": 1794957994092,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "mention-17",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 17,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957994108,
+      "completedAtMs": 1794957994199,
+      "durationMs": 91,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-17/mock-turn-17/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 17,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957994108,
+      "completedAtMs": 1794957994210,
+      "durationMs": 102,
+      "attempts": 1
+    },
+    {
+      "key": "mention-18",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 18,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957994213,
+      "completedAtMs": 1794957994374,
+      "durationMs": 161,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-18/mock-turn-18/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 18,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957994213,
+      "completedAtMs": 1794957994386,
+      "durationMs": 173,
+      "attempts": 1
+    },
+    {
+      "key": "mention-19",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 19,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957994389,
+      "completedAtMs": 1794957994483,
+      "durationMs": 94,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-19/mock-turn-19/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 19,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957994389,
+      "completedAtMs": 1794957994524,
+      "durationMs": 135,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-19/mock-turn-19",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 19,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957994483,
+      "completedAtMs": 1794957994492,
+      "durationMs": 9,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-19/mock-turn-19",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 19,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957994500,
+      "completedAtMs": 1794957994510,
+      "durationMs": 10,
+      "attempts": 1
+    },
+    {
+      "key": "mention-20",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 20,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957994527,
+      "completedAtMs": 1794957994692,
+      "durationMs": 165,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-20/mock-turn-20/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 20,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957994527,
+      "completedAtMs": 1794957994733,
+      "durationMs": 206,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-20/mock-turn-20",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 20,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957994539,
+      "completedAtMs": 1794957994704,
+      "durationMs": 165,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-20/mock-turn-20",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 20,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957994706,
+      "completedAtMs": 1794957994718,
+      "durationMs": 12,
+      "attempts": 1
+    },
+    {
+      "key": "mention-21",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 21,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957994736,
+      "completedAtMs": 1794957994831,
+      "durationMs": 95,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-21/mock-turn-21/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 21,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957994736,
+      "completedAtMs": 1794957994844,
+      "durationMs": 108,
+      "attempts": 1
+    },
+    {
+      "key": "mention-22",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 22,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957994848,
+      "completedAtMs": 1794957995011,
+      "durationMs": 163,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-22/mock-turn-22/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 22,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957994848,
+      "completedAtMs": 1794957995023,
+      "durationMs": 175,
+      "attempts": 1
+    },
+    {
+      "key": "mention-23",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 23,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957995027,
+      "completedAtMs": 1794957995119,
+      "durationMs": 92,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-23/mock-turn-23/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 23,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957995027,
+      "completedAtMs": 1794957995153,
+      "durationMs": 126,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-23/mock-turn-23",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 23,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957995119,
+      "completedAtMs": 1794957995130,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-23/mock-turn-23",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 23,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957995131,
+      "completedAtMs": 1794957995141,
+      "durationMs": 10,
+      "attempts": 1
+    },
+    {
+      "key": "mention-24",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 24,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957995156,
+      "completedAtMs": 1794957995317,
+      "durationMs": 161,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-24/mock-turn-24/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 24,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957995156,
+      "completedAtMs": 1794957995355,
+      "durationMs": 199,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-24/mock-turn-24",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 24,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957995164,
+      "completedAtMs": 1794957995329,
+      "durationMs": 165,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-24/mock-turn-24",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 24,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957995331,
+      "completedAtMs": 1794957995341,
+      "durationMs": 10,
+      "attempts": 1
+    },
+    {
+      "key": "mention-25",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 25,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957995357,
+      "completedAtMs": 1794957995452,
+      "durationMs": 95,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-25/mock-turn-25/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 25,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957995357,
+      "completedAtMs": 1794957995473,
+      "durationMs": 116,
+      "attempts": 1
+    },
+    {
+      "key": "mention-26",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 26,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957995474,
+      "completedAtMs": 1794957995631,
+      "durationMs": 157,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-26/mock-turn-26/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 26,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957995474,
+      "completedAtMs": 1794957995644,
+      "durationMs": 170,
+      "attempts": 1
+    },
+    {
+      "key": "mention-27",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 27,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957995648,
+      "completedAtMs": 1794957995741,
+      "durationMs": 93,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-27/mock-turn-27/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 27,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957995648,
+      "completedAtMs": 1794957995779,
+      "durationMs": 131,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-27/mock-turn-27",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 27,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957995741,
+      "completedAtMs": 1794957995752,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-27/mock-turn-27",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 27,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957995754,
+      "completedAtMs": 1794957995766,
+      "durationMs": 12,
+      "attempts": 1
+    },
+    {
+      "key": "mention-28",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 28,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957995782,
+      "completedAtMs": 1794957995944,
+      "durationMs": 162,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-28/mock-turn-28/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 28,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957995782,
+      "completedAtMs": 1794957995976,
+      "durationMs": 194,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-28/mock-turn-28",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 28,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957995791,
+      "completedAtMs": 1794957995954,
+      "durationMs": 163,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-28/mock-turn-28",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 28,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957995955,
+      "completedAtMs": 1794957995965,
+      "durationMs": 10,
+      "attempts": 1
+    },
+    {
+      "key": "mention-29",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 29,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957995977,
+      "completedAtMs": 1794957996062,
+      "durationMs": 85,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-29/mock-turn-29/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 29,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957995977,
+      "completedAtMs": 1794957996073,
+      "durationMs": 96,
+      "attempts": 1
+    },
+    {
+      "key": "mention-30",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 30,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957996073,
+      "completedAtMs": 1794957996228,
+      "durationMs": 155,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-30/mock-turn-30/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 30,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957996073,
+      "completedAtMs": 1794957996239,
+      "durationMs": 166,
+      "attempts": 1
+    },
+    {
+      "key": "mention-31",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 31,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957996242,
+      "completedAtMs": 1794957996332,
+      "durationMs": 90,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-31/mock-turn-31/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 31,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957996242,
+      "completedAtMs": 1794957996367,
+      "durationMs": 125,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-31/mock-turn-31",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 31,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957996332,
+      "completedAtMs": 1794957996342,
+      "durationMs": 10,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-31/mock-turn-31",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 31,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957996344,
+      "completedAtMs": 1794957996355,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "mention-32",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 32,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957996369,
+      "completedAtMs": 1794957996529,
+      "durationMs": 160,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-32/mock-turn-32/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 32,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957996369,
+      "completedAtMs": 1794957996565,
+      "durationMs": 196,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-32/mock-turn-32",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 32,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957996378,
+      "completedAtMs": 1794957996540,
+      "durationMs": 162,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-32/mock-turn-32",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 32,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957996541,
+      "completedAtMs": 1794957996552,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "mention-33",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 33,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957996567,
+      "completedAtMs": 1794957996657,
+      "durationMs": 90,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-33/mock-turn-33/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 33,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957996567,
+      "completedAtMs": 1794957996668,
+      "durationMs": 101,
+      "attempts": 1
+    },
+    {
+      "key": "mention-34",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 34,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957996670,
+      "completedAtMs": 1794957996831,
+      "durationMs": 161,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-34/mock-turn-34/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 34,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957996670,
+      "completedAtMs": 1794957996843,
+      "durationMs": 173,
+      "attempts": 1
+    },
+    {
+      "key": "mention-35",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 35,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957996846,
+      "completedAtMs": 1794957996937,
+      "durationMs": 91,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-35/mock-turn-35/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 35,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957996846,
+      "completedAtMs": 1794957996971,
+      "durationMs": 125,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-35/mock-turn-35",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 35,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957996937,
+      "completedAtMs": 1794957996947,
+      "durationMs": 10,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-35/mock-turn-35",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 35,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957996949,
+      "completedAtMs": 1794957996960,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "mention-36",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 36,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957996974,
+      "completedAtMs": 1794957997135,
+      "durationMs": 161,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-36/mock-turn-36/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 36,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957996974,
+      "completedAtMs": 1794957997175,
+      "durationMs": 201,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-36/mock-turn-36",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 36,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957996984,
+      "completedAtMs": 1794957997147,
+      "durationMs": 163,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-36/mock-turn-36",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 36,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957997149,
+      "completedAtMs": 1794957997160,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "mention-37",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 37,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957997178,
+      "completedAtMs": 1794957997268,
+      "durationMs": 90,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-37/mock-turn-37/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 37,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957997178,
+      "completedAtMs": 1794957997278,
+      "durationMs": 100,
+      "attempts": 1
+    },
+    {
+      "key": "mention-38",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 38,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957997280,
+      "completedAtMs": 1794957997442,
+      "durationMs": 162,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-38/mock-turn-38/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 38,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957997280,
+      "completedAtMs": 1794957997454,
+      "durationMs": 174,
+      "attempts": 1
+    },
+    {
+      "key": "mention-39",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 39,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957997456,
+      "completedAtMs": 1794957997547,
+      "durationMs": 91,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-39/mock-turn-39/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 39,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957997456,
+      "completedAtMs": 1794957997580,
+      "durationMs": 124,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-39/mock-turn-39",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 39,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957997546,
+      "completedAtMs": 1794957997557,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-39/mock-turn-39",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 39,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957997559,
+      "completedAtMs": 1794957997568,
+      "durationMs": 9,
+      "attempts": 1
+    },
+    {
+      "key": "mention-40",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 40,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957997583,
+      "completedAtMs": 1794957997741,
+      "durationMs": 158,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-40/mock-turn-40/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 40,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957997583,
+      "completedAtMs": 1794957997777,
+      "durationMs": 194,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-40/mock-turn-40",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 40,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957997588,
+      "completedAtMs": 1794957997753,
+      "durationMs": 165,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-40/mock-turn-40",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 40,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957997755,
+      "completedAtMs": 1794957997765,
+      "durationMs": 10,
+      "attempts": 1
+    },
+    {
+      "key": "mention-41",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 41,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957997780,
+      "completedAtMs": 1794957997872,
+      "durationMs": 92,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-41/mock-turn-41/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 41,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957997780,
+      "completedAtMs": 1794957997883,
+      "durationMs": 103,
+      "attempts": 1
+    },
+    {
+      "key": "mention-42",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 42,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957997886,
+      "completedAtMs": 1794957998047,
+      "durationMs": 161,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-42/mock-turn-42/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 42,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957997886,
+      "completedAtMs": 1794957998058,
+      "durationMs": 172,
+      "attempts": 1
+    },
+    {
+      "key": "mention-43",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 43,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957998060,
+      "completedAtMs": 1794957998154,
+      "durationMs": 94,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-43/mock-turn-43/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 43,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957998060,
+      "completedAtMs": 1794957998187,
+      "durationMs": 127,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-43/mock-turn-43",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 43,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957998154,
+      "completedAtMs": 1794957998166,
+      "durationMs": 12,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-43/mock-turn-43",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 43,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957998167,
+      "completedAtMs": 1794957998176,
+      "durationMs": 9,
+      "attempts": 1
+    },
+    {
+      "key": "mention-44",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 44,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957998190,
+      "completedAtMs": 1794957998352,
+      "durationMs": 162,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-44/mock-turn-44/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 44,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957998190,
+      "completedAtMs": 1794957998387,
+      "durationMs": 197,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-44/mock-turn-44",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 44,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957998200,
+      "completedAtMs": 1794957998362,
+      "durationMs": 162,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-44/mock-turn-44",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 44,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957998364,
+      "completedAtMs": 1794957998373,
+      "durationMs": 9,
+      "attempts": 1
+    },
+    {
+      "key": "mention-45",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 45,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957998389,
+      "completedAtMs": 1794957998481,
+      "durationMs": 92,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-45/mock-turn-45/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 45,
+      "mode": "quiet",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957998389,
+      "completedAtMs": 1794957998503,
+      "durationMs": 114,
+      "attempts": 1
+    },
+    {
+      "key": "mention-46",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 46,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957998504,
+      "completedAtMs": 1794957998659,
+      "durationMs": 155,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-46/mock-turn-46/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 46,
+      "mode": "quiet",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957998504,
+      "completedAtMs": 1794957998670,
+      "durationMs": 166,
+      "attempts": 1
+    },
+    {
+      "key": "mention-47",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 47,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957998671,
+      "completedAtMs": 1794957998758,
+      "durationMs": 87,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-47/mock-turn-47/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 47,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957998671,
+      "completedAtMs": 1794957998791,
+      "durationMs": 120,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-47/mock-turn-47",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 47,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957998758,
+      "completedAtMs": 1794957998769,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-47/mock-turn-47",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 47,
+      "mode": "progress",
+      "scenario": "slow-attachment",
+      "arrivedAtMs": 1794957998769,
+      "completedAtMs": 1794957998780,
+      "durationMs": 11,
+      "attempts": 1
+    },
+    {
+      "key": "mention-48",
+      "metric": "arrival_to_backend_accept",
+      "operation": "backend",
+      "round": 48,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957998793,
+      "completedAtMs": 1794957998947,
+      "durationMs": 154,
+      "attempts": 1
+    },
+    {
+      "key": "answer/mock-thread-48/mock-turn-48/answer/0",
+      "metric": "arrival_to_final",
+      "operation": "post",
+      "round": 48,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957998793,
+      "completedAtMs": 1794957998982,
+      "durationMs": 189,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-48/mock-turn-48",
+      "metric": "event_to_visible_progress",
+      "operation": "post",
+      "round": 48,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957998796,
+      "completedAtMs": 1794957998957,
+      "durationMs": 161,
+      "attempts": 1
+    },
+    {
+      "key": "progress/mock-thread-48/mock-turn-48",
+      "metric": "event_to_visible_progress",
+      "operation": "update",
+      "round": 48,
+      "mode": "progress",
+      "scenario": "slow-agent",
+      "arrivedAtMs": 1794957998959,
+      "completedAtMs": 1794957998970,
+      "durationMs": 11,
+      "attempts": 1
+    }
+  ],
+  "rounds": [
+    {
+      "number": 1,
+      "scenario": "slow-attachment",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-1/mock-turn-1/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 2,
+      "scenario": "slow-agent",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-2/mock-turn-2/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 3,
+      "scenario": "slow-attachment",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-3/mock-turn-3",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-3/mock-turn-3",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-3/mock-turn-3/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 4,
+      "scenario": "slow-agent",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-4/mock-turn-4",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-4/mock-turn-4",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-4/mock-turn-4/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 5,
+      "scenario": "slow-attachment",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-5/mock-turn-5/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 6,
+      "scenario": "slow-agent",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-6/mock-turn-6/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 7,
+      "scenario": "slow-attachment",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-7/mock-turn-7",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-7/mock-turn-7",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-7/mock-turn-7/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 8,
+      "scenario": "slow-agent",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-8/mock-turn-8",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-8/mock-turn-8",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-8/mock-turn-8/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 9,
+      "scenario": "slow-attachment",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-9/mock-turn-9/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 10,
+      "scenario": "slow-agent",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-10/mock-turn-10/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 11,
+      "scenario": "slow-attachment",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-11/mock-turn-11",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-11/mock-turn-11",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-11/mock-turn-11/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 12,
+      "scenario": "slow-agent",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-12/mock-turn-12",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-12/mock-turn-12",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-12/mock-turn-12/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 13,
+      "scenario": "slow-attachment",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-13/mock-turn-13/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 14,
+      "scenario": "slow-agent",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-14/mock-turn-14/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 15,
+      "scenario": "slow-attachment",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-15/mock-turn-15",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-15/mock-turn-15",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-15/mock-turn-15/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 16,
+      "scenario": "slow-agent",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-16/mock-turn-16",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-16/mock-turn-16",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-16/mock-turn-16/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 17,
+      "scenario": "slow-attachment",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-17/mock-turn-17/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 18,
+      "scenario": "slow-agent",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-18/mock-turn-18/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 19,
+      "scenario": "slow-attachment",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-19/mock-turn-19",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-19/mock-turn-19",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-19/mock-turn-19/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 20,
+      "scenario": "slow-agent",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-20/mock-turn-20",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-20/mock-turn-20",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-20/mock-turn-20/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 21,
+      "scenario": "slow-attachment",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-21/mock-turn-21/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 22,
+      "scenario": "slow-agent",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-22/mock-turn-22/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 23,
+      "scenario": "slow-attachment",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-23/mock-turn-23",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-23/mock-turn-23",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-23/mock-turn-23/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 24,
+      "scenario": "slow-agent",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-24/mock-turn-24",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-24/mock-turn-24",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-24/mock-turn-24/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 25,
+      "scenario": "slow-attachment",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-25/mock-turn-25/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 26,
+      "scenario": "slow-agent",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-26/mock-turn-26/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 27,
+      "scenario": "slow-attachment",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-27/mock-turn-27",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-27/mock-turn-27",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-27/mock-turn-27/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 28,
+      "scenario": "slow-agent",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-28/mock-turn-28",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-28/mock-turn-28",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-28/mock-turn-28/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 29,
+      "scenario": "slow-attachment",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-29/mock-turn-29/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 30,
+      "scenario": "slow-agent",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-30/mock-turn-30/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 31,
+      "scenario": "slow-attachment",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-31/mock-turn-31",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-31/mock-turn-31",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-31/mock-turn-31/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 32,
+      "scenario": "slow-agent",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-32/mock-turn-32",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-32/mock-turn-32",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-32/mock-turn-32/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 33,
+      "scenario": "slow-attachment",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-33/mock-turn-33/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 34,
+      "scenario": "slow-agent",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-34/mock-turn-34/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 35,
+      "scenario": "slow-attachment",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-35/mock-turn-35",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-35/mock-turn-35",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-35/mock-turn-35/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 36,
+      "scenario": "slow-agent",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-36/mock-turn-36",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-36/mock-turn-36",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-36/mock-turn-36/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 37,
+      "scenario": "slow-attachment",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-37/mock-turn-37/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 38,
+      "scenario": "slow-agent",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-38/mock-turn-38/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 39,
+      "scenario": "slow-attachment",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-39/mock-turn-39",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-39/mock-turn-39",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-39/mock-turn-39/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 40,
+      "scenario": "slow-agent",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-40/mock-turn-40",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-40/mock-turn-40",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-40/mock-turn-40/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 41,
+      "scenario": "slow-attachment",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-41/mock-turn-41/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 42,
+      "scenario": "slow-agent",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-42/mock-turn-42/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 43,
+      "scenario": "slow-attachment",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-43/mock-turn-43",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-43/mock-turn-43",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-43/mock-turn-43/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 44,
+      "scenario": "slow-agent",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-44/mock-turn-44",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-44/mock-turn-44",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-44/mock-turn-44/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 45,
+      "scenario": "slow-attachment",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-45/mock-turn-45/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 46,
+      "scenario": "slow-agent",
+      "mode": "quiet",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "answer/mock-thread-46/mock-turn-46/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 47,
+      "scenario": "slow-attachment",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-47/mock-turn-47",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-47/mock-turn-47",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-47/mock-turn-47/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    },
+    {
+      "number": 48,
+      "scenario": "slow-agent",
+      "mode": "progress",
+      "state": "completed",
+      "finalDelivered": true,
+      "deliveries": [
+        {
+          "key": "progress/mock-thread-48/mock-turn-48",
+          "operation": "post"
+        },
+        {
+          "key": "progress/mock-thread-48/mock-turn-48",
+          "operation": "update"
+        },
+        {
+          "key": "answer/mock-thread-48/mock-turn-48/answer/0",
+          "operation": "post"
+        }
+      ],
+      "unexpectedDeliveries": [],
+      "errors": []
+    }
+  ],
+  "greetings": [
+    {
+      "text": "Hello!",
+      "deliveries": [],
+      "backendStarts": 0,
+      "errors": []
+    },
+    {
+      "text": "你好！",
+      "deliveries": [],
+      "backendStarts": 0,
+      "errors": []
+    }
+  ],
+  "bridgeTimings": [
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-1",
+      "durationMs": 88
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-1",
+      "durationMs": 101
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-2",
+      "durationMs": 154
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-2",
+      "durationMs": 168
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-3",
+      "durationMs": 89
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-3/mock-turn-3/1794957992092/turn/started",
+      "durationMs": 19
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-3/mock-turn-3/1794957992111/item/completed",
+      "durationMs": 15
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-3",
+      "durationMs": 137
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-4",
+      "durationMs": 158
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-4/mock-turn-4/1794957992147/turn/started",
+      "durationMs": 163
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-4/mock-turn-4/1794957992310/item/completed",
+      "durationMs": 12
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-4",
+      "durationMs": 193
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-5",
+      "durationMs": 84
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-5",
+      "durationMs": 96
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-6",
+      "durationMs": 153
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-6",
+      "durationMs": 164
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-7",
+      "durationMs": 85
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-7/mock-turn-7/1794957992679/turn/started",
+      "durationMs": 11
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-7/mock-turn-7/1794957992690/item/completed",
+      "durationMs": 10
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-7",
+      "durationMs": 118
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-8",
+      "durationMs": 156
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-8/mock-turn-8/1794957992715/turn/started",
+      "durationMs": 164
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-8/mock-turn-8/1794957992879/item/completed",
+      "durationMs": 11
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-8",
+      "durationMs": 189
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-9",
+      "durationMs": 85
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-9",
+      "durationMs": 96
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-10",
+      "durationMs": 156
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-10",
+      "durationMs": 171
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-11",
+      "durationMs": 87
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-11/mock-turn-11/1794957993257/turn/started",
+      "durationMs": 11
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-11/mock-turn-11/1794957993268/item/completed",
+      "durationMs": 10
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-11",
+      "durationMs": 120
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-12",
+      "durationMs": 156
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-12/mock-turn-12/1794957993293/turn/started",
+      "durationMs": 166
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-12/mock-turn-12/1794957993459/item/completed",
+      "durationMs": 12
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-12",
+      "durationMs": 197
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-13",
+      "durationMs": 92
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-13",
+      "durationMs": 109
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-14",
+      "durationMs": 160
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-14",
+      "durationMs": 175
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-15",
+      "durationMs": 93
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-15/mock-turn-15/1794957993866/turn/started",
+      "durationMs": 12
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-15/mock-turn-15/1794957993879/item/completed",
+      "durationMs": 12
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-15",
+      "durationMs": 132
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-16",
+      "durationMs": 162
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-16/mock-turn-16/1794957993914/turn/started",
+      "durationMs": 167
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-16/mock-turn-16/1794957994081/item/completed",
+      "durationMs": 13
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-16",
+      "durationMs": 201
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-17",
+      "durationMs": 91
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-17",
+      "durationMs": 105
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-18",
+      "durationMs": 161
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-18",
+      "durationMs": 175
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-19",
+      "durationMs": 94
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-19/mock-turn-19/1794957994483/turn/started",
+      "durationMs": 17
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-19/mock-turn-19/1794957994500/item/completed",
+      "durationMs": 12
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-19",
+      "durationMs": 138
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-20",
+      "durationMs": 165
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-20/mock-turn-20/1794957994539/turn/started",
+      "durationMs": 167
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-20/mock-turn-20/1794957994707/item/completed",
+      "durationMs": 14
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-20",
+      "durationMs": 208
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-21",
+      "durationMs": 95
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-21",
+      "durationMs": 111
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-22",
+      "durationMs": 163
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-22",
+      "durationMs": 178
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-23",
+      "durationMs": 92
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-23/mock-turn-23/1794957995119/turn/started",
+      "durationMs": 12
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-23/mock-turn-23/1794957995131/item/completed",
+      "durationMs": 12
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-23",
+      "durationMs": 128
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-24",
+      "durationMs": 161
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-24/mock-turn-24/1794957995165/turn/started",
+      "durationMs": 166
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-24/mock-turn-24/1794957995332/item/completed",
+      "durationMs": 12
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-24",
+      "durationMs": 201
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-25",
+      "durationMs": 95
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-25",
+      "durationMs": 117
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-26",
+      "durationMs": 157
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-26",
+      "durationMs": 173
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-27",
+      "durationMs": 93
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-27/mock-turn-27/1794957995741/turn/started",
+      "durationMs": 13
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-27/mock-turn-27/1794957995754/item/completed",
+      "durationMs": 14
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-27",
+      "durationMs": 133
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-28",
+      "durationMs": 162
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-28/mock-turn-28/1794957995792/turn/started",
+      "durationMs": 163
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-28/mock-turn-28/1794957995955/item/completed",
+      "durationMs": 11
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-28",
+      "durationMs": 195
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-29",
+      "durationMs": 85
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-29",
+      "durationMs": 96
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-30",
+      "durationMs": 155
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-30",
+      "durationMs": 169
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-31",
+      "durationMs": 90
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-31/mock-turn-31/1794957996332/turn/started",
+      "durationMs": 12
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-31/mock-turn-31/1794957996344/item/completed",
+      "durationMs": 13
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-31",
+      "durationMs": 127
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-32",
+      "durationMs": 160
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-32/mock-turn-32/1794957996378/turn/started",
+      "durationMs": 163
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-32/mock-turn-32/1794957996542/item/completed",
+      "durationMs": 12
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-32",
+      "durationMs": 198
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-33",
+      "durationMs": 90
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-33",
+      "durationMs": 103
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-34",
+      "durationMs": 161
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-34",
+      "durationMs": 175
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-35",
+      "durationMs": 91
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-35/mock-turn-35/1794957996937/turn/started",
+      "durationMs": 12
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-35/mock-turn-35/1794957996950/item/completed",
+      "durationMs": 11
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-35",
+      "durationMs": 127
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-36",
+      "durationMs": 161
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-36/mock-turn-36/1794957996984/turn/started",
+      "durationMs": 165
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-36/mock-turn-36/1794957997150/item/completed",
+      "durationMs": 13
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-36",
+      "durationMs": 203
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-37",
+      "durationMs": 90
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-37",
+      "durationMs": 101
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-38",
+      "durationMs": 162
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-38",
+      "durationMs": 175
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-39",
+      "durationMs": 91
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-39/mock-turn-39/1794957997547/turn/started",
+      "durationMs": 12
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-39/mock-turn-39/1794957997559/item/completed",
+      "durationMs": 11
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-39",
+      "durationMs": 127
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-40",
+      "durationMs": 158
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-40/mock-turn-40/1794957997588/turn/started",
+      "durationMs": 167
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-40/mock-turn-40/1794957997755/item/completed",
+      "durationMs": 12
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-40",
+      "durationMs": 196
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-41",
+      "durationMs": 92
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-41",
+      "durationMs": 106
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-42",
+      "durationMs": 161
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-42",
+      "durationMs": 174
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-43",
+      "durationMs": 94
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-43/mock-turn-43/1794957998154/turn/started",
+      "durationMs": 13
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-43/mock-turn-43/1794957998168/item/completed",
+      "durationMs": 9
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-43",
+      "durationMs": 130
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-44",
+      "durationMs": 162
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-44/mock-turn-44/1794957998200/turn/started",
+      "durationMs": 164
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-44/mock-turn-44/1794957998364/item/completed",
+      "durationMs": 11
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-44",
+      "durationMs": 199
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-45",
+      "durationMs": 92
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-45",
+      "durationMs": 115
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-46",
+      "durationMs": 155
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-46",
+      "durationMs": 167
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-47",
+      "durationMs": 87
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-47/mock-turn-47/1794957998758/turn/started",
+      "durationMs": 11
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-47/mock-turn-47/1794957998770/item/completed",
+      "durationMs": 11
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-47",
+      "durationMs": 121
+    },
+    {
+      "metric": "arrival_to_backend_accept",
+      "id": "mention-48",
+      "durationMs": 154
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-48/mock-turn-48/1794957998797/turn/started",
+      "durationMs": 162
+    },
+    {
+      "metric": "event_to_visible_progress",
+      "id": "mock-thread-48/mock-turn-48/1794957998959/item/completed",
+      "durationMs": 12
+    },
+    {
+      "metric": "arrival_to_final",
+      "id": "mention-48",
+      "durationMs": 192
+    }
+  ]
+}

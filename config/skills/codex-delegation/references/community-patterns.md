@@ -8,15 +8,15 @@ Three levels, pick by how much structure you need downstream:
 
 1. **Plain** — final message to stdout, progress to stderr. Safe to pipe:
    ```bash
-   codex exec "generate release notes" > notes.md 2> codex.log
+   codex exec -m "$MODEL_ID" -c "model_reasoning_effort=${EFFORT:-high}" "generate release notes" > notes.md 2> codex.log
    ```
 2. **JSONL events** — every state change as one JSON line, parse with `jq`:
    ```bash
-   codex exec --json "run tests, summarize failures" | jq -r 'select(.type=="item.completed") | .item'
+   codex exec -m "$MODEL_ID" -c "model_reasoning_effort=${EFFORT:-high}" --json "run tests, summarize failures" | jq -r 'select(.type=="item.completed") | .item'
    ```
 3. **Schema-constrained** — force the final answer into stable fields (job summaries, risk reports, release metadata):
    ```bash
-   codex exec --output-schema ./audit-schema.json -o ./result.json "audit deps for CVEs"
+   codex exec -m "$MODEL_ID" -c "model_reasoning_effort=${EFFORT:-high}" --output-schema ./audit-schema.json -o ./result.json "audit deps for CVEs"
    ```
 
 ## Sandbox / approval combos (the mental grid)
@@ -34,7 +34,7 @@ Rule the docs stress: **never pair `-a never` with `-s danger-full-access`** out
 
 - **Auth**: use an **API key**, not ChatGPT browser auth. Scope it to the single command, never a job-level env var in workflows that check out untrusted code:
   ```bash
-  CODEX_API_KEY=$KEY codex exec --json --ephemeral "your task"
+  CODEX_API_KEY=$KEY codex exec -m "$MODEL_ID" -c "model_reasoning_effort=${EFFORT:-high}" --json --ephemeral "your task"
   ```
 - **Official GitHub Action** is the safe path — it installs the CLI, runs a Responses API proxy, and handles key exposure:
   ```yaml
@@ -71,7 +71,7 @@ approval_policy = "untrusted"
 sandbox_mode = "read-only"
 ```
 ```bash
-codex exec -p ci "..."
+codex exec -m "$MODEL_ID" -c "model_reasoning_effort=${EFFORT:-high}" -p ci "..."
 ```
 
 ## Codex as a peer tool for another agent

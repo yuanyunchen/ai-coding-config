@@ -1,157 +1,130 @@
 ---
 name: memory-management
-description: "全局记忆统一体系(hub 三库 + bytedance 域库),basic-memory 工具链唯一入口;模式 none/auto/full(缺省 auto),recall·update 两例程。触发:写入/维护全局记忆、语义检索工作知识、定位项目、TIMELINE、偏好、补记、解冲突。边界:判层归 harness-management,工作区文件归 workspace-management;轻量读枢纽不需加载。"
+description: "Manage global memory in the hub's three stores and the ByteDance domain via basic-memory. Use for writing or maintaining global memory, semantic work-knowledge retrieval, project location, TIMELINE, preferences, backfilling or conflict resolution. Use harness-management for placement and workspace-management for workspace files. A lightweight hub read does not require this skill."
 ---
 
-# memory-management — 全局记忆 Meta skill（unified BM；2026-07-29）
+# Global memory management (unified BM, 2026-07-29)
 
-全局记忆 = **单仓 `global-memory` + basic-memory 双 project**，两侧都是层级化形态：
+Global memory uses one `global-memory` repository and two separate, hierarchical basic-memory projects.
 
-| BM project | 目录 | 装什么 | 层级 |
+| BM project | Directory | Contents | Hierarchy |
 |---|---|---|---|
-| **hub** | `hub/` | 项目定位 / 时间索引 / 偏好与跨任务主题 | `MEMORY.md` → `ns/<域>/INDEX.md` → `ns/<域>/<slug>.md` → `_detail/<slug>/<段>.md`（**hub 侧是 P5 后的目标态，见下**） |
-| **bytedance** | `bytedance/` | 字节广告工作知识（原子事实） | `MEMORY.md` → `ns/<域>/INDEX.md` → `ns/<域>/<fact>.md` |
+| **hub** | `hub/` | Project location, time index, preferences and cross-task topics | `MEMORY.md` → `ns/<domain>/INDEX.md` → `ns/<domain>/<slug>.md` → `_detail/<slug>/<section>.md` (the post-P5 target described below) |
+| **bytedance** | `bytedance/` | ByteDance ads work knowledge, recorded as atomic facts | `MEMORY.md` → `ns/<domain>/INDEX.md` → `ns/<domain>/<fact>.md` |
 
-概念上仍称「三库」（定位 / 时间 / 知识），物理都在 `hub/`；域工作知识在 `bytedance/`（BM project 硬隔离）。
+The three conceptual stores (location, time and knowledge) reside in `hub/`. Domain-specific work knowledge resides in `bytedance/`, isolated at the BM project level.
 
 ```
 hub/
-  MEMORY.md              L0 路由索引（由 bin/build-index.py 从 frontmatter 派生，勿手写）
-  ns/<域>/INDEX.md       L1 域索引（派生）
-  ns/<域>/<slug>.md      L2 卡片，正文 ≤6,000 字符
-  _detail/<slug>/<段>.md L3 厚正文切片，每片独立进索引
-  timeline/              TIMELINE.md + records/，在 .bmignore 里，不进语义索引
+  MEMORY.md                  L0 routing index generated from frontmatter by bin/build-index.py. Do not handwrite.
+  ns/<domain>/INDEX.md       L1 domain index, generated
+  ns/<domain>/<slug>.md      L2 card, body ≤6,000 characters
+  _detail/<slug>/<section>.md L3 sections of long bodies, each separately indexed
+  timeline/                  TIMELINE.md and records/. Excluded from semantic indexing by .bmignore.
 ```
 
-**上面是 P5 收口后的目标形态，不是当前磁盘现状**：`hub/ns/` 尚未创建，卡片平铺在 `hub/`；
-时间线当前是 `hub/timeline/TIMELINE.md` + `hub/timeline/records/`，虽已写进 `.bmignore`，
-但 reindex 前**仍在语义索引里**（实测查 `"TIMELINE"` 首条 1.154 命中 `hub/timeline/records/2026-06-21`）。
+This is the intended state after P5. At the time of the checks described here, `hub/ns/` had not been created and the cards lay flat in `hub/`. The timeline consisted of `hub/timeline/TIMELINE.md` and `hub/timeline/records/`. Both had been added to `.bmignore`, but the semantic index still contained them pending reindex. Searching for `"TIMELINE"` returned `hub/timeline/records/2026-06-21` first with a score of 1.154.
 
-hub 域（P5 后权威清单以 `hub/MEMORY.md` 为准）：`search-city-signal` `user-preference`
-`agent-harness` `memory-workspace` `travel-embedding`。
-**当前 `hub/MEMORY.md` 里还没有域清单**，它是手写三组索引（① 偏好与用户 / ② 项目·子系统·参考 / ③ 时间线）。
+Hub domains: `search-city-signal`, `user-preference`, `agent-harness`, `memory-workspace`, and `travel-embedding`. After P5, `hub/MEMORY.md` is the authoritative list. At the recorded stage, it had no domain list. It contained three hand-written groups: ① preferences and user, ② projects, subsystems and references, and ③ timeline.
 
-**分类的真相在 frontmatter，目录只是主归属投影。** 顶层键 `type` / `status` / `updated` /
-多值 `topics` 承载分类；嵌进 `metadata:` 会让 BM 的所有过滤器返回 0。规范细节：`references/*.md`。
+Frontmatter is authoritative for classification. The directory expresses one primary grouping. Keep `type`, `status`, `updated` and the multivalued `topics` at the top level. Nesting them under `metadata:` makes every BM filter return 0. See `references/*.md`.
 
-## 路径解析（禁止写死本机绝对路径）
+## Resolve paths
 
-1. 枢纽 runtime 常见软链 → `…/global-memory/hub`（具体链路由各机 `bin/setup` 写入）
-2. **仓库根** = hub 目录的 parent（或读同仓 `manifest.json`）
-3. **CLI** = `<repo>/bin/bm`（包装 basic-memory；迁移后只要 clone + `./bin/setup`）
-4. MCP 调用一律带 `project=hub` 或 `project=bytedance`
+Never hardcode a local absolute path.
 
-新机器：`clone global-memory` → `./bin/setup` → `./agent-config memory status`。契约见仓内 `manifest.json` / `README.md`。
+1. The hub runtime symlink commonly points to `…/global-memory/hub`. Each machine's `bin/setup` establishes the actual link.
+2. The repository root is the hub directory's parent. Alternatively consult `manifest.json` in the repository.
+3. Use `<repo>/bin/bm`, the basic-memory wrapper. After migration, cloning and running `./bin/setup` suffice.
+4. Every MCP call must include `project=hub` or `project=bytedance`.
 
-## 域边界
+On a new machine: `clone global-memory` → `./bin/setup` → `./agent-config memory status`. See the repository's `manifest.json` / `README.md` for the contract.
 
-日常任务按需检索 hub；仅当前任务确实涉及字节工作知识时检索 bytedance。索引中出现飞书历史项目不构成加载飞书技能或执行记忆的理由，也不改变当前任务的交付平台。飞书执行记忆仅供已确认的飞书操作使用。
+## Domain boundaries
 
-## 检索契约
+Search the hub as needed for everyday work. Search bytedance only when the task genuinely involves ByteDance work knowledge. A historical Feishu project in an index does not select the delivery platform or warrant loading a Feishu skill or execution memory. Use Feishu execution memory only for confirmed Feishu operations.
 
-`bin/bm tool search-notes` 支持 `--page-size` `--page` `--type` `--status` `--meta k=v` `--tag`
-`--after_date` `--permalink` `--title` `--vector` `--hybrid` `--entity-type` `--category`。
-**默认必带 `--page-size 3`**：实测 `--project hub "浏览器"` 不带参数吐 74,927 字符，
-带 `--page-size 3` 是 11,835 字符；单条 content 被截在 4,000 字符（`CONTENT_DISPLAY_LIMIT`），
-默认 10 条里大半是截断残渣。
+## Retrieval contract
 
-| 想知道 | 走 |
+`bin/bm tool search-notes` accepts `--page-size`, `--page`, `--type`, `--status`, `--meta k=v`, `--tag`, `--after_date`, `--permalink`, `--title`, `--vector`, `--hybrid`, `--entity-type` and `--category`. **Always include `--page-size 3` by default.** The actual query `--project hub "浏览器"` (“browser”) returned 74,927 characters without the option and 11,835 with it. Each item's content is truncated at 4,000 characters (`CONTENT_DISPLAY_LIMIT`). Much of the default 10-item response consists of truncated fragments.
+
+| Question | Route |
 |---|---|
-| 关于 X 我知道什么 | `search-notes --project hub "X" --page-size 3` |
-| 有哪些已完结 / 活跃项目 | `--status closed` / `--status active`；**P5 reindex 前这两个都返回 0**，此期间读 `hub/MEMORY.md` 人肉筛是合法兜底 |
-| 只要项目卡 / 只要偏好卡 | `--type project` / `--type feedback`（多值可重复传）。**偏好卡的值是 `feedback`；`user` 在 hub 里一张都没有**，别用 |
-| 最近哪些卡被动过 | `--after_date 7d`（也接 `'1 week'`）——它过滤的是**索引里的文件 mtime**，不是 frontmatter `updated`，只能用来交叉验证哪些文件最近被动过 |
-| X 月 / 上周做了什么 | 读 `hub/timeline/TIMELINE.md`，或 `rg '<关键词>' <repo>/hub/timeline/records/`。**TIMELINE 才是时间索引的权威**，`--after_date` 替代不了它 |
-| 某个域下都有什么 | 把**域名当查询词**（目录名进 FTS）：bytedance 上实测 `"signal-pixel"` 首条 1.170。**hub 侧要等 P5 建出 `ns/` 才有效**——现在查 `"user-preference"` 首条只有 0.647，落在噪声带 |
-| 卡名 / 工具名 / 表名等精确对象 | 直接当查询词，FTS 会命中 |
-| 换个说法再找一次 | `--vector`（纯语义，绕开 FTS）；`--hybrid` 两路合并 |
+| What do we know about X? | `search-notes --project hub "X" --page-size 3` |
+| Which projects are closed or active? | `--status closed` or `--status active`. Both return 0 before the P5 reindex. Manually filtering `hub/MEMORY.md` is a valid fallback during that period. |
+| Only project or preference cards? | `--type project` or `--type feedback`. Repeat the option for multiple values. The preference type is `feedback`. There are no `user` cards in the hub. |
+| Which cards changed recently? | `--after_date 7d` (also accepts `'1 week'`) filters indexed file mtime. Use it only to cross-check recently touched files. It does not use the frontmatter's `updated` date. |
+| What happened last week or in a given month? | Read `hub/timeline/TIMELINE.md` or run `rg '<keyword>' <repo>/hub/timeline/records/`. TIMELINE is authoritative for chronology. `--after_date` cannot replace it. |
+| What belongs to a domain? | Query the domain name itself. FTS indexes directory names. On bytedance, `"signal-pixel"` scored 1.170 on the first result. On the hub this works only after P5 creates `ns/`. At the recorded stage, the first `"user-preference"` result scored just 0.647, in the noise range. |
+| An exact card, tool or table name? | Use the name as the query for an FTS match. |
+| Search again with different wording? | `--vector` uses semantic search without FTS. `--hybrid` merges both routes. |
 
-**两条必须先知道的事实**（不知道就会把空结果当成"没有这条记忆"）：
+Two facts prevent an empty result from being mistaken for missing knowledge:
 
-- **frontmatter 过滤器在 P5 reindex 前基本是死的**。DB 仍是迁移前状态，实测 `--type note` → total 58，
-  而 `--type project` / `--type feedback` / `--status closed` 全部 → total 0；磁盘上这三类分别有
-  22 / 10 / 9 张。过滤器返回 0 时先怀疑索引没跟上，再怀疑记忆不存在。
-- **`--after_date` 过滤的是索引里的文件 mtime，不是 frontmatter `updated`**
-  （`sync_service.py:1101` `updated_at = file_metadata.modified_at`）。clone、批量重写、reindex
-  都会把 mtime 整体重置，所以它对"这条知识什么时候成立"无效，只对"这个文件最近被动过"有效。
-  实测 hub `--after_date '30d'` → total 59 = 整库。**时间维的权威是 `hub/timeline/TIMELINE.md`。**
+- Frontmatter filters are largely ineffective before the P5 reindex because the database still reflects the pre-migration state. Measured totals: `--type note` → 58, while `--type project`, `--type feedback` and `--status closed` each returned 0. On disk those three groups had 22, 10 and 9 cards respectively. Investigate index lag before concluding a card is missing.
+- `--after_date` uses indexed file mtime (`sync_service.py:1101`, `updated_at = file_metadata.modified_at`). Cloning, bulk rewrites and reindexing can reset mtimes together. The filter answers when a file was touched, not when its knowledge became valid. On the hub, `--after_date '30d'` returned all 59 items. Use `hub/timeline/TIMELINE.md` for chronology.
 
-**分数判读**（实测，不是估计）。下面三档**只适用于带 query 词的调用**：
+**Measured score interpretation for searches with a query term:**
 
-- **≥1.0** = FTS 命中了查询里的字面 token，可信。精确 token 查询实测落在 1.14–1.21
-- **0.5–0.7** = 纯向量距离，与噪声底（同库实测 0.52–0.65）完全重叠，**不构成命中**。
-  换一个精确 token 重查，或 Read 原文自己确认，不要直接当答案用
-- **<0.5** = 噪声（`semantic_min_similarity` 阈值以下会被截掉）
+- **≥1.0:** FTS matched a literal query token, a reliable signal. Exact-token queries scored 1.14–1.21 in tests.
+- **0.5–0.7:** vector distance alone, overlapping the measured noise floor of 0.52–0.65 in that database. This score alone does not establish a hit. Try a more exact token or read the original to confirm.
+- **<0.5:** noise. Results below `semantic_min_similarity` are cut off.
 
-不带 query 词时分数换了一套语义，**别拿上面三档去判它，会把正确命中当噪声丢掉**：
+Without query terms the scores have different meanings. Applying the three ranges would discard correct results:
 
-- **`--title` 命中给负分**（SQLite FTS5 bm25 原始分，越负越匹配）。实测
-  `--title "doc-system"` → -2.340、`--title "codex-plugin-cc-install"` → -4.103。负分是命中，不是噪声。
-- **纯过滤（只给 `--type` / `--status` / `--after_date`）score 恒为 0**（实测 `-0.0`），
-  因为根本没算相关性。这时看 `total` 和 `results` 数组，不看分。
+- **Title matches score negative.** SQLite FTS5 returns raw bm25, where more negative means a closer match. Measured examples: `--title "doc-system"` → -2.340 and `--title "codex-plugin-cc-install"` → -4.103. Both are matches.
+- **Pure filters score 0** (observed as `-0.0`). With only `--type`, `--status` or `--after_date`, relevance is never calculated. Inspect `total` and `results`.
 
-参数逐条语义、坑与组合用法：`modules/recall.md`。
+See `modules/recall.md` for parameter semantics, pitfalls and combinations.
 
-## 记忆模式（v3）
+## Memory modes (v3)
 
-记在 `hub/MEMORY.md` 头部。缺省 **auto**。
+The mode is recorded in the header of `hub/MEMORY.md`. The default is **auto**.
 
-| 模式 | 纪律 |
+| Mode | Behavior |
 |---|---|
-| **--none** | 不自动写。手动（对话或 /project-update）才更 |
-| **--auto(缺省)** | 里程碑后三小件（定位卡现状 + TIMELINE 一行 + 恒真知识）；出入大时跑 update |
-| **--full** | 定型即写；新 session/换项目自动 recall |
+| **--none** | Write only on an explicit request in conversation or via /project-update. |
+| **--auto (default)** | After a milestone, refresh the locator card status, add one TIMELINE entry and record enduring knowledge. Run update when the discrepancy is large. |
+| **--full** | Write as soon as information settles. Automatically recall in a new session or when switching projects. |
 
-## 写入纪律
+## Write rules
 
-- **工具链**：读/写/改记忆优先 `bin/bm tool {search-notes,read-note,write-note,edit-note} --project …`；hub 索引行与 TIMELINE 亦可直接编辑 md
-- **体积门禁（必做）**：任何写入后跑 `<repo>/bin/lint.py --path <改过的文件>`，
-  正文超 6,000 字符必须切片到 `_detail/<slug>/`。三小件的动词全是"刷/补/入"，
-  不设门禁就是单向增长（实测退化速率 21.5 KB/天）。细则见 `modules/update.md`
-- **索引派生不手写**：`MEMORY.md` / `INDEX.md` 由 `bin/build-index.py` 生成，手改会被覆盖
-- **无痕**：auto/full 下三库内容直接落盘，不审批不汇报；可审计 = `updated` + git
-- **仲裁序**：工作区 task.md 上层原话 > 工作区实物 > 全局记忆；不静默删文件；update 末步冲突检查
-- **域执行坑**仍在域 skill memory（如 `feishu-task-management/memory.md`），**不**进 bytedance 事实库
+- Prefer `bin/bm tool {search-notes,read-note,write-note,edit-note} --project …` for memory reads, writes and edits. Hub index entries and TIMELINE can also be edited directly in Markdown.
+- **Mandatory size check.** After every write, run `<repo>/bin/lint.py --path <changed-file>`. Split a body over 6,000 characters into `_detail/<slug>/`. The three milestone operations all refresh or add content, so neglecting the gate causes one-way growth. Observed degradation: 21.5 KB/day. Details in `modules/update.md`.
+- Derived indexes `MEMORY.md` / `INDEX.md` are generated by `bin/build-index.py`. Do not handwrite generated content. Manual edits will be overwritten.
+- In auto/full, write the three stores directly without approval or reporting. The `updated` field and git provide the audit trail.
+- Precedence: parent instructions verbatim in workspace task.md, then workspace artifacts, then global memory. Never delete files silently. Check for conflicts at the end of update.
+- Keep domain execution pitfalls in the domain skill's memory, such as `feishu-task-management/memory.md`. They do not belong in bytedance's factual store.
 
-## 索引同步与维护
+## Index synchronization and maintenance
 
-**`bm sync` 这个子命令不存在**（0.22.1）。唯一同步路径是 `bm reindex`，它**没有并发保护**——
-手跑之前必须 `pgrep -fa 'basic-memory mcp'` 为空；带 embeddings 的 reindex 必须后台 detached 跑，
-前台会因加载模型超时被杀、留下 orphaned chunks。`bm status` / `bm doctor` / `search-notes` 只读，随时可跑。
+There is no `bm sync` subcommand in 0.22.1. The only synchronization path is `bm reindex`, which has no concurrency protection. Before manual execution, `pgrep -fa 'basic-memory mcp'` must return no results. Run reindex with embeddings as a detached process: foreground model loading can time out and leave orphaned chunks. The read-only commands `bm status`, `bm doctor` and `search-notes` can be used at any time.
 
-日常不该手跑 reindex——只有一个执行器：
+Under normal operation there is one maintenance executor. Avoid routine manual reindex when it is running.
 
-| 层 | 执行器 | 职责 |
+| Layer | Executor | Duties |
 |---|---|---|
-| L2 后台 | `~/Library/LaunchAgents/` 加载 `<repo>/bin/maintain.sh`（900s） | `build-index.py --check`（只校验不写）→ `lint.py --json` → `bm reindex -p hub`（detached，本轮不等）→ 写状态文件 `~/Library/Logs/global-memory/lint.json` |
+| L2 background | `~/Library/LaunchAgents/` loads `<repo>/bin/maintain.sh` (900s) | `build-index.py --check` (check only), then `lint.py --json`, then `bm reindex -p hub` (detached without waiting in this run), then write `~/Library/Logs/global-memory/lint.json`. |
 
-L2 **对 git 只做读操作**（`git status --porcelain` / `git rev-parse`），不 pull / 不 stash / 不 add /
-不 commit / 不 push——commit 永远是人的动作。reindex 有四道门禁，任一命中就跳过：
-`GM_NO_REINDEX=1`、`<repo>/.gm-maintenance-hold` 存在、`git status --porcelain` 非空、
-`basic-memory mcp` 进程在跑（另外上一轮 detached reindex 没收完时本轮也不起新的）。
-迁移期想彻底停掉 reindex 就 `touch <repo>/.gm-maintenance-hold`。
-drift 对账与 TIMELINE 月压缩也折在 L2 里，**没有"每周自动"这一层**——需要时手动跑，别当它自动发生。
+L2 only reads git (`git status --porcelain` / `git rev-parse`). It never pulls, stashes, adds, commits or pushes. Committing remains a human action. Skip reindex if any of these four conditions applies: `GM_NO_REINDEX=1`, presence of `<repo>/.gm-maintenance-hold`, nonempty `git status --porcelain`, or a running `basic-memory mcp` process. Also skip starting a new run when the prior detached reindex is unfinished. To disable reindex during migration, run `touch <repo>/.gm-maintenance-hold`. Drift reconciliation and monthly TIMELINE compaction also fall under L2. There is no automatic weekly layer. Run these manually when needed.
 
-**这个执行器存在与否要自己确认**，别当它必然在跑（历史上有过一个根本不存在的周度执行器，
-被 12 处规范指派了职责）：`ls <repo>/bin/maintain.sh` + `launchctl print gui/501/com.yunchen.global-memory-maintain`。
-**截至 2026-11-01 该 job 未注册**(`~/Library/LaunchAgents/` 无 plist,`launchctl print` 报 service not found;`maintain.sh` 最后日志 2026-09-18),reindex 目前是手动步骤,
-即 L2 现在没在跑，索引落后于磁盘是常态。不在 → 报给用户，别声称记忆库是新鲜的。
+**Verify that the executor exists.** Historically 12 specifications assigned duties to a weekly executor that did not exist. Check `ls <repo>/bin/maintain.sh` and `launchctl print gui/501/com.yunchen.global-memory-maintain`. As of 2026-11-01 this job was unregistered: no plist under `~/Library/LaunchAgents/`, launchctl reported “service not found”, and the last `maintain.sh` log was dated 2026-09-18. At that point L2 was inactive, reindex was manual, and the index regularly lagged behind disk. Report an absent executor and avoid claiming the store is current.
 
-## 路由表
+## Routing
 
-| 场景 | 走 |
+| Situation | Read or run |
 |---|---|
-| 项目在哪/什么状态 | `--project hub --type project` + 定位卡规范 `references/project-index.md`（P5 前该过滤器返回 0，退回读 `hub/MEMORY.md` ②组） |
-| 列出已完结项目 | `--project hub --status closed`（同上，P5 reindex 后才有结果） |
-| 何时做了什么 | 读 `hub/timeline/TIMELINE.md` 或 `rg` 一遍 `hub/timeline/records/`（P5 后为 `hub/timeline/`）；结构见 `references/time-index.md`。`--after_date` 只查文件 mtime，用来交叉验证哪些文件被动过，不回答"何时做了什么" |
-| 偏好/跨任务知识 | `--project hub`（偏好卡 `--type feedback`，不是 `user`） |
-| 字节广告工作知识 | `--project bytedance`（必带实体名；命中后核 `source.quote`） |
-| 卡片 `type`/`topics` 填什么 | 分类词表 `references/knowledge.md` §一（受控词表唯一权威，新词先进表再用） |
-| 写入纪律与门禁 | `references/update-rules.md`（无痕边界 / 红线 / 写完必跑 `lint.py`） |
-| 更新 / 定向检索 | `modules/update.md` / `modules/recall.md` |
-| 记不记/落哪层 | `harness-management` placement-table |
+| Locate a project and check its status | `--project hub --type project` and locator card rules in `references/project-index.md`. Before P5 the filter returns 0. Fall back to group ② in `hub/MEMORY.md`. |
+| List completed projects | `--project hub --status closed` (same limitation before the P5 reindex). |
+| Find what happened when | Read `hub/timeline/TIMELINE.md` or use `rg` on `hub/timeline/records/` (`hub/timeline/` after P5). See `references/time-index.md` for structure. Use `--after_date` only to cross-check which files were touched. |
+| Preferences and cross-task knowledge | `--project hub`. Use `--type feedback` for preference cards. |
+| ByteDance ads work knowledge | `--project bytedance`. Include an entity name and verify `source.quote` on a hit. |
+| Choose card `type` and `topics` | Section one of `references/knowledge.md` is the sole authoritative controlled vocabulary. Register new terms there before use. |
+| Write rules and gates | `references/update-rules.md` (silent-write boundaries, mandatory limits and `lint.py` after every write). |
+| Update / targeted retrieval | `modules/update.md` / `modules/recall.md` |
+| Whether to record something and at what level | The `harness-management` placement table. |
 
-## 边界
+## Boundaries
 
-- WHERE → harness-management；工作区文件 → workspace-management
-- 不依赖 `~/feishu-memory` 目录名；旧路径若存在应为指向 `bytedance/` 的软链
+- Route placement questions to harness-management and workspace files to workspace-management.
+- Do not depend on the `~/feishu-memory` directory name. If the legacy path exists it should symlink to `bytedance/`.

@@ -1,59 +1,142 @@
 # AI Coding Config
 
-Cursor / Claude Code / Codex / Trae 四工具统一的 agent 配置备份与迁移仓库。
-
-**配置说明见 [CLAUDE.md](./CLAUDE.md)**（目录结构、部署流程、命令一览）。
-
-**新机器 / 第一次部署见 [SETUP.md](./SETUP.md)**（安装 Cursor、Claude Code、Codex、Trae，登录账号，Parallel 等 skill 依赖）。
-
-## 当前工作区
-
-本目录已从原 Agent Development 目录迁入这里。实际配置文件、原有未提交改动与完整 Git 历史都在本仓库。
-
-| 想看什么 | 打开哪里 |
-|---|---|
-| 全局规则 | [英文主版本](config/AGENTS.md) · [中文镜像](config/AGENTS-cn.md) |
-| Skills、子智能体、命令、Hooks | [skills](config/skills/) · [agents](config/agents/) · [commands](config/commands/) · [hooks](config/hooks/) |
-| 插件与个性化快照 | [插件清单](config/plugins/README.md) · [Claude](config/claude-personal/) · [Codex](config/codex-personal/) |
-| 工作区入口、任务树与操作约定 | [AGENTS.md](AGENTS.md) |
-| 本次需求与执行记录 | [需求](.agents/task/01-workspace-migration/task.md) · [进度](.agents/task/01-workspace-migration/progress.md) · [结果](.agents/task/01-workspace-migration/result.md) |
-| 对话历史（本机） | [用户原文与最终答复](.agents/conversation.md) · [用户消息](.agents/inbox.md) |
-| 迁移前的全部 Git 提交 | [历史快照](.agents/task/01-workspace-migration/input/git-history.txt)；持续历史在本仓库 Git 面板 |
-| 早期整改、重构和工作区升级记录 | [历史来源导航](.agents/memory/history-sources.md) |
-| 现在部署在哪里、快照是什么 | [Harness 基线](.agents/memory/harness-baseline.md) |
-| 接下来系统性升级 | [T02 任务](.agents/task/02-harness-upgrade/task.md) · [阶段计划](.agents/task/02-harness-upgrade/plan.md) |
-
-config/ 是版本化配置快照；各工具当前实际加载的文件在各自 home 目录。运行目录链接见基线，未经核对不把两者视为完全相同。
-对话记录从本轮开始，旧对话保留在原会话系统；本地 Q&A 不进 Git。原路径保留兼容入口，全局记忆通过相邻软链访问。
-
-```sh
-ws status       # 任务与最近进度
-ws check        # 工作区完整性
-ws inbox        # 未归档需求
-git log --all --date=short --format='%h %ad %s'
-```
-
-## 快速开始
+A single, version-controlled source of truth for the agent configuration of **Claude Code, Cursor, Codex and Trae** — global rules, skills, subagents, slash commands, hooks, plugins and personal settings — with one CLI to deploy it to a new machine and keep all four tools in sync.
 
 ```bash
-# 新设备（Claude Code：官方插件 + deploy，暂不 sync 到其他工具）
 git clone https://github.com/yuanyunchen/ai-coding-config.git
 cd ai-coding-config
-./agent-config plugins install
-./agent-config deploy --no-sync
-
-# 本机改完配置后
-./agent-config pull && git commit -am "sync config" && git push
+./agent-config deploy
 ```
 
-插件说明与清单见 [config/plugins/README.md](./config/plugins/README.md)。同步 Cursor/Codex：`./agent-config plugins sync` 或 `./agent-config deploy`。
+## Why
 
-## 命令
+Each AI coding tool keeps its own configuration tree (`~/.claude`, `~/.cursor`, `~/.codex`, `~/.trae`) with slightly different layouts. Maintaining rules and skills by hand across four tools and several machines drifts quickly. This repository solves that with:
+
+- **One snapshot tree** (`config/`) holding real files — no symlinks — so it travels across machines through Git.
+- **One canonical runtime** (`~/.claude`) that the other three tools are synced from.
+- **One entry point** (`./agent-config`) for deploy, pull, cross-tool sync, plugin management and memory sync, every command supporting `--dry-run`.
+
+## How it works
+
+```
+                 deploy                      sync
+  config/  ─────────────────▶  ~/.claude  ─────────────────▶  ~/.cursor
+ (Git snapshot) ◀─────────────── (canonical)                    ~/.codex
+                  pull                                          ~/.trae
+```
+
+| Command | Direction | Purpose |
+|---|---|---|
+| `deploy` | `config/` → `~/.claude` (+ sync) | Restore a machine: rules, skills, agents, commands, hooks, plugins, personal settings |
+| `pull` | local tools → `config/` | Capture local changes back into the snapshot |
+| `sync` | `~/.claude` → Cursor / Codex / Trae | Incremental, add-only propagation between tools |
+| `plugins` | `pull` · `sync` · `vendor` · `deploy` · `install` · `apply` · `status` | Manage raw plugin packages and enable/disable state |
+| `memory` | `setup` · `pull` · `push` · `status` | Register and sync the companion `global-memory` repository |
+| `migrate` | `~/.cursor` → `~/.claude` | One-time migration from an existing Cursor setup |
+
+Run `./agent-config <command> -h` for full options. Every command except `pull` writes to the tools' home directories — preview with `--dry-run` first.
+
+### Path mapping per tool
+
+| Category | Claude Code / Cursor / Trae | Codex |
+|---|---|---|
+| Global rules | `AGENTS.md` | `AGENTS.md` |
+| Slash commands | `commands/*.md` | `prompts/*.md` |
+| Subagents | `agents/*.md` | — (not supported) |
+| Skills | `skills/*` (enabled), `skills-disabled/*` (disabled) | same |
+| Personal settings | Claude: `settings.json` | `config.toml` |
+
+## What's included
+
+| Path | Contents |
+|---|---|
+| [`config/AGENTS.md`](config/AGENTS.md) | Global operating rules deployed to every tool (English primary; [Chinese mirror](config/AGENTS-cn.md) kept 1:1) |
+| [`config/skills/`](config/skills/) | Enabled skills (flat layout, one directory per skill) |
+| `config/skills-disabled/` | Disabled skills, kept as a sibling so tools do not load them |
+| [`config/agents/`](config/agents/) | Subagent definitions |
+| [`config/commands/`](config/commands/) | Slash commands |
+| [`config/hooks/`](config/hooks/) | Self-owned Claude Code hooks, with tests |
+| [`config/plugins/`](config/plugins/README.md) | Raw plugin packages per platform and the `manifest.json` that controls enable state |
+| `config/claude-personal/`, `config/codex-personal/` | Portable subset of personal settings and status-line layout |
+| [`scripts/`](scripts/) | Implementation behind `./agent-config` |
+| [`tests/`](tests/) | Tests for settings merging, skill isolation and platform behavior |
+
+### Skills
+
+| Area | Skills |
+|---|---|
+| Engineering workflow | `coding-partner`, `ponytail`, `webapp-testing`, `claude-delegation`, `codex-delegation` |
+| Planning and design | `design-partner`, `grill-me`, `design-principles`, `teach` |
+| Agent system management | `harness-management`, `memory-management`, `workspace-management`, `project-management`, `claude-md-improver`, `writing-rules` |
+| Content extraction | `file-content-extraction`, `webpage-content-extraction`, `pdf` |
+| Output and reporting | `frontend-pipeline`, `explainer`, `write-report` |
+| Integrations | `slack-bot`, `feishu-task-management`, `bytedcli` |
+| Personal | `ethan-job-apply` |
+
+### Subagents and commands
+
+- **Subagents:** `executor` (hands-on implementation), `verifier` (senior-level code review), `qa-specialist` (output-only quality inspection), `report-writer` (LaTeX reports end to end), `file-extractor` (document and web extraction), `conversation-analyzer` (finds behaviors worth guarding with hooks).
+- **Commands:** `/project-init`, `/project-recall`, `/project-update` (orchestrate workspace, memory and harness together), `/qa-loop` (plan → delegate → QA-and-fix until passing), `/code-review`, `/revise-claude-md`.
+
+### Hooks
+
+- `workspace-guard.py` — activates only inside a v4 workspace (nearest `.agents/ws.json`). Injects workspace status on session start, records user prompts verbatim, and requires every subagent dispatch to reference a task file created by `ws dispatch`.
+- `discipline-reminders.py` — warn-only `PreToolUse` reminders when an edit touches persistent harness files (rules, skills, scheduled-task prompts) outside the managed update flow.
+
+## Getting started
+
+### 1. Prerequisites
+
+Install each tool you use and **run it at least once** so its home directory exists; `deploy` and `sync` skip tools whose directory is missing.
+
+| Tool | Install |
+|---|---|
+| Claude Code | `curl -fsSL https://claude.ai/install.sh \| bash`, then `claude` to sign in |
+| Codex | `npm install -g @openai/codex` (Node 22+), then `codex` |
+| Cursor | Download from [cursor.com](https://cursor.com), sign in, open any folder |
+| Trae | Install the IDE from [trae.ai](https://www.trae.ai) and open it once; CLI is `traecli` |
+| Status line | `npm i -g ccstatusline` and `brew install jq` |
+
+The full first-time checklist — including Cursor plugin setup and optional dependencies — is in [SETUP.md](SETUP.md).
+
+### 2. Deploy
 
 ```bash
-./agent-config deploy   # config/ -> ~/.claude (+ sync)
-./agent-config pull     # ~/.claude -> config/
-./agent-config sync     # 四工具互相同步（claude → cursor/codex/trae）
-./agent-config migrate  # Cursor -> Claude 一次性迁移
-./agent-config help
+./agent-config plugins install     # Claude Code marketplace plugins
+./agent-config deploy              # or: deploy --no-sync to touch Claude Code only
 ```
+
+### 3. Day-to-day
+
+```bash
+# After changing configuration in any tool
+./agent-config pull
+git add -A && git commit -m "sync config" && git push
+
+# On another machine
+git pull && ./agent-config deploy
+```
+
+If the change was made in Cursor, propagate it first with `./agent-config sync --source cursor`.
+
+## Design decisions
+
+- **Personal settings are deep-merged, never overwritten.** `scripts/settings-personal.py` (Claude) and `scripts/codex-personal.py` (Codex) extract only a declared set of portable keys — default model, reasoning effort, permissions, status line — and merge them back on deploy. Machine-local or secret-bearing keys (`auth`, `mcp_servers`, `enabledPlugins`, third-party hooks) are never touched.
+- **Secrets stay out of Git.** Local MCP servers are not synced because their `env`/`headers` commonly carry credentials; re-add them per machine with `claude mcp add`. Account-level connectors follow the signed-in account automatically.
+- **Disabling a skill means moving it, not nesting it.** Tools treat every subdirectory of `skills/` as a skill, so a `skills/disabled/` folder would itself be loaded as a skill. Disabled skills live in the sibling `skills-disabled/`.
+- **Hook plugins are per platform; portable plugins are synced.** Plugins that register hooks are installed separately on each tool. Prompt-only plugins are vendored from Claude Code and synced to Cursor and Codex. See [config/plugins/README.md](config/plugins/README.md).
+- **Sync is add-only.** `sync` never deletes files in a target tool, so a partial run cannot remove working configuration.
+
+## Development
+
+```bash
+bash -n scripts/*.sh                              # syntax check
+python3 -m pytest tests config/hooks/tests        # test suite (Python 3.11+)
+./agent-config deploy --dry-run                   # verify paths before a real deploy
+```
+
+`SETUP.md` and the plugin README are currently written in Chinese.
+
+## Related
+
+- **global-memory** — companion repository for long-term agent memory, cloned next to this one and managed with `./agent-config memory`.

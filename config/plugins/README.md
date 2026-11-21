@@ -1,58 +1,58 @@
 # config/plugins
 
-三平台插件**原始包** git 快照。开关在 `manifest.json`；**当前安装一览**见下文 [当前安装一览](#当前安装一览)（`pull` / `sync` / `apply` 自动更新）。
+Git snapshot of the raw plugin packages for Claude Code, Cursor and Codex. Enable state is controlled by `manifest.json`; the [installed plugins](#installed-plugins) table below is regenerated automatically by `pull`, `sync` and `apply`.
 
 ```
 config/plugins/
-  manifest.json     各平台开关 + hookPlugins + syncPlugins
-  README.md         本文件（含自动生成安装表）
+  manifest.json     per-platform enable state + hookPlugins + syncPlugins
+  README.md         this file (includes the generated table)
   claude/ cursor/ codex/
-    enabled/        manifest 中 enabled: true 的原始包
-    disabled/       manifest 中 enabled: false 的原始包
+    enabled/        raw packages with enabled: true in the manifest
+    disabled/       raw packages with enabled: false in the manifest
   skills/
-    enabled/        启用的 skill
-    disabled/       禁用的 skill
+    enabled/        enabled skills
+    disabled/       disabled skills
 ```
 
-## 命名
+## Naming
 
-路径：`{platform}/{enabled|disabled}/{name}__{marketplace}/`，含 `plugin-meta.json`。
+Each package lives at `{platform}/{enabled|disabled}/{name}__{marketplace}/` and contains a `plugin-meta.json`.
 
-开关以 `manifest.json` 为准；`pull` / `sync` 会按开关放入对应子目录，切换开关时会移动目录。
+`manifest.json` is the source of truth for enable state. `pull` and `sync` place each package in the matching subdirectory and move it when its state changes.
 
-## 命令
+## Commands
 
 ```bash
-./agent-config plugins status              # 终端摘要
-./agent-config plugins pull                # 拉回原始包 + 更新下方安装表
-./agent-config plugins sync [--force]      # claude portable -> cursor/codex + 部署
-./agent-config plugins sync --no-deploy    # 只更新快照与 manifest
+./agent-config plugins status              # terminal summary
+./agent-config plugins pull                # pull raw packages and refresh the table below
+./agent-config plugins sync [--force]      # claude portable -> cursor/codex, then deploy
+./agent-config plugins sync --no-deploy    # update snapshots and manifest only
 ./agent-config plugins vendor [--force]    # claude portable -> config/
 ./agent-config plugins deploy
-./agent-config plugins install             # Claude marketplace
+./agent-config plugins install             # Claude Code marketplace
 ```
 
-## hook vs portable
+## Hook vs. portable plugins
 
 | | hook | portable |
 |--|------|----------|
-| 跨平台 | 否，各平台独立安装 | `plugins sync`（claude -> cursor/codex） |
-| Claude | `plugins install` | marketplace + vendor |
-| Cursor | IDE 安装（如 continual-learning） | sync 或 `plugins deploy --platform cursor` |
-| 示例 | ralph-loop, continual-learning | code-review, parallel |
+| Cross-platform | No — installed separately on each platform | `plugins sync` (claude -> cursor/codex) |
+| Claude Code | `plugins install` | marketplace + vendor |
+| Cursor | Installed in the IDE (e.g. continual-learning) | sync or `plugins deploy --platform cursor` |
+| Examples | ralph-loop, continual-learning | code-review, parallel |
 
-## 新设备安装
+## New machine
 
 ```bash
-git clone .../ai-coding-config.git && cd ai-coding-config
-./agent-config plugins install          # Claude marketplace
+git clone https://github.com/yuanyunchen/ai-coding-config.git && cd ai-coding-config
+./agent-config plugins install          # Claude Code marketplace
 ./agent-config plugins sync --force     # portable -> cursor/codex
 ./agent-config deploy                   # config + plugins deploy
 ```
 
-仅 Claude、暂不 sync 到其他工具：`./agent-config deploy --no-sync`
+To deploy Claude Code only, without syncing to other tools: `./agent-config deploy --no-sync`
 
-日常拉回并提交：
+Routine pull and commit:
 
 ```bash
 ./agent-config plugins pull
@@ -60,27 +60,27 @@ git clone .../ai-coding-config.git && cd ai-coding-config
 git add -A && git commit && git push
 ```
 
-### Cursor 原生插件
+### Native Cursor plugins
 
-`manifest.json` → `cursor.enabledPlugins` 中与 `@cursor-public` 相关的项需在 **Cursor IDE** 里先启用，再 `plugins pull --platform cursor`：
+Entries under `cursor.enabledPlugins` in `manifest.json` that come from `@cursor-public` must first be enabled in the **Cursor IDE**, then pulled with `plugins pull --platform cursor`:
 
 - `parallel@cursor-public`
 - `browse@cursor-public`
-- `continual-learning@cursor-public`（hook）
-- `superpowers@cursor-public`（hook；Cursor 侧 marketplace 为 cursor-public，与 Claude 的 superpowers-marketplace 不同 ID）
+- `continual-learning@cursor-public` (hook)
+- `superpowers@cursor-public` (hook; on Cursor the marketplace is cursor-public, a different ID from Claude Code's superpowers-marketplace)
 
-## 当前安装一览
+## Installed plugins
 
 <!-- installed:start -->
 _Updated: 2026-11-19 05:09 UTC_
 
 ## claude
 
-**manifest 启用**: 6 · **git 快照**: 12
+**Enabled in manifest**: 6 · **Git snapshots**: 12
 
 | pluginId | kind | version | snapshot |
 |----------|------|---------|----------|
-| `cc-plugin-you-should-know@builtin` | — | — | *(无快照，运行 `plugins pull --platform claude`)* |
+| `cc-plugin-you-should-know@builtin` | — | — | *(no snapshot; run `plugins pull --platform claude`)* |
 | `claude-md-management@claude-plugins-official` | portable (off) | 1.0.0 | `claude/disabled/claude-md-management__claude-plugins-official/` |
 | `code-review@claude-plugins-official` | portable (off) | 1.0.1 | `claude/disabled/code-review__claude-plugins-official/` |
 | `code-simplifier@claude-plugins-official` | portable (off) | 1.0.0 | `claude/disabled/code-simplifier__claude-plugins-official/` |
@@ -96,7 +96,7 @@ _Updated: 2026-11-19 05:09 UTC_
 
 ## cursor
 
-**manifest 启用**: 3 · **git 快照**: 10
+**Enabled in manifest**: 3 · **Git snapshots**: 10
 
 | pluginId | kind | version | snapshot |
 |----------|------|---------|----------|
@@ -111,7 +111,7 @@ _Updated: 2026-11-19 05:09 UTC_
 | `skill-creator@claude-plugins-official` | portable (off) | unknown | `cursor/disabled/skill-creator__claude-plugins-official/` |
 | `superpowers@cursor-public` | hook | 6.1.1 | `cursor/enabled/superpowers__cursor-public/` |
 
-<details><summary>manifest 已关闭（无快照目录）</summary>
+<details><summary>Disabled in manifest (no snapshot directory)</summary>
 
 - `codex@openai-codex`
 - `hookify@claude-plugins-official`
@@ -123,7 +123,7 @@ _Updated: 2026-11-19 05:09 UTC_
 
 ## codex
 
-**manifest 启用**: 1 · **git 快照**: 8
+**Enabled in manifest**: 1 · **Git snapshots**: 8
 
 | pluginId | kind | version | snapshot |
 |----------|------|---------|----------|
@@ -136,7 +136,7 @@ _Updated: 2026-11-19 05:09 UTC_
 | `skill-creator@claude-plugins-official` | portable (off) | local | `codex/disabled/skill-creator__claude-plugins-official/` |
 | `superpowers@openai-curated` | hook | 6.3.0 | `codex/enabled/superpowers__openai-curated/` |
 
-<details><summary>manifest 已关闭（无快照目录）</summary>
+<details><summary>Disabled in manifest (no snapshot directory)</summary>
 
 - `codex@openai-codex`
 - `hookify@claude-plugins-official`

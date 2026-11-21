@@ -3,7 +3,7 @@
 ## 定位
 
 本目录是 Yunchen 的 Agent Harness 配置源仓与升级工作区，按 workspace-management v4 管理。
-当前入口为 README.md；原有仓库操作说明保留在 CLAUDE.md；新机器配置看 SETUP.md。
+当前入口为 README.md（含命令与设计说明）；新机器配置看 SETUP.md。
 全局规则正文是 config/AGENTS.md，中文镜像是 config/AGENTS-cn.md；本文件是项目入口。
 
 ## 文件地图
@@ -15,7 +15,6 @@
 | 自有 skills / agents / commands / hooks 快照 | config/skills/、config/agents/、config/commands/、config/hooks/ |
 | 插件快照与清单 | [config/plugins/README.md](config/plugins/README.md) |
 | 管理入口与实现 | agent-config、scripts/ |
-| 仓库操作细节 | [CLAUDE.md](CLAUDE.md) |
 | 当前基线及运行目录定位 | [.agents/memory/harness-baseline.md](.agents/memory/harness-baseline.md) |
 | 对话原文与最终答复 | [.agents/conversation.md](.agents/conversation.md) |
 | 迁移过程及结果 | [.agents/task/01-workspace-migration/progress.md](.agents/task/01-workspace-migration/progress.md)、[result.md](.agents/task/01-workspace-migration/result.md) |
@@ -34,9 +33,9 @@ ws index
 git log --all --date=short --format='%h %ad %s'
 ```
 
-实际运行配置在 ~/.claude、~/.cursor、~/.codex、~/.trae；config/ 是配置快照。
+实际运行配置在 ~/.claude、~/.cursor、~/.codex；config/ 是配置快照。
 Canonical live 源沿用既有约定 ~/.claude；本轮只迁移工作区，没有拉回或部署运行配置。
-脚本与运行目录映射以 CLAUDE.md 为准，不从本文件推断新的同步策略。
+脚本与运行目录映射以 README.md 与 scripts/ 为准，不从本文件推断新的同步策略。
 
 ## 无 hook 环境的对话记录兜底
 

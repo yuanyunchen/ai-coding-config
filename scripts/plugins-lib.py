@@ -690,7 +690,7 @@ INSTALLED_END = "<!-- installed:end -->"
 
 
 def build_installed_section(manifest_path: Path, installed_path: Path | None) -> str:
-    """Markdown tables for README ## 当前安装一览 (auto-generated body only)."""
+    """Markdown tables for README ## Installed plugins (auto-generated body only)."""
     manifest = load_manifest(manifest_path)
     plugins_root = manifest_path.parent
     installed: dict = {}
@@ -702,7 +702,7 @@ def build_installed_section(manifest_path: Path, installed_path: Path | None) ->
         snap = find_snapshot(plat_dir, plugin_id)
         meta = snap / "plugin-meta.json" if snap else None
         if snap is None:
-            return f"| `{plugin_id}` | — | — | *(无快照，运行 `plugins pull --platform {platform}`)* |"
+            return f"| `{plugin_id}` | — | — | *(no snapshot; run `plugins pull --platform {platform}`)* |"
         kind = "hook" if plugin_id in hook_plugins(manifest, platform) else "portable"
         ver = "—"
         if meta and meta.exists():
@@ -726,7 +726,7 @@ def build_installed_section(manifest_path: Path, installed_path: Path | None) ->
         lines += [
             f"## {platform}",
             "",
-            f"**manifest 启用**: {sum(1 for v in enabled.values() if v)} · **git 快照**: {len(on_disk)}",
+            f"**Enabled in manifest**: {sum(1 for v in enabled.values() if v)} · **Git snapshots**: {len(on_disk)}",
             "",
             "| pluginId | kind | version | snapshot |",
             "|----------|------|---------|----------|",
@@ -739,12 +739,12 @@ def build_installed_section(manifest_path: Path, installed_path: Path | None) ->
                     row = row.replace("| portable |", "| portable (off) |").replace("| hook |", "| hook (off) |")
                 lines.append(row)
         if not any(enabled.values()) and not on_disk:
-            lines.append("| — | — | — | *(manifest 无启用项)* |")
+            lines.append("| — | — | — | *(nothing enabled in manifest)* |")
         lines.append("")
 
         off = [pid for pid, on in sorted(enabled.items()) if not on and find_snapshot(plat_dir, pid) is None]
         if off:
-            lines += ["<details><summary>manifest 已关闭（无快照目录）</summary>", ""]
+            lines += ["<details><summary>Disabled in manifest (no snapshot directory)</summary>", ""]
             for pid in off:
                 ip = ""
                 if platform == "claude":
@@ -768,7 +768,7 @@ def write_installed_md(manifest_path: Path, installed_path: Path | None) -> None
 
     if not readme.exists():
         readme.write_text(
-            "# config/plugins\n\n## 当前安装一览\n\n"
+            "# config/plugins\n\n## Installed plugins\n\n"
             f"{INSTALLED_START}\n{body}{INSTALLED_END}\n"
         )
         return
@@ -781,7 +781,7 @@ def write_installed_md(manifest_path: Path, installed_path: Path | None) -> None
     else:
         readme.write_text(
             text.rstrip()
-            + f"\n\n## 当前安装一览\n\n{INSTALLED_START}\n{body}{INSTALLED_END}\n"
+            + f"\n\n## Installed plugins\n\n{INSTALLED_START}\n{body}{INSTALLED_END}\n"
         )
 
 
@@ -973,7 +973,7 @@ def main() -> int:
         readme = plugins_root / "README.md"
         print(f"manifest: {manifest_path}")
         if readme.exists():
-            print(f"summary:  {readme} (#当前安装一览)")
+            print(f"summary:  {readme} (#installed-plugins)")
         for plat, sub in (("claude", claude_dir), ("cursor", cursor_dir), ("codex", codex_dir)):
             snaps = sorted(p.name for _b, p in iter_snapshots(sub))
             en = sum(1 for v in enabled_plugins(manifest, plat).values() if v)

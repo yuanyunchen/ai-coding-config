@@ -1,80 +1,60 @@
-# 首次配置
+# First-Time Setup
 
-新机器第一次用，按下面顺序做一遍即可。配完后 skill / 规则全局生效，**不用每个项目重复配**。
+Follow these steps once on a new machine. Afterwards, skills and rules apply globally — there is nothing to configure per project.
 
-日常维护见 [CLAUDE.md](./CLAUDE.md)。
-
----
-
-## 要做的事（清单）
-
-- [ ] 装 Cursor，登录，打开一次
-- [ ] 装 Claude Code，登录，运行一次 `claude`
-- [ ] 装 Codex，登录，运行一次 `codex`
-- [ ] 装 Trae IDE（打开一次生成 `~/.trae`）与 Trae CLI（`traecli`）
-- [ ] 装 `bytedcli`，完成字节内部账号登录
-- [ ] 装 `ccstatusline` + `jq`（Claude Code 状态栏显示）
-- [ ] 克隆本仓库，执行 `./agent-config deploy`
-- [ ] 克隆 `global-memory`，运行 `./bin/setup`（见 [global-memory README](../global-memory/README.md)）
-- [ ] 在 Cursor 里启用 browse 插件
-- [ ] browse 插件目录跑一次 `npm install`
+For day-to-day maintenance, see the [README](./README.md).
 
 ---
 
-## 1. 装四工具并登录
+## Checklist
 
-每个工具**至少打开/运行一次**，才会生成配置目录。不生成的话后面 `deploy`/`sync` 会跳过它。
+- [ ] Install Cursor, sign in, and open it once
+- [ ] Install Claude Code, sign in, and run `claude` once
+- [ ] Install Codex, sign in, and run `codex` once
+- [ ] Install `bytedcli` and sign in with your ByteDance account
+- [ ] Install `ccstatusline` and `jq` (Claude Code status line)
+- [ ] Clone this repository and run `./agent-config deploy`
+- [ ] Clone `global-memory` and run `./bin/setup` (see the [global-memory README](../global-memory/README.md))
+- [ ] Enable the browse plugin in Cursor
+- [ ] Run `npm install` once in the browse plugin directory
+
+---
+
+## 1. Install the tools and sign in
+
+Each tool must be **opened or run at least once** so that it creates its configuration directory. Tools without one are skipped by `deploy` and `sync`.
 
 ### Cursor
 
-1. [cursor.com](https://cursor.com) 下载安装
-2. 登录账号，随便打开一个文件夹
+1. Download and install from [cursor.com](https://cursor.com).
+2. Sign in and open any folder.
 
 ### Claude Code
 
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
-claude          # 浏览器登录，需要 Pro/Max 等付费账号
+claude          # signs in through the browser; requires a paid plan such as Pro or Max
 ```
 
-状态栏（reset/session/weekly 用量、版本）由 `ccstatusline` 渲染，单独装：
+The status line (reset timer, session and weekly usage, version) is rendered by `ccstatusline`, which is installed separately:
 
 ```bash
-npm i -g ccstatusline    # deploy 只恢复其配置，不装工具本身
-brew install jq          # context-tokens 部件依赖；已有可跳过
+npm i -g ccstatusline    # deploy restores its configuration, not the tool itself
+brew install jq          # required by the context-tokens widget; skip if already installed
 ```
 
-> 个性化（默认 Opus + high、bypass 免确认、状态栏布局）随 `deploy` 自动恢复，不用手动配 `settings.json`。
+> Personal settings — default Opus with high effort, bypass-permissions mode, status-line layout — are restored by `deploy`. There is no need to edit `settings.json` by hand.
 
 ### Codex
 
 ```bash
-npm install -g @openai/codex    # 注意是 @openai/codex，需 Node 22+
-codex           # 选 Sign in with ChatGPT（Plus/Pro 等），或用 API Key
+npm install -g @openai/codex    # note the @openai scope; requires Node 22+
+codex           # choose "Sign in with ChatGPT" (Plus, Pro, ...) or use an API key
 ```
-
-### Trae（IDE + CLI）
-
-1. 安装 [Trae](https://www.trae.ai)（或国内版 trae.cn），打开一次以生成 `~/.trae`
-2. 安装 Trae CLI（`traecli`）。美区若 `trae.cn` 被拦，用：
-
-```bash
-curl -fsSL "https://lf-cdn.trae.ai/obj/trae-ai-us/trae-cli/install.sh" | bash
-export PATH="$HOME/.local/bin:$PATH"
-traecli doctor    # 首次需 /login 企业账号并选 model
-```
-
-可选：把 IDE 命令链到 PATH：
-
-```bash
-ln -sfn "/Applications/Trae.app/Contents/Resources/app/bin/trae" "$HOME/.local/bin/trae"
-```
-
-`deploy`/`sync` 会把 skill / commands / agents / AGENTS.md 写到 `~/.trae`（与 Claude/Cursor 同构）。
 
 ### bytedcli
 
-四工具共享同一份全局 CLI；`deploy` 负责同步 skill，不重复安装二进制。
+All tools share one global CLI; `deploy` syncs the skill but does not install the binary.
 
 ```bash
 npm install -g @bytedance-dev/bytedcli@latest --registry https://bnpm.byted.org
@@ -82,7 +62,7 @@ bytedcli auth login
 bytedcli --json auth status
 ```
 
-若安装时 Puppeteer 下载浏览器失败，可跳过该可选下载后重试：
+If Puppeteer fails to download its browser during installation, skip that optional download and retry:
 
 ```bash
 PUPPETEER_SKIP_DOWNLOAD=1 npm install -g @bytedance-dev/bytedcli@latest --registry https://bnpm.byted.org
@@ -90,7 +70,7 @@ PUPPETEER_SKIP_DOWNLOAD=1 npm install -g @bytedance-dev/bytedcli@latest --regist
 
 ---
 
-## 2. 部署配置
+## 2. Deploy the configuration
 
 ```bash
 git clone https://github.com/yuanyunchen/ai-coding-config.git
@@ -98,30 +78,30 @@ cd ai-coding-config
 ./agent-config deploy
 ```
 
-这一条会把 skill、命令、规则写到四个工具（含 Trae），并安装 Claude 官方插件。
+This writes skills, commands and rules to every installed tool and installs the official Claude Code plugins.
 
-### 全局记忆（global-memory）
+### Global memory (global-memory)
 
-与 `ai-coding-config` **同级**克隆；`hub/` = 三库，`bytedance/` = 域知识。经 `bin/setup` 注册 BM project 并刷新 runtime 软链（可移植，不手写绝对路径）。
+Clone it **next to** `ai-coding-config`. `hub/` holds the three memory stores and `bytedance/` holds domain knowledge. `bin/setup` registers the Basic Memory projects and refreshes the runtime symlink, so no absolute paths are written by hand.
 
 ```bash
-cd ..    # 回到 Agent Development/（与 ai-coding-config 同级）
+cd ..    # back to the directory that contains ai-coding-config
 git clone https://github.com/yuanyunchen/global-memory.git
 cd global-memory && ./bin/setup
 cd ../ai-coding-config && ./agent-config memory status
 ```
 
-完整说明见 [global-memory/README.md](../global-memory/README.md)。
+Full details are in the [global-memory README](../global-memory/README.md).
 
 ---
 
-## 3. Cursor 插件
+## 3. Cursor plugins
 
-在 Cursor **Settings → Plugins** 里启用：
+Enable the following under **Settings → Plugins** in Cursor:
 
-- **browse** — 浏览器自动化（本机要装 Chrome）
+- **browse** — browser automation (requires Chrome on the machine)
 
-启用 browse 后，在终端跑一次：
+After enabling browse, run once in a terminal:
 
 ```bash
 cd ai-coding-config/config/plugins/cursor/enabled/browse__cursor-public
@@ -130,40 +110,40 @@ npm install
 
 ---
 
-## 4. Parallel CLI（按需）
+## 4. Parallel CLI (optional)
 
-Parallel skill 默认禁用。只有直接使用 `parallel-cli`，或使用 `webpage-content-extraction` 的纯文本快速路径时，才需要安装 CLI 和登录账号。
-
-需要时直接在终端安装：
+The Parallel skills are disabled by default. Install the CLI and sign in only if you call `parallel-cli` directly or use the text-only fast path of `webpage-content-extraction`:
 
 ```bash
 curl -fsSL https://parallel.ai/install.sh | bash
 parallel-cli login
-parallel-cli auth          # 确认已登录
+parallel-cli auth          # confirm you are signed in
 ```
 
-装完找不到命令，把 `~/.local/bin` 加到 PATH（写进 `~/.zshrc`）。
+If the command is not found afterwards, add `~/.local/bin` to `PATH` in `~/.zshrc`.
 
 ---
 
-## 按需（大多数人可以跳过）
+## Optional dependencies
 
-| 什么时候需要 | 做什么 |
+Most users can skip this section.
+
+| When you need it | What to do |
 |---|---|
-| 用 webapp-testing 测网页 | `pip install playwright && playwright install chromium` |
-| 用 frontend-pipeline 的设计 CLI | 在 `.../ui-ux-design-pro/cli/` 里 `npm install` |
-| 读扫描版 PDF | `pip install pytesseract pdf2image` |
-| 要本地 MCP 服务器 | `deploy` **不**同步 MCP，需自己配：`claude mcp add ...`（含密钥，不入仓库） |
+| Testing web pages with `webapp-testing` | `pip install playwright && playwright install chromium` |
+| The design CLI in `frontend-pipeline` | Run `npm install` in `.../ui-ux-design-pro/cli/` |
+| Reading scanned PDFs | `pip install pytesseract pdf2image` |
+| Local MCP servers | `deploy` does **not** sync MCP servers; add them yourself with `claude mcp add ...` (they carry secrets and stay out of the repository) |
 
-> MCP 说明：claude.ai 账号连接器（如 Hugging Face）登录后自动出现，不用配；只有 `claude mcp add` 的本地 MCP 才要手动重配。
+> Account connectors from claude.ai (such as Hugging Face) appear automatically after you sign in. Only local MCP servers added with `claude mcp add` need to be set up again.
 
 ---
 
-## 出问题了？
+## Troubleshooting
 
-| 现象 | 处理 |
+| Symptom | Fix |
 |---|---|
-| `找不到 ~/.claude` | 先跑一遍 `claude` 登录 |
-| sync 跳过了 cursor/codex | 先打开 Cursor、跑一遍 `codex` |
-| `parallel-cli` 找不到 | 仅在需要可选的纯文本网页提取路径时安装，并检查 `~/.local/bin` 是否在 PATH |
-| Codex 登录失败 | 确认 ChatGPT 付费档，或 `export OPENAI_API_KEY=sk-...` |
+| `~/.claude` not found | Run `claude` once and sign in |
+| `sync` skipped Cursor or Codex | Open Cursor and run `codex` once |
+| `parallel-cli` not found | Install it only if you need the optional text-only extraction path, and check that `~/.local/bin` is on `PATH` |
+| Codex sign-in fails | Confirm a paid ChatGPT plan, or `export OPENAI_API_KEY=sk-...` |

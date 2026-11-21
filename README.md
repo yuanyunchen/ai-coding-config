@@ -1,6 +1,6 @@
 # AI Coding Config
 
-A single, version-controlled source of truth for the agent configuration of **Claude Code, Cursor, Codex and Trae** — global rules, skills, subagents, slash commands, hooks, plugins and personal settings — with one CLI to deploy it to a new machine and keep all four tools in sync.
+A single, version-controlled source of truth for the agent configuration of **Claude Code, Cursor and Codex** — global rules, skills, subagents, slash commands, hooks, plugins and personal settings — with one CLI to deploy it to a new machine and keep all three tools in sync.
 
 ```bash
 git clone https://github.com/yuanyunchen/ai-coding-config.git
@@ -10,10 +10,10 @@ cd ai-coding-config
 
 ## Why
 
-Each AI coding tool keeps its own configuration tree (`~/.claude`, `~/.cursor`, `~/.codex`, `~/.trae`) with slightly different layouts. Maintaining rules and skills by hand across four tools and several machines drifts quickly. This repository solves that with:
+Each AI coding tool keeps its own configuration tree (`~/.claude`, `~/.cursor`, `~/.codex`) with slightly different layouts. Maintaining rules and skills by hand across three tools and several machines drifts quickly. This repository solves that with:
 
 - **One snapshot tree** (`config/`) holding real files — no symlinks — so it travels across machines through Git.
-- **One canonical runtime** (`~/.claude`) that the other three tools are synced from.
+- **One canonical runtime** (`~/.claude`) that the other tools are synced from.
 - **One entry point** (`./agent-config`) for deploy, pull, cross-tool sync, plugin management and memory sync, every command supporting `--dry-run`.
 
 ## How it works
@@ -22,14 +22,13 @@ Each AI coding tool keeps its own configuration tree (`~/.claude`, `~/.cursor`, 
                  deploy                      sync
   config/  ─────────────────▶  ~/.claude  ─────────────────▶  ~/.cursor
  (Git snapshot) ◀─────────────── (canonical)                    ~/.codex
-                  pull                                          ~/.trae
 ```
 
 | Command | Direction | Purpose |
 |---|---|---|
 | `deploy` | `config/` → `~/.claude` (+ sync) | Restore a machine: rules, skills, agents, commands, hooks, plugins, personal settings |
 | `pull` | local tools → `config/` | Capture local changes back into the snapshot |
-| `sync` | `~/.claude` → Cursor / Codex / Trae | Incremental, add-only propagation between tools |
+| `sync` | `~/.claude` → Cursor / Codex | Incremental, add-only propagation between tools |
 | `plugins` | `pull` · `sync` · `vendor` · `deploy` · `install` · `apply` · `status` | Manage raw plugin packages and enable/disable state |
 | `memory` | `setup` · `pull` · `push` · `status` | Register and sync the companion `global-memory` repository |
 | `migrate` | `~/.cursor` → `~/.claude` | One-time migration from an existing Cursor setup |
@@ -38,7 +37,7 @@ Run `./agent-config <command> -h` for full options. Every command except `pull` 
 
 ### Path mapping per tool
 
-| Category | Claude Code / Cursor / Trae | Codex |
+| Category | Claude Code / Cursor | Codex |
 |---|---|---|
 | Global rules | `AGENTS.md` | `AGENTS.md` |
 | Slash commands | `commands/*.md` | `prompts/*.md` |
@@ -94,7 +93,6 @@ Install each tool you use and **run it at least once** so its home directory exi
 | Claude Code | `curl -fsSL https://claude.ai/install.sh \| bash`, then `claude` to sign in |
 | Codex | `npm install -g @openai/codex` (Node 22+), then `codex` |
 | Cursor | Download from [cursor.com](https://cursor.com), sign in, open any folder |
-| Trae | Install the IDE from [trae.ai](https://www.trae.ai) and open it once; CLI is `traecli` |
 | Status line | `npm i -g ccstatusline` and `brew install jq` |
 
 The full first-time checklist — including Cursor plugin setup and optional dependencies — is in [SETUP.md](SETUP.md).

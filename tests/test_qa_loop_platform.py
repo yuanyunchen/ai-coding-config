@@ -16,7 +16,7 @@ def function(script, name):
 class QaLoopPlatformTests(unittest.TestCase):
     def test_native_skill_is_not_shared_in_either_sync_mode(self):
         check = function(SYNC, 'should_sync_skill')
-        for target in ('claude', 'cursor', 'trae', 'codex'):
+        for target in ('claude', 'cursor', 'codex'):
             for mirror in (0, 1):
                 with self.subTest(target=target, mirror=mirror):
                     result = subprocess.run(

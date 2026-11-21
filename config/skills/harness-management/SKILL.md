@@ -43,7 +43,7 @@ The built-in recall and update submodules live in `modules/`. A user can request
 | Write SKILL.md: structure, description trigger budget and splitting | `subskills/skill-authoring/SKILL.md` and the two advanced writing-great-skills documents in that directory |
 | Scaffold a new skill, run evals or tune its description | `subskills/skill-creator/SKILL.md` (the former global skill-creator, incorporated in full) |
 | Write or audit AGENTS.md, CLAUDE.md and other agent guidance | `subskills/agent-file/SKILL.md` (formerly the global write-agent-file) |
-| Sync Claude/Cursor/Codex/Trae and GitHub (“three-source sync” is a synonym), deploy, pull, links, or update from GitHub and propagate to the tools from any working directory | `subskills/multi-source-sync/SKILL.md` |
+| Sync Claude/Cursor/Codex and GitHub (“three-source sync”), deploy, pull, links, or update from GitHub and propagate to the tools from any working directory | `subskills/multi-source-sync/SKILL.md` |
 | Hooks, permissions, settings.json or environment | The session's built-in update-config skill is the external execution layer. Show hooks before applying them. |
 | Workspace .agents/skills structure and registration | workspace-management's `references/capability-layer.md` defines implementation. This skill decides what to persist. |
 
@@ -51,7 +51,7 @@ Use the internal equivalents of superpowers:writing-skills and anthropic-skills:
 
 ## Platform-specific entry points
 
-**qa-loop (user decision, 2026-11-14).** Codex alone uses the native `skills/qa-loop/SKILL.md` entry point, which loads its `prompts/qa-loop.md` workflow. Claude Code, Cursor and Trae keep their existing `commands/qa-loop.md` entry points. Do not migrate them to skills or change other entry points or behavior. Cross-tool sync boundaries are in “Platform-specific entry points” in `subskills/multi-source-sync/SKILL.md`.
+**qa-loop (user decision, 2026-11-14).** Codex alone uses the native `skills/qa-loop/SKILL.md` entry point, which loads its `prompts/qa-loop.md` workflow. Claude Code and Cursor keep their existing `commands/qa-loop.md` entry points. Do not migrate them to skills or change other entry points or behavior. Cross-tool sync boundaries are in “Platform-specific entry points” in `subskills/multi-source-sync/SKILL.md`.
 
 ## Mandatory rules
 

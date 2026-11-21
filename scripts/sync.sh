@@ -1,14 +1,14 @@
 #!/bin/bash
 ################################################################################
-# 以 cursor | claude | codex | trae 任一为 SOURCE，把统一的 agent 配置同步到
+# 以 cursor | claude | codex 任一为 SOURCE，把统一的 agent 配置同步到
 # 其余工具。默认【增量】：只添加 / 更新，绝不删除目标里已有的东西。
 # 加 --mirror 则【镜像】：目标与源对齐，删除源里没有的多余项（覆盖前备份）。
 #
-# 四个工具的部署目录（全局安装）：
-#   ~/.cursor   ~/.claude   ~/.codex   ~/.trae
+# 三个工具的部署目录（全局安装）：
+#   ~/.cursor   ~/.claude   ~/.codex
 #
 # 同步的配置类别及各工具的目录映射：
-#   类别          cursor/claude/trae              codex
+#   类别          cursor/claude                   codex
 #   -----------   -----------------------------   ----------------------------
 #   斜杠命令      commands/*.md                    prompts/*.md
 #   subagents     agents/*.md                      (无对应目录 -> 跳过)
@@ -17,7 +17,6 @@
 #   中文镜像      AGENTS-cn.md                     AGENTS-cn.md（人读参考）
 #
 #   - claude 额外保证 CLAUDE.md 里有 @AGENTS.md 导入（Claude 只读 CLAUDE.md）。
-#   - trae = Trae IDE + Trae CLI（traecli）共用 ~/.trae；布局与 cursor/claude 同构。
 #   - codex 没有 subagents 机制，故 subagents 不写入 codex。
 #   - codex 的 skills/.system 是官方系统 skill，永不触碰。
 #   - hook 型 Claude 插件（manifest hookPlugins）不同步；各工具单独安装。
@@ -32,15 +31,15 @@
 #   - skills / skills-disabled：rsync --delete；并删除目标里 source 未同步的整个 skill 目录。
 #   - 同步到 codex 时仍永不触碰 skills/.system；--mirror 也会同步 CODEX_IGNORE 里跳过的 skill。
 #
-# 路径改写：拷贝后把正文里的 ~/.cursor/ ~/.claude/ ~/.codex/ ~/.trae/ 统一改写成
-#   目标工具自己的根（如同步到 trae 则改写为 ~/.trae/），使 skill / 命令正文里
+# 路径改写：拷贝后把正文里的 ~/.cursor/ ~/.claude/ ~/.codex/ 统一改写成
+#   目标工具自己的根（如同步到 cursor 则改写为 ~/.cursor/），使 skill / 命令正文里
 #   "Read ~/.claude/skills/pdf/SKILL.md" 之类指令指向目标工具的真实位置。
 #
 # 撞名保护：覆盖已存在的 skill / AGENTS.md / AGENTS-cn.md 前，先备份到目标根下
 #   <tool>/.claude-sync-backup-<时间戳>/。
 #
-# 用法：./agent-config sync [--source cursor|claude|codex|trae]
-#                           [--target cursor|claude|codex|trae]
+# 用法：./agent-config sync [--source cursor|claude|codex]
+#                           [--target cursor|claude|codex]
 #                           [--mirror] [--dry-run] [--no-backup]
 ################################################################################
 
@@ -65,10 +64,10 @@ STAMP="$(date +%Y%m%d-%H%M%S)"
 while [ $# -gt 0 ]; do
     case "$1" in
         --source)
-            [ -n "${2:-}" ] || { echo "ERROR: --source 需要一个值 (cursor|claude|codex|trae)"; exit 1; }
+            [ -n "${2:-}" ] || { echo "ERROR: --source 需要一个值 (cursor|claude|codex)"; exit 1; }
             SOURCE="$2"; shift 2 ;;
         --target)
-            [ -n "${2:-}" ] || { echo "ERROR: --target 需要一个值 (cursor|claude|codex|trae)"; exit 1; }
+            [ -n "${2:-}" ] || { echo "ERROR: --target 需要一个值 (cursor|claude|codex)"; exit 1; }
             TARGET_FILTER="$2"; shift 2 ;;
         --mirror)  MIRROR=1; shift ;;
         --dry-run)   DRY_RUN=1; shift ;;
@@ -78,12 +77,12 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-case "$SOURCE" in cursor|claude|codex|trae) ;; *) echo "ERROR: --source 只能是 cursor|claude|codex|trae"; exit 1 ;; esac
+case "$SOURCE" in cursor|claude|codex) ;; *) echo "ERROR: --source 只能是 cursor|claude|codex"; exit 1 ;; esac
 case "$TARGET_FILTER" in
     "") ;;
-    cursor|claude|codex|trae)
+    cursor|claude|codex)
         [ "$TARGET_FILTER" = "$SOURCE" ] && { echo "ERROR: --target 不能与 --source 相同"; exit 1; } ;;
-    *) echo "ERROR: --target 只能是 cursor|claude|codex|trae"; exit 1 ;;
+    *) echo "ERROR: --target 只能是 cursor|claude|codex"; exit 1 ;;
 esac
 
 # --- 工具属性 ---
@@ -94,7 +93,7 @@ has_agents(){ [ "$1" != codex ]; }                                 # 是否有 s
 SRC_BASE="$(base_dir "$SOURCE")"
 [ -d "$SRC_BASE" ] || { echo "ERROR: 找不到源目录: $SRC_BASE"; exit 1; }
 
-ALL="cursor claude codex trae"
+ALL="cursor claude codex"
 TARGETS=""
 for t in $ALL; do
     [ "$t" = "$SOURCE" ] && continue
@@ -159,10 +158,10 @@ rewrite_paths() {
         | xargs -0 perl -pi -e '
             # 先把绝对写法（/Users/<user>/.claude/、$HOME/.codex/）归一成 ~/.<tool>/，
             # 否则它们绕过下面的改写、把源工具的 home 原样带进目标工具（chart-gen 曾四源同错）
-            s{(?:/Users/[^/\s"'"'"']+|\$HOME|\$\{HOME\})/\.(cursor|claude|codex|trae)/}{~/.$1/}g;
-            s{(~/.(?:cursor|claude|codex|trae)/skills)/disabled/}{${1}-disabled/}g;
-            s{(~/.(?:cursor|claude|codex|trae)/skills)/enabled/}{$1/}g;
-            s{\Q~/.cursor/\E|\Q~/.claude/\E|\Q~/.codex/\E|\Q~/.trae/\E}{$ENV{REPL}}g;
+            s{(?:/Users/[^/\s"'"'"']+|\$HOME|\$\{HOME\})/\.(cursor|claude|codex)/}{~/.$1/}g;
+            s{(~/.(?:cursor|claude|codex)/skills)/disabled/}{${1}-disabled/}g;
+            s{(~/.(?:cursor|claude|codex)/skills)/enabled/}{$1/}g;
+            s{\Q~/.cursor/\E|\Q~/.claude/\E|\Q~/.codex/\E}{$ENV{REPL}}g;
         ' 2>/dev/null || true
 }
 

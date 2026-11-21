@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-# 把本仓库 config/ 快照部署到 ~/.claude，插件一键 deploy，再 sync 到 cursor + codex + trae。
+# 把本仓库 config/ 快照部署到 ~/.claude，插件一键 deploy，再 sync 到 cursor + codex。
 #
 # 用法：./agent-config deploy [--dry-run] [--no-sync]
 ################################################################################
@@ -104,7 +104,7 @@ fi
 
 echo ""
 if [ "$DO_SYNC" -eq 1 ]; then
-    echo "同步 portable 配置到 cursor + codex + trae ..."
+    echo "同步 portable 配置到 cursor + codex ..."
     if [ "$DRY_RUN" -eq 1 ]; then
         "$SCRIPTS_DIR/sync.sh" --dry-run
     else

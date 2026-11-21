@@ -1,15 +1,15 @@
 #!/bin/bash
 ################################################################################
-# 统一入口：管理 Cursor / Claude / Codex / Trae 四工具的 agent 配置。
+# 统一入口：管理 Cursor / Claude / Codex 三工具的 agent 配置。
 #
 # 用法：
 #   ./agent-config <command> [options]
 #   ./agent-config help
 #
 # 命令：
-#   deploy   config/ -> ~/.claude，并同步到 cursor + codex + trae（新设备恢复）
+#   deploy   config/ -> ~/.claude，并同步到 cursor + codex（新设备恢复）
 #   pull     本地部署目录 -> config/（改完配置后拉回仓库）
-#   sync     四工具互相同步（不写仓库）
+#   sync     三工具互相同步（不写仓库）
 #   migrate  Cursor -> Claude 一次性迁移
 #   plugins  Claude 插件开关 + 可移植内容提取（见 plugins -h）
 #   memory   全局记忆枢纽 git 同步（见 memory -h）
@@ -17,7 +17,7 @@
 # 示例：
 #   ./agent-config deploy --dry-run
 #   ./agent-config pull
-#   ./agent-config sync --source claude --target trae
+#   ./agent-config sync --source claude --target codex
 ################################################################################
 
 set -euo pipefail

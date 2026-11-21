@@ -133,7 +133,7 @@ for label, path, cat, note in [
      "feishu-task-management/subskills/ 是它的物理副本(不是软链),会漂移"),
     ("global-memory 仓", "~/Desktop/AI Workspace/Agentic Engineering/global-memory", "记忆", ""),
     ("ai-coding-config 仓", "~/Desktop/AI Workspace/Agentic Engineering/ai-coding-config", "同步",
-     "四源同步的仓快照;deploy 前确认它不比 live 旧"),
+     "三源同步的仓快照;deploy 前确认它不比 live 旧"),
     ("记忆 hub 软链", "~/.claude/projects/-Users-bytedance/memory", "记忆",
      "bin/setup 只为 $HOME 的 slug 建链;其他 cwd 拿不到"),
 ]:

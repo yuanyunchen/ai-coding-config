@@ -20,7 +20,7 @@
    | command(当前工具 home 的 `commands/` 或项目 agent 配置目录下的 `commands/`) | 薄 command 惯例:只引用 skill、Read 模块执行(参照 /project-* 系列) |
    | 工作区 .agents/skills | workspace-management `references/capability-layer.md` 的结构与登记规范 |
    | 飞书域 skill | 建成 feishu-task-management 内部伪 skill(其 §2 构建规则),禁注册全局 |
-   | 四源同步 / deploy / pull / GitHub→各工具 live | `../subskills/multi-source-sync/SKILL.md`(任意 cwd 调 `$REPO/agent-config`;仓内唯一树 = `config/`) |
+   | 三源同步 / deploy / pull / GitHub→各工具 live | `../subskills/multi-source-sync/SKILL.md`(任意 cwd 调 `$REPO/agent-config`;仓内唯一树 = `config/`) |
 8. **验证登记**:引用面 sweep(旧名/旧路径 grep 清残留,历史日志不回改);触发词查重(新 description vs 既有注册表);改动一行留痕(全局级 → 枢纽定位卡/TIMELINE 由 memory-management 按其模式处理;工作区级 → 跑 ws index 刷新 AGENTS.md 的 Skills 表);全局级改动若需三工具可见 → 同笔走 `../subskills/multi-source-sync/SKILL.md`;向用户回简短清单:落了什么/哪层/冲突如何消解。
 
-全局 harness 改完要推 Claude/Cursor/Codex/Trae、或用户只要「同步三源/四源 / deploy / links」时:直接 Read 并执行 `../subskills/multi-source-sync/SKILL.md`(协议与 CLI 摘要在彼,此处不重复)。
+全局 harness 改完要推 Claude/Cursor/Codex、或用户只要「同步三源 / deploy / links」时:直接 Read 并执行 `../subskills/multi-source-sync/SKILL.md`(协议与 CLI 摘要在彼,此处不重复)。

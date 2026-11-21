@@ -95,7 +95,7 @@
 - 不少于 20 个字符的消息会附带一行提示，给出条目 ID；更短的（"继续""好的"）静默记录，无需归档。
 - 归档（v4.4 起自动）：`ws focus <ID>` 把当前节点写进 ws.json 的 `focus`；之后 hook 每记一条用户消息，就同时追加进该节点 task.md「原文记录」的 `### <时间> · 用户原文 · <id>` 并打上归档标记。不足 20 字的、疑似含密钥的不追加（只留在 conversation.md）。提问和需求不再区分，原文记录是完整的逐字记录；需求有变化时把变化合进「任务说明」（`ws task spec`）。没设 focus 时消息只进 conversation.md。手动补录：`ws req <ID> --entry <id>`、`ws req --new <slug> --entry <id> [--parent ID]`。
 - 含疑似密钥（`sk-`、`ghp_`、`AKIA`、`xox?-`、私钥头、`XXX_KEY=…`）的原文拒绝归档，除非加 `--allow-secret`：task.md 可能进 git，conversation.md 不会。密钥统一放 `.agents/secrets.env`（600，不进 git），不得写进 task.md、memory 或派发说明。
-- 没有 hook 的环境（Codex、Cursor、Trae）：把用户原话照录，`ws req <ID> --stdin` 或 `ws task new <slug> --stdin`。
+- 没有 hook 的环境（Codex、Cursor）：把用户原话照录，`ws req <ID> --stdin` 或 `ws task new <slug> --stdin`。
 
 ## 6. 派发
 
@@ -184,6 +184,6 @@ hook 还在两个时刻给主 agent 提示（只提示，不拦截）：
 
 ## 12. 已知限制
 
-- Codex、Cursor、Trae 没有这套 hook：规则仍在 AGENTS.md 里生效，`ws` 照常可用，但原文记录、派发把关、结果追收都要靠 agent 自觉（协议里写了兜底做法）。Codex 是否自动注册项目内 `.agents/skills/` 未验证。
+- Codex、Cursor 没有这套 hook：规则仍在 AGENTS.md 里生效，`ws` 照常可用，但原文记录、派发把关、结果追收都要靠 agent 自觉（协议里写了兜底做法）。Codex 是否自动注册项目内 `.agents/skills/` 未验证。
 - `claude -p` 测不到会话恢复、上下文压缩、后台子智能体回报这些交互场景；hook 在这些场景下的表现以真实会话的冒烟测试为准。
 - Claude Code 不会自动发现 `.agents/skills/`（2026-11-01，2.1.316，探针实测），工作区 skill 靠 AGENTS.md 的 Skills 表按路径读取。

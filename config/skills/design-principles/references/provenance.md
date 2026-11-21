@@ -66,3 +66,5 @@
 | 二 渲染自查四条 | `hero-svg-design-system.md` 五 |
 | 三 内容检查 | `FP/references/verification.md`「内容面向读者」 |
 | 四 对抗审查 | `FL/analytical-report/references/methodology.md` 三;`FW/data-analysis-report/SKILL.md` §3.4 |
+
+`data-report.md` 不来自飞书规范:2026-11-19 至 11-20 auto-rater 项目的复盘,规则旁引用了用户原话。

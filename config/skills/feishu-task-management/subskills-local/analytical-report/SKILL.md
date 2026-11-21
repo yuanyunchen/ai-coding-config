@@ -77,6 +77,7 @@ starter-kit 在 `references/starter-kit/`,直接拷来改即可。
 详细方法论(读图三拍范例、诚实口径检查表、对抗审查派单模板、调色板)见 `references/methodology.md`。
 
 ## references
+- 报告组织规则(统一对比口径、一卡一问一图、图型随强调点、章节顺序、选择偏差)与一份成品示例:`~/.claude/skills/design-principles/references/data-report.md`、`~/.claude/skills/design-principles/assets/example-data-report/`。动手前先读。
 - `references/methodology.md` — 读图三拍范例 · 诚实口径检查表 · 对抗审查 ≥4 角度派单模板 · 调色板与设计基线 · 构建验证清单。
 - `references/starter-kit/` — 现成设计系统(拷来改):
   - `_shared.css` — 全套设计系统(双色/卡片/KPI/表/趋势表/折叠区/ladder/mini-TOC/响应式/打印)。

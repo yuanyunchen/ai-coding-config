@@ -37,6 +37,7 @@ Check each before delivery. The 25 rules below expand on them.
 | Set colors, type sizes, legends, status colors, or the visual prominence of controls. | [`references/visual-encoding.md`](references/visual-encoding.md). Use [`assets/demo-recall-metrics.html`](assets/demo-recall-metrics.html) to calibrate restraint. |
 | Design person or entity cards, dashboard overviews, or detail drawers. | [`references/visual-encoding.md`](references/visual-encoding.md) §8 |
 | Make statistical charts, present numbers, or explain data findings. | [`references/data-honesty.md`](references/data-honesty.md) |
+| Build a data or experiment report: comparison convention, cards, chart form, section order, selection honesty. | [`references/data-report.md`](references/data-report.md). Worked example: [`assets/example-data-report/`](assets/example-data-report/README.md) |
 | Choose a diagram type or draw relationship, process, architecture, or hero diagrams. | [`references/diagrams.md`](references/diagrams.md) |
 | Check the deliverable or brief adversarial reviewers. | [`references/verification.md`](references/verification.md) |
 

@@ -51,6 +51,7 @@ The user made the reading mandatory on 2026-11-04. Previously it applied only to
 
 - **Multiple pages delivered together** (dashboard, relationship graph, explainer page, README): also read the multi-page deliverables section in [`references/content-for-readers.md`](references/content-for-readers.md).
 - **GitHub repository homepage or README showcase, or a static site published to GitHub Pages:** read [`references/github-repo-page.md`](references/github-repo-page.md).
+- **The user names an existing site to match, or the page's controls compute a result** (weights, filters, a recommendation): read [`references/match-reference.md`](references/match-reference.md).
 - **Establish content first for explanatory and document-style artifacts.** Present the key-point outline and diagram list in the user's language and obtain their approval before building the page. When delegating the page, the orchestrator obtains approval before dispatch (user decision, 2026-11-04).
 - For layout aesthetics, use this skill's subskills. Route a single-page explanation, such as a codebase tour or a work report, to `explainer`.
 
@@ -79,6 +80,7 @@ The standard complex-tier order is **the full `frontend-design-pro` workflow for
 - `references/verification.md` — standard and high-quality checklists and the verification loop
 - `references/content-for-readers.md` — multi-page deliverables (writing and readability details now live in design-principles)
 - `references/github-repo-page.md` — organizing the GitHub repository homepage (README) and publishing to GitHub Pages
+- `references/match-reference.md` — matching a reference site element by element; testing an interactive page's controls at their extremes
 
 ## Verification
 

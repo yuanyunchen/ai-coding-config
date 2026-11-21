@@ -68,7 +68,7 @@
 
 - **web**:首屏观感、SEO 基本项(title/meta/语义结构)
 - **pdf**:`@page` 尺寸正确、分页无错位、印刷边距/出血、导出 PDF 与预览一致
-- **interactive**:核心交互流程跑通、状态切换正确、无运行时报错
+- **interactive**:核心交互流程跑通、状态切换正确、无运行时报错;每个会算出结果的控件在极值处单独测过(见 `match-reference.md` 二)
 - **slides**:逐页无溢出、母版一致、16:9 比例、翻页可用、导出 PDF 正确
 
 ## 艺术产物验证(`canvas-design` / `algorithmic-art` 分支)

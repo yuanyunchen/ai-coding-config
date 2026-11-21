@@ -1,0 +1,82 @@
+<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Continuous space · Concept graph</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="vendor/starmap.css">
+<link rel="stylesheet" href="page.css">
+<link rel="stylesheet" href="dualmap.css">
+<link rel="stylesheet" href="lightbox.css">
+<link rel="stylesheet" href="hovercard.css">
+<link rel="stylesheet" href="fullnet.css">
+<link rel="stylesheet" href="columns.css">
+</head><body data-tab="map">
+<nav id="site-nav"></nav>
+<div class="sm-vignette"></div><div class="sm-grain"></div>
+<div class="pg-frame">
+<header class="top">
+  <div class="sm-brand">
+    <div class="sm-eyebrow">Dual map · Design Arena web pages</div>
+    <h1 id="title">Every page by its look, <em>every concept by its name</em></h1>
+    <div class="sub" id="sub">Left: every generated page, placed by its look and coloured by what voters favoured.
+      Right: how design elements combine into whole looks, and what each step adds or costs.</div>
+  </div>
+  <div class="tools">
+    <div class="fixture" id="fixture" hidden><b>Fixture data.</b> Synthetic pages, not real results.</div>
+    <div class="sm-readout" id="ro"></div>
+    <div class="tabs"><button class="hbtn" data-tab="map">Map</button><button class="hbtn" data-tab="graph">Concepts</button></div>
+    <button class="hbtn" id="theme">Light</button>
+  </div>
+</header>
+<div class="tasks" id="tasks" hidden></div>
+<main>
+  <section class="pane" id="mapPane">
+    <canvas id="map"></canvas>
+    <div class="empty" id="noPoints" hidden></div>
+    <div class="ctl" id="ctl">
+      <div class="mo">
+        <button id="mPrev" aria-label="Previous month">‹</button>
+        <h2 id="mTitle"></h2>
+        <button id="mNext" aria-label="Next month">›</button>
+        <button class="hbtn" id="mAll">All</button>
+      </div>
+      <div class="segs" id="segs"></div>
+      <div class="opts">
+        <span class="seg" id="encB" role="group" aria-label="Layout"></span><select id="enc" hidden></select>
+        <span class="seg" id="modeB" role="group" aria-label="Colour"></span><select id="mode" hidden></select>
+        <span id="modelL" hidden>Model <span class="seg" id="modelB" role="group" aria-label="Model"><button class="hbtn" data-mod="0">All</button><button class="hbtn" data-mod="1"></button></span></span>
+        <label id="fromL">From <select id="from"></select></label>
+        <label id="conceptL">Concept <select id="concept" aria-label="Concept"></select></label>
+        <a id="toGraph" hidden>Open in the concept graph →</a>
+        <label class="chk" id="ctrlL"><input type="checkbox" id="ctrl"> Beyond model strength</label>
+        <label class="chk" id="onlyL"><input type="checkbox" id="only"> Show only pages from this month</label>
+        <button class="hbtn" id="brush">Select region</button>
+      </div>
+      <div class="cap" id="mapCap"></div>
+    </div>
+    <div class="region" id="region" hidden></div>
+    <div class="region probs" id="probs" hidden></div>
+    <details class="legend" id="mapLegend"><summary><span class="key" id="mapKey"></span><u>How to read the map</u></summary><div id="mapLegendBody"></div></details>
+    <div class="sm-zoom"><button id="mIn" aria-label="Zoom in">+</button><button id="mOut" aria-label="Zoom out">−</button><button id="mFit" aria-label="Fit">⤢</button></div>
+  </section>
+  <section class="pane" id="graphPane">
+    <canvas class="sm-sky"></canvas>
+    <div class="gopts" id="gopts"></div>
+    <div class="empty" id="noGraph" hidden>No concept graph in this data folder yet.</div>
+    <details class="legend" id="graphLegend"><summary><span class="key" id="graphKey"></span><u>How to read the graph</u></summary><div id="graphLegendBody"></div></details>
+    <div class="sm-zoom"><button id="gIn" aria-label="Zoom in">+</button><button id="gOut" aria-label="Zoom out">−</button><button id="gFit" aria-label="Fit">⤢</button></div>
+    <div class="sm-insp"><div class="sm-rz"></div><div class="sm-head"></div><button class="sm-x" aria-label="Close">✕</button><div class="sm-body"></div></div>
+  </section>
+</main>
+</div>
+<div class="sm-tip"></div>
+<dialog class="sm-dlg"><div class="sm-dh"><b id="dt"></b><button onclick="this.closest('dialog').close()">Close</button></div><div class="sm-doc" id="db"></div></dialog>
+<script src="vendor/starmap.js"></script>
+<script src="lightbox.js"></script>
+<script src="panzoom.js"></script>
+<script src="columns.js"></script>
+<script src="picker.js"></script>
+<script src="hovercard.js"></script>
+<script src="fullnet.js"></script>
+<script src="dualmap.js"></script>
+<script src="nav.js"></script>
+</body></html>

@@ -1,0 +1,76 @@
+/* the concept graph (Network, Details) */
+.sm-insp .shots img,.region img{cursor:zoom-in}
+body[data-gv="2"] .gopts{flex-direction:column;align-items:stretch;gap:5px}
+.g2row{display:flex;flex-wrap:wrap;gap:5px 8px;align-items:center}
+.g2row select,.g2row input{font:inherit;color:var(--starlight);background:var(--well);border:1px solid var(--line-strong);border-radius:7px;padding:3px 6px;max-width:170px}
+.g2path{left:14px;bottom:56px;max-width:min(560px,46%);max-height:46%;overflow:auto;padding:10px 12px}
+.g2path h3{font-size:13px;color:var(--starlight);margin:0 0 4px}.g2path .x{float:right;padding:2px 9px}
+.g2path .g2h{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;margin:6px 0 2px}
+.g2path .g2l{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline;font-size:11.5px}.g2path .g2l a{color:var(--starlight);cursor:pointer}.g2path .g2l a:hover{color:var(--ice)}
+.g2path .g2n{flex:0 0 100%;color:var(--dim);font-size:10.5px}.g2path .g2l.sel a{color:var(--ice)}.g2path b.pos{color:var(--lime)}.g2path b.neg{color:var(--rose)}.g2path em{color:var(--ember);font-style:normal;font-size:10px}
+.g2path .g2l i{color:var(--faint);font-style:normal}
+.sm-insp .sm-head .def{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sm-insp .sm-head .def:hover{-webkit-line-clamp:unset}
+body[data-gv="2"] .sm-insp .sm-sec{margin-top:10px}
+body[data-gv="2"] #graphPane .sm-insp{--iw:500px}
+.g2path{max-height:40%}
+@media (max-width:900px){body[data-view] .sm-brand .sub{display:none}body[data-gv="2"] .g2path{max-width:none;right:8px;left:8px}}
+.netrule{font-size:11.5px;color:var(--dim)}.netrule summary{cursor:pointer;color:var(--ice)}.netrule div{position:absolute;z-index:9;max-width:560px;margin-top:4px;padding:8px 10px;background:var(--panel-2,var(--panel));border:1px solid var(--line-strong);border-radius:8px;line-height:1.5;color:var(--starlight)}
+#gmode .hbtn{padding:6px 11px}
+body[data-gmode="net"] #graphPane .sm-insp{--iw:500px}
+.g2path.inpanel{position:static;max-width:none;max-height:none;padding:0;background:none;border:0;backdrop-filter:none}
+.g2path.inpanel h3{display:none}
+body[data-gv="2"] .sm-insp .sm-sec{margin-top:6px}
+body[data-view=graph]:not([data-gv]) .exg img{aspect-ratio:2.3/1}
+body[data-view=graph]:not([data-gv]) .sm-insp .sm-sec{margin-top:8px}
+.audtag{display:inline-block;margin-left:6px;padding:0 6px;border-radius:999px;border:1px solid var(--ember);color:var(--ember);font:500 10px var(--font-ui);letter-spacing:0;text-transform:none}
+body[data-view] #mapPane,body[data-view] #graphPane{border-radius:12px;border:1px solid var(--line)}
+#graphPane .sm-zoom,#mapPane .sm-zoom{display:none}
+.netcap{position:absolute;left:50%;transform:translateX(-50%);bottom:104px;z-index:5;font-size:12px;color:var(--dim);pointer-events:none;white-space:nowrap}
+body:not([data-gmode="net"]) .netcap{display:none}
+.netcore{color:var(--starlight)}
+body[data-gmode="net"] .gopts .g2row{flex-wrap:nowrap;overflow-x:auto}
+body[data-gv="2"] .legend .tiers{flex-direction:row;flex-wrap:wrap;gap:2px 8px}
+body[data-gv="2"] .legend .netcore{display:block;font-size:11.5px;margin-bottom:2px}
+body[data-gv="2"] .gopts label{display:inline-flex;gap:4px;align-items:center;white-space:nowrap}
+body[data-gv="2"] .gopts .seg .hbtn{white-space:nowrap}
+.gopts .pk-btn{min-width:120px;max-width:220px}
+body[data-view=graph] #ro{display:none}
+body[data-view=graph][data-gmode=net] .pg-frame{padding-bottom:var(--s16)}
+body[data-view=graph] #ctrlrow{margin-bottom:var(--s12)}
+body[data-view=graph] #ctrlrow .tools{flex-wrap:nowrap;align-items:center;gap:var(--s8);width:100%}
+body[data-view=graph] #ctrlrow #gopts{position:static;margin:0;padding:0;background:none;border:0;box-shadow:none;flex:1;min-width:0}
+body[data-view=graph] #ctrlrow #gopts .g2row{flex-wrap:nowrap;gap:var(--s8);align-items:center;overflow:visible}
+body[data-view=graph] #ctrlrow .netrule>summary{color:var(--dim);font-size:12px;cursor:pointer;list-style:none;white-space:nowrap}
+body[data-view=graph] #ctrlrow .netrule>summary b{color:var(--starlight)}
+body[data-view=graph] #ctrlrow .netrule[open]>div{position:absolute;z-index:60;margin-top:var(--s8);max-width:640px;padding:var(--s16);background:var(--panel-2,rgba(13,19,38,.98));border:1px solid var(--line-strong);border-radius:10px;font-size:12.5px;line-height:1.55}
+body[data-view=graph][data-gmode=net] #graphLegend>summary>u{display:none}
+body[data-view=graph][data-gmode=net] #graphLegend{pointer-events:none;padding:4px 10px}
+body[data-view=graph][data-gmode=net] #graphLegend .key{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%}
+body[data-view=graph][data-gmode=net] #graphLegend .netcore{display:inline;margin-right:var(--s8)}
+body[data-view=graph][data-gmode=net] #graphLegend .tiers{display:inline}
+body[data-view=graph][data-gmode=net] #graphLegend .tiers>span{display:inline}
+body[data-view=graph][data-gmode=net] #graphLegend{max-width:calc(100% - 150px)}
+body[data-view=graph][data-gmode=dense] .pg-frame{padding-bottom:var(--s16)}
+body[data-view=graph] #ctrlrow #g2fly{width:180px;padding:5px 10px;font:inherit;font-size:12px;color:var(--starlight);background:var(--panel-2,rgba(13,19,38,.92));border:1px solid var(--line-strong);border-radius:8px}
+body[data-view=graph] #ctrlrow #g2fly.miss{border-color:var(--rose)}
+body[data-view=graph] #ctrlrow .dfilt>summary{color:var(--starlight);border:1px solid var(--line-strong);border-radius:8px;padding:4px 10px}
+body[data-view=graph] #ctrlrow .dfilt[open]>div .hbtn{margin:2px}
+body[data-view=graph][data-gmode=dense] #graphLegend>summary>u{display:none}
+body[data-view=graph][data-gmode=dense] #graphLegend{pointer-events:none;padding:4px 10px;max-width:calc(100% - 150px)}
+body[data-view=graph][data-gmode=dense] #graphLegend .key{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%}
+body[data-view=graph][data-gmode=dense] #graphLegend .netcore,body[data-view=graph][data-gmode=dense] #graphLegend .tiers,body[data-view=graph][data-gmode=dense] #graphLegend .tiers>span{display:inline;margin-right:var(--s8)}
+.g2jump{margin-top:var(--s8)}
+body[data-view=graph][data-gmode=dense] #ctrlrow{margin-bottom:var(--s8)}
+body[data-view=graph][data-gmode=dense] #graphLegend{bottom:6px}
+body[data-view=graph][data-gmode=full] .pg-frame{padding-bottom:var(--s16)}
+body[data-view=graph] #ctrlrow .dfilt[open]>div{max-width:760px}
+body[data-view=graph] #ctrlrow .dfilt .lvc{display:inline-flex;gap:4px;align-items:center;margin:2px 8px 2px 0}
+/* item 54: the example card on a node */
+.hcard .nhc-g{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.hcard .nhc-g img{margin:0;aspect-ratio:16/10}
+.hcard .nhc-w{margin:6px 0 4px;font:11px var(--font-data,ui-monospace,monospace);color:var(--dim,#9aa7c9)}
+.hcard .nhc-wo img{opacity:.85;outline:1px dashed var(--line-strong,rgba(148,178,255,.3))}
+body[data-view=graph] #ctrlrow{min-height:44px;box-sizing:border-box}   /* a fixed height, so the frame below does not move as the row fills (Details rows; item 61) */
+body[data-view=graph] #pnote{height:3em;overflow:hidden}   /* item 61: the line that carries the selection keeps one height, so a click never moves the graph (the full text is in the panel) */
+@media (min-width:2400px){ body[data-gmode="net"] #graphPane .sm-insp{box-shadow:none;border-left:1px solid var(--line,rgba(127,127,127,.25))} }   /* item 58: docked beside the network, not floating over it */

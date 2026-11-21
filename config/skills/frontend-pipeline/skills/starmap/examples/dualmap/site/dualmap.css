@@ -1,0 +1,429 @@
+/* Dual map: layout and the light theme on top of vendor/starmap.css (tokens and sm-* components come from there). */
+@font-face{font-family:'JetBrains Mono';font-display:swap;src:url(vendor/JetBrainsMono-Regular.ttf) format('truetype')}
+:root{--serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+  --well:rgba(8,12,24,.5);--tipbg:rgba(6,9,19,.94);--backdrop:rgba(3,5,12,.74);--shadow:rgba(0,0,0,.5);
+  --gold:#e3b341;--silver:#c0c7d1;--bronze:#c98b5e;--brown:#8a6248}
+/* light: the warm-grey ground of the Design Arena reference */
+:root[data-theme=light]{--void:#eceae4;--void-2:#e4e1d9;--panel:rgba(250,249,246,.84);--panel-2:rgba(250,249,246,.95);
+  --line:rgba(60,50,30,.16);--line-soft:rgba(60,50,30,.09);--line-strong:rgba(60,50,30,.34);
+  --starlight:#1d1b17;--dim:#57534a;--faint:#857f72;
+  --ice:#1f5fbf;--ice-soft:rgba(31,95,191,.12);--ice-glow:rgba(31,95,191,.3);
+  --ember:#a8620a;--lime:#1f8a4c;--rose:#c8322f;
+  --well:rgba(255,255,255,.6);--tipbg:rgba(250,249,246,.97);--backdrop:rgba(40,36,28,.45);--shadow:rgba(40,30,10,.16);
+  --gold:#c99a1e;--silver:#8f98a6;--bronze:#b97a4e;--brown:#6b4a36}
+:root[data-theme=light] .sm-vignette{display:none}
+
+body{display:flex;flex-direction:column}
+.top{position:relative;z-index:10;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:14px 22px 10px}
+.sm-brand .sub{max-width:640px;color:var(--dim);letter-spacing:0;font-size:12px}
+.tools{display:flex;gap:10px;align-items:center;flex:none}
+.gopts{position:absolute;right:12px;top:8px;z-index:6;display:flex;gap:6px;align-items:center;font-size:11.5px;color:var(--dim)}
+.gopts .hbtn{padding:3px 9px;font-size:11px}
+.legend .bd{display:inline-grid;place-items:center;width:13px;height:13px;border:1px solid;border-radius:50%;font:700 10px/1 var(--font-data);font-style:normal;margin-right:4px;vertical-align:-2px}
+table.sum{width:100%;border-collapse:collapse;font-size:12px}table.sum td{padding:4px 0}table.sum td.n{font-family:var(--font-data);text-align:right;color:var(--dim)}
+table.sum.cond td.n{white-space:nowrap;padding-left:6px}table.sum td.n.pos{color:var(--lime)}table.sum td.n.neg{color:var(--rose)}table.sum tr.tot td{border-top:1px solid var(--line)}table.sum tr.go{cursor:pointer}table.sum tr.go:hover td:first-child{color:var(--ice)}
+.tabs{display:none;gap:6px}
+/* single-pane pages: ?view=map, ?view=graph */
+body[data-view=map] #graphPane,body[data-view=graph] #mapPane,body[data-view] .tabs{display:none}
+body[data-view] #graphPane{border-left:0}
+body[data-view=graph] .sm-act.tomap{display:block}
+.opts a,.empty a,.found a,.gcap a{color:var(--ice)}
+.tasks{position:relative;z-index:10;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:0 22px 10px;font-size:12px;color:var(--dim)}
+.tasks[hidden]{display:none}.tasks .hbtn{padding:4px 11px;font-size:11.5px}.tasks .hbtn.on{background:var(--ice);color:var(--void)}
+.ctl .cap{margin-top:9px;font-size:12px;line-height:1.45;color:var(--dim)}
+.seg{display:inline-flex}.seg .hbtn{border-radius:0;margin-left:-1px;padding:5px 13px}
+.seg .hbtn:first-child{border-radius:999px 0 0 999px;margin-left:0}.seg .hbtn:last-child{border-radius:0 999px 999px 0}
+.seg .hbtn.on{background:var(--ice);color:var(--void)}
+.empty a{pointer-events:auto}
+body[data-nopoints] #mapPane>:not(.empty){display:none}
+.gopts{left:14px;flex-wrap:wrap;justify-content:flex-end}
+.gopts .gcap{flex:1 1 100%;order:-1}
+.found{color:var(--ember);margin:0 0 12px}
+.gopts a.warn{text-decoration:none}
+.gopts .warn{color:var(--ember);border:1px solid var(--ember);border-radius:999px;padding:3px 10px;background:var(--panel)}
+.hbtn{border:1px solid var(--line-strong);background:var(--panel);color:var(--ice);cursor:pointer;font-family:var(--font-ui);
+  padding:7px 12px;border-radius:999px;font-size:12px}
+.hbtn:hover,.hbtn.on{background:var(--ice-soft)}
+.hbtn:disabled{opacity:.4;cursor:default}
+.fixture{padding:7px 12px;border:1px solid var(--ember);border-radius:8px;
+  color:var(--ember);background:var(--panel);font-size:12px}
+main{flex:1;min-height:0;display:flex;position:relative;z-index:5}
+.pane{position:relative;overflow:hidden;min-width:0;border-top:1px solid var(--line)}
+#mapPane{flex:34}#graphPane{flex:66;border-left:1px solid var(--line)}
+#map{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+#map.brush{cursor:crosshair}
+canvas.sm-sky{position:absolute;touch-action:none}
+.empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--faint);font-size:13px;pointer-events:none}
+.empty[hidden]{display:none}
+
+/* month control: large serif title, arrows, segmented progress */
+.ctl{position:absolute;left:14px;right:14px;top:12px;z-index:6;padding:10px 14px 12px;background:var(--panel);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:var(--r)}
+.mo{display:flex;align-items:center;gap:10px}
+.mo h2{font-family:var(--serif);font-weight:500;font-size:30px;line-height:1.1;min-width:238px;text-align:center}
+.mo button:not(.hbtn){width:32px;height:32px;border-radius:50%;border:1px solid var(--line-strong);background:transparent;
+  color:var(--starlight);font-size:19px;line-height:1;cursor:pointer}
+.mo button:not(.hbtn):hover{background:var(--ice-soft)}
+.segs{display:flex;gap:4px;margin:9px 0 10px}
+.segs button{flex:1;height:14px;padding:0;border:0;background:none;cursor:pointer;position:relative}
+.segs button::after{content:"";position:absolute;left:0;right:0;top:5px;height:4px;border-radius:2px;background:var(--line-strong)}
+.segs button.on::after{background:var(--starlight)}
+.opts{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:12px;color:var(--dim)}
+.opts select{font:inherit;color:var(--starlight);background:var(--well);border:1px solid var(--line-strong);border-radius:7px;
+  padding:4px 6px;max-width:210px}
+.opts .chk{display:flex;align-items:center;gap:5px;cursor:pointer}
+.opts .chk input{accent-color:var(--ice)}
+.opts [hidden]{display:none}
+
+.legend,.region{position:absolute;z-index:6;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--line);border-radius:var(--r);font-size:11.5px;line-height:1.55;color:var(--dim)}
+.legend{left:14px;bottom:14px;max-width:min(430px,calc(100% - 76px));padding:8px 12px;max-height:70%;overflow:auto}
+.legend summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;gap:3px 10px;align-items:center;color:var(--starlight)}
+.legend summary::-webkit-details-marker{display:none}
+.legend summary u{color:var(--ice);text-decoration:none;border-bottom:1px dotted var(--ice);white-space:nowrap}
+.legend[open] summary u::after{content:" ▴"}.legend:not([open]) summary u::after{content:" ▾"}
+#graphLegend{max-width:calc(100% - 76px)}
+.legend .key .ramp{display:inline-block;width:70px;margin:0 3px;vertical-align:0}
+.legend p{margin-top:6px}
+.legend b{color:var(--starlight);font-weight:500}
+.legend .ramp{height:9px;border-radius:2px;margin:7px 0 2px}
+.legend .ends{display:flex;justify-content:space-between;font-family:var(--font-data);font-size:10.5px}
+.legend .sw{display:inline-block;width:9px;height:9px;margin:0 5px 0 0;vertical-align:-1px}
+.legend .it{display:inline-block;margin-right:11px;white-space:nowrap}
+.legend .ln{display:flex;align-items:center;gap:8px}.legend svg{flex:none;color:var(--dim)}
+.legend .grid{display:grid;grid-template-columns:1fr 1fr;gap:1px 10px;margin-top:4px}
+.region{z-index:7;right:14px;top:var(--ctl-b,150px);width:300px;max-width:calc(100% - 28px);max-height:calc(100% - var(--ctl-b,150px) - 14px);
+  overflow:auto;padding:11px 13px}
+.region h3{font-family:var(--font-display);font-size:14px;color:var(--starlight);margin-bottom:6px;padding-right:54px}
+.region .x{position:absolute;right:9px;top:8px;font-size:11px;padding:3px 9px}
+.region table{width:100%;border-collapse:collapse;margin-top:6px}
+.region td{padding:3px 0;border-top:1px solid var(--line-soft);vertical-align:top}
+.region td.n{font-family:var(--font-data);text-align:right;white-space:nowrap;padding-left:8px;color:var(--starlight)}
+.region tr.go{cursor:pointer}.region tr.go:hover td{color:var(--ice)}
+.region .stat{display:flex;justify-content:space-between;gap:10px}
+.region .stat b{font-family:var(--font-data);font-weight:500}
+.pos{color:var(--lime)}.neg{color:var(--rose)}
+
+.mtip{position:fixed;z-index:15;pointer-events:none;display:none;background:var(--tipbg);border:1px solid var(--line);border-radius:8px;
+  padding:6px;font-size:11px;line-height:1.5;color:var(--starlight);box-shadow:0 10px 30px var(--shadow);width:176px}
+.mtip img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:4px;margin-bottom:5px;background:var(--void-2)}
+.mtip s{text-decoration:none;color:var(--dim);font-family:var(--font-data);font-size:10px}
+
+/* tournament card: prompt on top, four pages side by side with rank badges */
+.card .meta{font-family:var(--font-data);font-size:10.5px;color:var(--faint);margin-top:14px}
+.card .prompt{font-family:var(--serif);font-size:20px;line-height:1.35;color:var(--starlight);margin:6px 0 16px}
+.four{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.four figure{margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--well)}
+.four figure.cur{outline:2px solid var(--ice);outline-offset:1px}
+.four img,.shots img,.ph{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:var(--void-2)}
+.ph{display:grid;place-items:center;color:var(--faint);font-size:10.5px}
+.four figcaption{padding:8px 10px 10px;font-size:12px;color:var(--starlight);display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.four figcaption s{flex-basis:100%;text-decoration:none;font-family:var(--font-data);font-size:10.5px;color:var(--dim)}
+.badge{font-family:var(--font-data);font-size:10.5px;font-weight:700;color:#14110b;border-radius:999px;padding:2px 8px}
+.badge.p1{background:var(--gold)}.badge.p2{background:var(--silver)}.badge.p3{background:var(--bronze)}.badge.p4{background:var(--brown);color:#fff}
+
+/* drawer */
+.sm-insp{position:absolute;width:var(--iw,min(400px,100%))}
+.big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.big b{font-family:var(--font-data);font-weight:500;font-size:26px;line-height:1}
+.big span,.meas{font-size:11.5px;color:var(--dim)}
+.meas{margin-top:6px}
+.shots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.shots figure{margin:0;cursor:pointer}
+.shots img,.shots .ph{border:1px solid var(--line);border-radius:4px}
+.spark{width:100%;height:80px;display:block}
+.sm-act.tomap{display:none;margin:0 0 14px}
+
+/* surfaces that starmap.css hard-codes dark */
+.sm-pane,.sm-rel{background:var(--well);border-color:var(--line-soft)}
+.sm-tip{background:var(--tipbg);box-shadow:0 10px 30px var(--shadow)}
+.sm-x,.sm-zoom button{background:var(--panel)}
+.sm-zoom{position:absolute;right:14px;bottom:14px;z-index:6}
+.sm-zoom button{font-size:16px;color:var(--dim)}
+.sm-insp{box-shadow:-18px 0 50px var(--shadow)}
+dialog.sm-dlg{box-shadow:0 30px 90px var(--shadow)}
+dialog.sm-dlg::backdrop{background:var(--backdrop)}
+.sm-dh{background:var(--panel-2)}
+.sm-readout b{font-size:12px}
+
+@media (max-width:900px){
+  .top{padding:10px 14px 8px}.sm-brand .sub,.sm-eyebrow{display:none}.sm-brand h1{font-size:15px}
+  .tabs{display:flex}.tools{gap:6px}.hbtn{padding:6px 10px}
+  .top{flex-wrap:wrap;gap:8px}.tools{flex:1 1 100%;flex-wrap:wrap}.tabs{margin-right:auto}
+  .fixture{order:9;flex:1 1 100%;font-size:11px;padding:5px 9px}
+  .gopts{left:8px;right:8px;flex-wrap:wrap}
+  body[data-tab=map] #graphPane,body[data-tab=graph] #mapPane{display:none}
+  #graphPane{border-left:0}
+  .ctl{left:8px;right:8px;top:8px;padding:8px 10px}
+  .mo h2{font-size:23px;min-width:0;flex:1}
+  .legend{left:8px;bottom:8px}.sm-zoom{right:8px;bottom:8px}
+  .region{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:46%;z-index:7}
+  .four{grid-template-columns:repeat(2,1fr)}.sm-doc{padding:6px 14px 20px}.card .prompt{font-size:17px}
+  .sm-act.tomap{display:block}
+}
+
+/* model sub-space; the inset in the graph drawer */
+a.hbtn{text-decoration:none}
+.region{font-size:12px}
+.probs{left:14px;right:auto;width:360px;max-height:calc(100% - var(--ctl-b,150px) - 64px)}
+.probs ol{margin:0;padding-left:20px}
+.probs li{padding:7px 4px;border-top:1px solid var(--line-soft);cursor:pointer;color:var(--starlight)}
+.probs li:hover b,.probs li.on b{color:var(--ice)}
+.probs li.on{background:var(--ice-soft)}
+.probs li b{font-weight:500;display:block}
+.probs li span,.probs li em{display:block;font-style:normal;color:var(--dim);margin-top:2px}
+.probs li span{font-family:var(--font-data)}
+.probs a{color:var(--ice)}
+.probs p{margin-top:6px}
+.probs .two{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.probs figure{margin:0}.probs canvas{display:block;width:100%;border:1px solid var(--line);border-radius:4px}
+.probs figcaption{font-size:12px;color:var(--dim);margin-top:3px}
+#modelL{display:inline-flex;align-items:center;gap:8px}#modelL[hidden]{display:none}
+canvas.inset{display:block;width:100%;border:1px solid var(--line);border-radius:4px}
+.sm-pane a.sm-act{display:block;margin-top:10px;text-decoration:none;text-align:center}
+.gopts .seg .hbtn{padding:3px 11px;font-size:12px}
+.gopts #gReg{color:var(--starlight);font-size:12px}
+.card img.one{display:block;width:100%;max-width:960px;border:1px solid var(--line);border-radius:10px}
+
+/* Continuous space page: header and controls as one slim strip, so the map gets the height (user ruling 2026-11-19) */
+body[data-view=map] .top{padding:8px 22px 6px;align-items:center}
+body[data-view=map] .sm-eyebrow,body[data-view=map] .sm-brand .sub{display:none}
+body[data-view=map] .tasks{padding-bottom:8px}
+.ctl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:7px 12px;top:8px}
+.mo{gap:6px}
+.mo h2{font-family:var(--font-ui);font-weight:600;font-size:18px;min-width:92px}
+.mo button:not(.hbtn){width:24px;height:24px;font-size:15px}
+.ctl .hbtn{padding:4px 10px}.ctl .seg .hbtn{padding:4px 10px}
+.segs{flex:none;width:240px;margin:0;gap:3px}
+.opts{flex:1 1 auto;gap:6px 10px;flex-wrap:nowrap;white-space:nowrap}
+.ctl .cap{flex:1 1 100%;margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:1200px){.opts{flex-wrap:wrap;white-space:normal}.ctl .cap{white-space:normal}}
+
+.legend .tiers{display:flex;flex-direction:column;gap:2px;flex-basis:100%}.legend .tiers .sw{margin-right:4px}
+
+.probs #cmpB{float:right;padding:3px 9px;margin:-2px 0 6px 8px}
+
+/* example pages in a panel: four shown, two by two; one alone takes the full width */
+.exg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.exg.one{grid-template-columns:1fr}
+.exg figure{position:relative;margin:0}.exg figure[hidden]{display:none}
+.exg img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;border-radius:6px;border:1px solid var(--line);cursor:zoom-in;display:block;background:var(--well)}
+.exg .exm{position:absolute;left:5px;top:5px;font-size:10px;padding:1px 6px;border-radius:999px;background:var(--ice);color:var(--void);pointer-events:none}
+.exg .exmore{position:absolute;right:5px;bottom:5px;font:600 11px var(--font-data);padding:2px 7px;border-radius:999px;background:var(--panel-2,var(--panel));color:var(--starlight);border:1px solid var(--line-strong);pointer-events:none}
+/* headline numbers under a node's title */
+.sm-head .hl{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px;font-size:12px;color:var(--dim)}.sm-head .hl b{color:var(--starlight);font-family:var(--font-data)}
+.sm-head .hl b.pos{color:var(--lime)}.sm-head .hl b.neg{color:var(--rose)}.sm-head .hl .warn{color:var(--ember)}
+/* distribution */
+.pb{display:grid;grid-template-columns:minmax(80px,1fr) 2fr auto;gap:8px;align-items:center;font-size:11.5px;margin:3px 0}
+.pb .pl{color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pb .pl a{color:var(--starlight);cursor:pointer}
+.pb .pw{position:relative;height:12px;background:var(--well);border-radius:3px}
+.pb .pw i{position:absolute;left:0;border-radius:2px}.pb .p1{top:0;height:6px;background:var(--ice)}.pb .p0{bottom:0;height:5px;background:var(--faint)}
+.pb .pv{font-family:var(--font-data);color:var(--starlight);white-space:nowrap}.pb .pv em{color:var(--faint);font-style:normal}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:6px}
+.dh{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;margin:2px 0 3px}.dh span{text-transform:none}
+.tb{position:relative;display:grid;grid-template-columns:78px 1fr 36px;align-items:center;height:13px;font-size:10.5px;color:var(--dim)}
+.tb span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.tb.on span{color:var(--ice)}
+.tb i{display:block;height:7px;background:var(--ice);border-radius:2px;grid-column:2;max-width:100%}
+.tb b{position:absolute;top:1px;bottom:1px;width:1px;background:var(--starlight);margin-left:78px;opacity:.6;max-width:calc(100% - 114px)}
+.tb em{font-style:normal;font-family:var(--font-data);text-align:right;color:var(--faint)}
+.mb{display:flex;align-items:flex-end;gap:2px;height:46px}.mb i{flex:1;background:var(--ice);border-radius:2px 2px 0 0;min-height:1px}
+.ml{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--faint)}.ml a{color:var(--ice)}
+#g2map{width:100%;height:auto;border-radius:6px;border:1px solid var(--line);display:block}
+/* ranked lists of the selected state */
+.rks{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.rk .rkn{font-size:10.5px;color:var(--faint);margin:-2px 0 4px}
+table.lt th{font-weight:500;color:var(--dim);padding:4px 0 4px 6px;white-space:nowrap;font-size:11px}
+/* v2 header strip and chain panel */
+.lvc{display:inline-flex;gap:4px;align-items:center;padding:2px 8px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}.lvc b{color:var(--starlight)}
+.lvc .hbtn{padding:0 6px;font-size:10.5px}.lvc.warn{color:var(--ember);border-color:var(--ember)}
+#resetView{white-space:nowrap}
+
+/* the head of a panel: title, one line of definition, the numbers */
+
+body[data-gv="2"] .sm-head .mono{display:none}
+body[data-gv="2"] .exg img{aspect-ratio:2.3/1}
+.dg3{display:grid;grid-template-columns:1fr 1fr .9fr;gap:4px 12px;margin-top:4px}
+.dg3 .tb{grid-template-columns:62px 1fr 38px;height:13px;line-height:13px;font-size:10px;overflow:hidden}
+.tb em{white-space:nowrap}
+.dg3 .tb b{margin-left:62px;max-width:calc(100% - 100px)}
+.dg3 .mb{height:34px}
+
+.tb .tw{position:relative;height:7px;display:block}.tb .tw i{position:absolute;left:0;top:0;bottom:0;height:auto}
+.tb .tw b,.dg3 .tb .tw b{position:absolute;top:-2px;bottom:-2px;width:1px;margin:0;max-width:none;background:var(--starlight);opacity:.7}
+.tools .smallnk{font-size:11px;color:var(--dim);text-decoration:underline;white-space:nowrap}
+.gcap .undc{color:var(--ember);font-weight:500}
+.mtip{width:min(340px,calc(100vw - 32px))}.mtip s{font-size:11px}
+
+/* the continuous space names itself: eyebrow, title and one plain sentence (user, 2026-11-20 11:0x) */
+
+
+
+.dg3 .tb{height:12px;line-height:12px}
+.dg .spark{height:34px}
+
+/* the site's page frame (page.css .pg-frame in index.html): header, controls, task row and the panes fill it, on the same edges */
+body[data-view] .pg-frame>.top,body[data-view] .pg-frame>.tasks,body[data-view] .pg-frame>main,.pg-frame>.ctrlrow{width:auto;margin-inline:0;padding-inline:0;box-sizing:border-box}
+body>.pg-frame{flex:1;min-height:0;display:flex;flex-direction:column}   /* the body is a flex column: the frame takes the rest of the window and the panes the rest of the frame */
+body[data-view] .pg-frame>.top{padding-top:0}body[data-view] .pg-frame>main{margin-bottom:0}
+/* zoom buttons come from panzoom.js; the engine's own are hidden */
+
+/* header as page.css draws it (one heading, the note under it); the page's controls in a row under it */
+body[data-view] .top{display:block;padding-bottom:0}
+body[data-view] .top .sm-brand{max-width:none}
+.ctrlrow{margin:0 0 var(--s16);display:flex;justify-content:flex-start}
+.ctrlrow .tools{flex-wrap:wrap}
+/* the strip's pickers (picker.js) keep to the width of their choices, so the strip stays on one or two rows */
+/* the note keeps two lines of room, so the hover reading (often one line) never moves the panes */
+body[data-view] #pnote{min-height:3em}
+/* round 3 (items 27-31): one row of controls, the Light switch in the navigation bar, a one-line legend, the graph larger */
+#site-nav .navtheme{order:99;margin-left:auto;padding:4px 12px;font-size:12px}
+#site-nav:has(#nav-upd) .navtheme{margin-left:var(--s8)}
+/* the tournament viewer on the map (items 32-33) */
+.sm-dlg .tv{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s12);min-width:0}
+.tv-meta{font:11px var(--font-data);color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
+.tv-q{overflow-wrap:anywhere;margin:var(--s4) 0 0;font-size:14px;line-height:1.5;color:var(--starlight)}
+.tv-more{background:none;border:0;color:var(--ice);cursor:pointer;font-size:12px;padding:0}
+.tv-big{margin:0}.tv-big img{display:block;width:100%;height:38vh;object-fit:contain;object-position:center top;background:var(--void-2);border-radius:10px}
+.tv-big figcaption{font-size:12.5px;line-height:1.6;color:var(--dim);margin-top:var(--s8)}.tv-big figcaption b{color:var(--starlight)}
+.tv-big .pos,.tv-row .pos{color:var(--lime)}.tv-big .neg,.tv-row .neg{color:var(--rose)}
+.tv-clash{color:var(--ember,#ffb36b);font-style:normal}
+.tv-row h4{margin:0 0 var(--s4);font:600 11px var(--font-data);color:var(--faint);text-transform:uppercase;letter-spacing:.08em}
+.tv-row.on h4{color:var(--ice)}
+.tv-strip{display:flex;gap:var(--s8);overflow-x:auto}
+.tv-o{flex:0 0 140px;display:flex;flex-direction:column;gap:2px;padding:0 0 4px;border:1px solid var(--line);border-radius:8px;background:var(--well);color:var(--starlight);cursor:pointer;text-align:left;font-size:11.5px;overflow:hidden}
+.tv-o img,.tv-o .ph{width:100%;aspect-ratio:16/10;object-fit:cover}
+.tv-o.cur{outline:2px solid var(--ice);outline-offset:1px}
+.tv-o .tv-m{display:flex;align-items:center;gap:4px;padding:0 6px;white-space:nowrap;overflow:hidden}
+.tv-o s{text-decoration:none;font:10.5px var(--font-data);color:var(--dim);padding:0 6px}
+.tv-dot{flex:none;width:9px;height:9px;border-radius:2px;background:var(--faint)}
+.tv-key{margin:0;font-size:11.5px;color:var(--faint)}
+/* placement colours (item 34): one definition in page.css; the fallbacks only until it lands */
+.place-1{color:var(--place-1,#2fbf71)}.place-2{color:var(--place-2,#9fe0b6)}.place-3{color:var(--place-3,#f2a3a3)}.place-4{color:var(--place-4,#e0453a)}
+.tv-dot.place-1{background:var(--place-1,#2fbf71)}.tv-dot.place-2{background:var(--place-2,#9fe0b6)}.tv-dot.place-3{background:var(--place-3,#f2a3a3)}.tv-dot.place-4{background:var(--place-4,#e0453a)}
+/* Full network (items 35-38): its strip in the one controls row; the search field and the Filters popover */
+/* Details (item 39): one controls row too */
+/* item 48: the continuous space in one control row */
+body[data-view=map] #ro{display:none}
+body[data-view=map] .pg-frame{padding-bottom:var(--s16)}
+body[data-view=map] .tasks.gone{display:none!important}
+body[data-view=map] #ctrlrow{margin-bottom:var(--s12)}
+body[data-view=map] #ctrlrow .tools{flex-wrap:nowrap;align-items:center;gap:var(--s8);width:100%}
+body[data-view=map] #ctrlrow .mo{display:flex;align-items:center;gap:4px;margin:0}
+body[data-view=map] #ctrlrow .mo h2{font-size:13px;margin:0 4px;white-space:nowrap;min-width:72px;text-align:center}
+body[data-view=map] #ctrlrow .mo button{background:none;border:1px solid var(--line-strong);border-radius:6px;color:var(--starlight);padding:2px 7px;cursor:pointer}
+body[data-view=map] #ctrlrow .opts{display:flex;flex-wrap:nowrap;align-items:center;gap:var(--s8);font-size:12px;white-space:nowrap}
+body[data-view=map] #ctrlrow .opts .chk{font-size:11.5px;color:var(--dim)}
+body[data-view=map] #ctrlrow .mtaskL{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--dim);white-space:nowrap}
+body[data-view=map] #ctrlrow .pk-btn{min-width:120px;max-width:180px}
+body[data-view=map] #ctl[hidden]{display:none!important}
+body[data-view=map] #ctrlrow .tools{gap:6px}
+body[data-view=map] #ctrlrow .hbtn{padding-left:10px;padding-right:10px}
+
+/* T02.05.06.03/S01: the map's hover card (shared hovercard.js) and the tournament viewer */
+.hcard .hc-m{font-weight:400;color:var(--dim)}.hcard .hc-s b{color:var(--starlight);font-weight:500}
+.hcard .pos{color:var(--lime)}.hcard .neg{color:var(--rose)}.hcard .tv-clash{font-style:normal}
+.tv-big img{height:clamp(180px,30vh,420px)}
+.tv-o{flex-basis:150px}.tv-o s{display:flex;align-items:center;gap:5px}
+.tv-o .badge.p1{background:var(--place-1)}.tv-o .badge.p2{background:var(--place-2)}.tv-o .badge.p3{background:var(--place-3)}.tv-o .badge.p4{background:var(--place-4);color:#fff}
+/* the viewer in two columns from 900 px: the page large on the left, the task and its tournament (2 x 2) on the right, look-alikes below */
+@media (min-width:900px){
+  dialog.sm-dlg:has(.tv){width:min(1240px,calc(100vw - 64px));max-width:none}
+  .sm-dlg .tv{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);grid-template-areas:"big task" "big t" "n n" "key key";grid-template-rows:auto 1fr auto auto;column-gap:var(--s24);align-items:start}
+  .tv-task{grid-area:task}.tv-big{grid-area:big}.tv-t{grid-area:t}.tv-n{grid-area:n}.tv-key{grid-area:key}
+  .tv-big img{height:clamp(220px,44vh,520px)}
+  .tv-t .tv-strip{display:grid;grid-template-columns:1fr 1fr;overflow:visible}
+  .tv-t .tv-o img,.tv-t .tv-o .ph{aspect-ratio:16/9}
+}
+body[data-view=map] #ctrlrow .hbtn{padding-left:8px;padding-right:8px}
+body[data-view=map] #conceptL{font-size:0}body[data-view=map] #conceptL>*{font-size:12px}
+.mapopts{position:absolute;z-index:6;left:14px;top:14px;display:flex;gap:var(--s16);align-items:center;padding:6px 12px;border-radius:8px;background:var(--panel);border:1px solid var(--line);font-size:12px;color:var(--dim)}
+.mapopts:not(:has(> :not([hidden]))){display:none}
+.mapopts .chk{display:inline-flex;gap:5px;align-items:center;cursor:pointer}.mapopts a{color:var(--ice);cursor:pointer}
+body[data-view=map] #ctrlrow .pk-btn{min-width:96px}
+body[data-view=map] .probs{top:56px;max-height:calc(100% - 120px)}
+.mapopts [hidden]{display:none!important}
+@media (max-width:900px){body[data-view=map] #ctrlrow .tools,body[data-view=map] #ctrlrow .opts{flex-wrap:wrap}}   /* phones: the one row wraps rather than run off the screen */
+/* item 81: on wide screens (>= 2400 px) the tournament viewer docks beside the map instead of covering it */
+:root{--dock-w:clamp(560px,30vw,1000px)}
+body.tv-docked #mapPane{margin-right:calc(var(--dock-w) + var(--s24))}
+dialog.sm-dlg.dock,dialog.sm-dlg.dock:has(.tv){position:fixed;inset:auto;margin:0;right:var(--pg-g);top:var(--dock-top,200px);height:var(--dock-h,70vh);max-height:none;width:var(--dock-w);max-width:none;z-index:30;display:flex;flex-direction:column}
+dialog.sm-dlg.dock .sm-doc{max-height:none;flex:1;min-height:0}
+dialog.sm-dlg.dock .tv{grid-template-columns:minmax(0,1fr);grid-template-areas:"task" "big" "t" "n" "key";grid-template-rows:none}
+dialog.sm-dlg.dock .tv-big img{height:clamp(240px,34vh,560px)}
+dialog.sm-dlg.dock .tv-t .tv-strip{grid-template-columns:repeat(4,1fr)}
+.tv-o s{align-items:flex-start}.tv-o s>span{white-space:normal;line-height:1.35}
+/* the concept graph (Network, Details) */
+.sm-insp .shots img,.region img{cursor:zoom-in}
+body[data-gv="2"] .gopts{flex-direction:column;align-items:stretch;gap:5px}
+.g2row{display:flex;flex-wrap:wrap;gap:5px 8px;align-items:center}
+.g2row select,.g2row input{font:inherit;color:var(--starlight);background:var(--well);border:1px solid var(--line-strong);border-radius:7px;padding:3px 6px;max-width:170px}
+.g2path{left:14px;bottom:56px;max-width:min(560px,46%);max-height:46%;overflow:auto;padding:10px 12px}
+.g2path h3{font-size:13px;color:var(--starlight);margin:0 0 4px}.g2path .x{float:right;padding:2px 9px}
+.g2path .g2h{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;margin:6px 0 2px}
+.g2path .g2l{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline;font-size:11.5px}.g2path .g2l a{color:var(--starlight);cursor:pointer}.g2path .g2l a:hover{color:var(--ice)}
+.g2path .g2n{flex:0 0 100%;color:var(--dim);font-size:10.5px}.g2path .g2l.sel a{color:var(--ice)}.g2path b.pos{color:var(--lime)}.g2path b.neg{color:var(--rose)}.g2path em{color:var(--ember);font-style:normal;font-size:10px}
+.g2path .g2l i{color:var(--faint);font-style:normal}
+.sm-insp .sm-head .def{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sm-insp .sm-head .def:hover{-webkit-line-clamp:unset}
+body[data-gv="2"] .sm-insp .sm-sec{margin-top:10px}
+body[data-gv="2"] #graphPane .sm-insp{--iw:500px}
+.g2path{max-height:40%}
+@media (max-width:900px){body[data-view] .sm-brand .sub{display:none}body[data-gv="2"] .g2path{max-width:none;right:8px;left:8px}}
+.netrule{font-size:11.5px;color:var(--dim)}.netrule summary{cursor:pointer;color:var(--ice)}.netrule div{position:absolute;z-index:9;max-width:560px;margin-top:4px;padding:8px 10px;background:var(--panel-2,var(--panel));border:1px solid var(--line-strong);border-radius:8px;line-height:1.5;color:var(--starlight)}
+#gmode .hbtn{padding:6px 11px}
+body[data-gmode="net"] #graphPane .sm-insp{--iw:500px}
+.g2path.inpanel{position:static;max-width:none;max-height:none;padding:0;background:none;border:0;backdrop-filter:none}
+.g2path.inpanel h3{display:none}
+body[data-gv="2"] .sm-insp .sm-sec{margin-top:6px}
+body[data-view=graph]:not([data-gv]) .exg img{aspect-ratio:2.3/1}
+body[data-view=graph]:not([data-gv]) .sm-insp .sm-sec{margin-top:8px}
+.audtag{display:inline-block;margin-left:6px;padding:0 6px;border-radius:999px;border:1px solid var(--ember);color:var(--ember);font:500 10px var(--font-ui);letter-spacing:0;text-transform:none}
+body[data-view] #mapPane,body[data-view] #graphPane{border-radius:12px;border:1px solid var(--line)}
+#graphPane .sm-zoom,#mapPane .sm-zoom{display:none}
+.netcap{position:absolute;left:50%;transform:translateX(-50%);bottom:104px;z-index:5;font-size:12px;color:var(--dim);pointer-events:none;white-space:nowrap}
+body:not([data-gmode="net"]) .netcap{display:none}
+.netcore{color:var(--starlight)}
+body[data-gmode="net"] .gopts .g2row{flex-wrap:nowrap;overflow-x:auto}
+body[data-gv="2"] .legend .tiers{flex-direction:row;flex-wrap:wrap;gap:2px 8px}
+body[data-gv="2"] .legend .netcore{display:block;font-size:11.5px;margin-bottom:2px}
+body[data-gv="2"] .gopts label{display:inline-flex;gap:4px;align-items:center;white-space:nowrap}
+body[data-gv="2"] .gopts .seg .hbtn{white-space:nowrap}
+.gopts .pk-btn{min-width:120px;max-width:220px}
+body[data-view=graph] #ro{display:none}
+body[data-view=graph][data-gmode=net] .pg-frame{padding-bottom:var(--s16)}
+body[data-view=graph] #ctrlrow{margin-bottom:var(--s12)}
+body[data-view=graph] #ctrlrow .tools{flex-wrap:nowrap;align-items:center;gap:var(--s8);width:100%}
+body[data-view=graph] #ctrlrow #gopts{position:static;margin:0;padding:0;background:none;border:0;box-shadow:none;flex:1;min-width:0}
+body[data-view=graph] #ctrlrow #gopts .g2row{flex-wrap:nowrap;gap:var(--s8);align-items:center;overflow:visible}
+body[data-view=graph] #ctrlrow .netrule>summary{color:var(--dim);font-size:12px;cursor:pointer;list-style:none;white-space:nowrap}
+body[data-view=graph] #ctrlrow .netrule>summary b{color:var(--starlight)}
+body[data-view=graph] #ctrlrow .netrule[open]>div{position:absolute;z-index:60;margin-top:var(--s8);max-width:640px;padding:var(--s16);background:var(--panel-2,rgba(13,19,38,.98));border:1px solid var(--line-strong);border-radius:10px;font-size:12.5px;line-height:1.55}
+body[data-view=graph][data-gmode=net] #graphLegend>summary>u{display:none}
+body[data-view=graph][data-gmode=net] #graphLegend{pointer-events:none;padding:4px 10px}
+body[data-view=graph][data-gmode=net] #graphLegend .key{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%}
+body[data-view=graph][data-gmode=net] #graphLegend .netcore{display:inline;margin-right:var(--s8)}
+body[data-view=graph][data-gmode=net] #graphLegend .tiers{display:inline}
+body[data-view=graph][data-gmode=net] #graphLegend .tiers>span{display:inline}
+body[data-view=graph][data-gmode=net] #graphLegend{max-width:calc(100% - 150px)}
+body[data-view=graph][data-gmode=dense] .pg-frame{padding-bottom:var(--s16)}
+body[data-view=graph] #ctrlrow #g2fly{width:180px;padding:5px 10px;font:inherit;font-size:12px;color:var(--starlight);background:var(--panel-2,rgba(13,19,38,.92));border:1px solid var(--line-strong);border-radius:8px}
+body[data-view=graph] #ctrlrow #g2fly.miss{border-color:var(--rose)}
+body[data-view=graph] #ctrlrow .dfilt>summary{color:var(--starlight);border:1px solid var(--line-strong);border-radius:8px;padding:4px 10px}
+body[data-view=graph] #ctrlrow .dfilt[open]>div .hbtn{margin:2px}
+body[data-view=graph][data-gmode=dense] #graphLegend>summary>u{display:none}
+body[data-view=graph][data-gmode=dense] #graphLegend{pointer-events:none;padding:4px 10px;max-width:calc(100% - 150px)}
+body[data-view=graph][data-gmode=dense] #graphLegend .key{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%}
+body[data-view=graph][data-gmode=dense] #graphLegend .netcore,body[data-view=graph][data-gmode=dense] #graphLegend .tiers,body[data-view=graph][data-gmode=dense] #graphLegend .tiers>span{display:inline;margin-right:var(--s8)}
+.g2jump{margin-top:var(--s8)}
+body[data-view=graph][data-gmode=dense] #ctrlrow{margin-bottom:var(--s8)}
+body[data-view=graph][data-gmode=dense] #graphLegend{bottom:6px}
+body[data-view=graph][data-gmode=full] .pg-frame{padding-bottom:var(--s16)}
+body[data-view=graph] #ctrlrow .dfilt[open]>div{max-width:760px}
+body[data-view=graph] #ctrlrow .dfilt .lvc{display:inline-flex;gap:4px;align-items:center;margin:2px 8px 2px 0}
+/* item 54: the example card on a node */
+.hcard .nhc-g{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.hcard .nhc-g img{margin:0;aspect-ratio:16/10}
+.hcard .nhc-w{margin:6px 0 4px;font:11px var(--font-data,ui-monospace,monospace);color:var(--dim,#9aa7c9)}
+.hcard .nhc-wo img{opacity:.85;outline:1px dashed var(--line-strong,rgba(148,178,255,.3))}
+body[data-view=graph] #ctrlrow{min-height:44px;box-sizing:border-box}   /* a fixed height, so the frame below does not move as the row fills (Details rows; item 61) */
+body[data-view=graph] #pnote{height:3em;overflow:hidden}   /* item 61: the line that carries the selection keeps one height, so a click never moves the graph (the full text is in the panel) */
+@media (min-width:2400px){ body[data-gmode="net"] #graphPane .sm-insp{box-shadow:none;border-left:1px solid var(--line,rgba(127,127,127,.25))} }   /* item 58: docked beside the network, not floating over it */

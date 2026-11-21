@@ -1,0 +1,104 @@
+<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Arena · sealed final test</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="arena.css">
+<link rel="stylesheet" href="page.css">
+<link rel="stylesheet" href="lightbox.css">
+<link rel="stylesheet" href="columns.css">
+<style>
+/* Final-test arena: the arena's main screen (arena.css .ar-*) as a scrolling page, then the quality and variety block */
+/* frame and header from page.css (pg-frame, pg-head); the view controls follow the header */
+/* spacing on page.css's scale (--s4 … --s48): panels 20-24 padding, 24 between panels and sections, 12 heading to content, 48 at the end;
+   labels at 11 px or more */
+/* item 70: the top is one block (<= ~96 px at 1440): the prompt left, the controls right in two rows; the view controls under Next prompt */
+.ar-pr{padding:var(--s12,12px) var(--pad,20px);margin-bottom:var(--s24,24px);align-items:flex-start;gap:var(--s24,24px);position:relative;z-index:30}   /* the picker list opens above the panes */
+.ar-pr .tx{position:relative}
+.ar-pr .ar-meta{flex-wrap:nowrap;overflow:hidden;white-space:nowrap;margin-bottom:var(--s4,4px)}.ar-pr .ar-meta span{flex:none}.ar-pr .ar-meta .ft{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ar-pr q{max-height:none;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;line-height:1.55}
+.ar-pr .tx.open q{display:block;-webkit-line-clamp:unset;max-height:9.3em;overflow:auto;white-space:pre-wrap}
+.ar-more{position:absolute;right:0;bottom:0;border:0;background:var(--void-2);box-shadow:-14px 0 10px var(--void-2);padding:0 0 0 4px;line-height:1.55;color:var(--ice);font:11.5px var(--font-ui);cursor:pointer}.ar-more:hover{text-decoration:underline}.tx.open .ar-more{position:static;box-shadow:none;background:none;padding:0}
+.ar-cl{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:var(--s8,8px)}
+.ar-cl .ar-ctl{flex-wrap:nowrap;justify-content:flex-end}
+.ar-pr .ar-next{padding:6px 16px;font-size:13px}
+.ar-vc .ar-b{padding:3px 10px;font-size:11px}
+.ar-ph{padding:var(--s12,12px) var(--s16,16px);flex-wrap:wrap;row-gap:var(--s8,8px)}.ar-ph .ar-lab{flex:1 0 auto;min-width:max-content;height:auto}
+.ar-side{padding:var(--pad,20px) var(--s24,24px)}.ar-side .sm-sec{margin:var(--s24,24px) 0 var(--s12,12px);font-size:11px;letter-spacing:.14em}.ar-side .sm-sec:first-child{margin-top:0}
+.an{margin-top:var(--s24,24px);padding:var(--pad,20px) var(--s24,24px)}.an h3{margin:var(--s24,24px) 0 var(--s12,12px)}
+.ar-note,.ar-meta,.ar-ph .ar-b,.ar-ph select.ar-b,.an th,.an td small,.an .eb,.ar-rt span,.ar-rt a,.ar-pane>.ar-bad{font-size:11px}
+/* item 81, page.css frame: #arMain is the working area (.pg-work via PgFrame.fit): it fills the viewport below the top block, at least
+   480 px; the sidebar scrolls inside itself. --work-h is re-declared here so that it reads the --work-top PgFrame sets on this element
+   (declared only on :root it resolves there, with the 280 px default). Shared breakpoints of page.css:
+   >= 1304 panes | divider | sidebar (--side); 784-1303 panes side by side, sidebar below; <= 783 one pane at a time with a pane switch.
+   Every generated page is shown at its natural desktop width (1280 px), scaled down only when the pane is narrower, centred. */
+#arMain{--work-h:max(var(--work-min,480px),calc(100dvh - var(--work-top,280px)));grid-template-columns:minmax(0,1fr) var(--s24,24px) var(--side,clamp(300px,22vw,520px));gap:0;align-items:stretch}
+.ar-panes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s24,24px);min-width:0;min-height:0}.ar-panes.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ar-pane{display:flex;flex-direction:column;min-height:0;min-width:0}.ar-ph{flex:none}
+.ar-stage{flex:1 1 auto;height:auto;min-height:0;background:#0a0f1f}
+.ar-stage img{width:min(100%,1280px);margin:0 auto}
+.ar-sw{display:none}
+body.resizing iframe{pointer-events:none}
+#arSide{min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;border-radius:var(--r)}#arSide .ar-side{grid-column:auto;min-height:100%;box-sizing:border-box}
+.ar-pr q{max-width:var(--measure-title,90ch)}
+.an ul.fd,.an p.n{max-width:min(var(--measure,70ch),56ch)}   /* 56ch of this 13.5 px text ~ 70 characters a line */
+/* item 81: from 1304 px the top block is tighter so the panes get at least 70 % of a 1,080 px high screen */
+@media (min-width:1304px){.ar-pr{padding-top:var(--s8,8px);padding-bottom:var(--s8,8px);margin-bottom:var(--s12,12px)}.ar-pr q{line-height:1.4}.ar-pr .ar-meta{margin-bottom:2px}.ar-pr .ar-meta span{padding-top:0;padding-bottom:0}.ar-cl{gap:4px}.ar-pr .ar-next,.ar-pr .pk-btn{padding-top:4px;padding-bottom:4px}}
+@media (max-width:1303px){#arMain{grid-template-columns:1fr !important;gap:var(--s24,24px);height:auto}#arMain>#arSplit{display:none}.ar-panes{height:var(--work-h)}#arSide{overflow:visible}}
+@media (max-width:783px){.ar-panes,.ar-panes.c2{display:flex;flex-direction:column;gap:var(--s8,8px);height:max(var(--work-h),75dvh)}
+  .ar-sw{display:flex;gap:var(--s8,8px);flex:none}.ar-sw .ar-b{flex:1}.ar-pane{flex:1 1 auto}.ar-pane:not(.cur){display:none}
+  .ar-pr{flex-direction:column;align-items:stretch}.ar-cl{align-items:stretch}.ar-cl .ar-ctl{flex-wrap:wrap;justify-content:flex-start}}
+#arReset:disabled{opacity:.45}
+.ar-pane{position:relative}.ar-pane>.ar-bad{position:absolute;z-index:2;top:60px;left:var(--s16,16px);background:var(--void)}
+.ar-pane>.ar-bad.look{color:var(--dim);border-color:var(--line)}
+.ar-side .pv{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font:11px var(--font-data);color:var(--dim);margin:-2px 0 6px}
+.ar-side a.run{display:inline-block;margin-top:8px;font-size:11.5px}
+.an{margin-top:26px;padding:16px 18px}
+.an h2{font:700 19px var(--font-display);margin:2px 0 8px}
+.an .sc{display:flex;gap:8px;margin:6px 0 12px}
+.an ul.fd{margin:0 0 14px 18px;padding:0;font-size:13.5px;line-height:1.6;color:var(--starlight)}
+.an table{border-collapse:collapse;width:100%;font-size:12.5px}
+.an th,.an td{padding:5px 8px;border-top:1px solid var(--line-soft);text-align:right;white-space:nowrap}
+.an th{font:11px var(--font-data);color:var(--faint);font-weight:400}.an td:first-child,.an th:first-child{text-align:left}
+.an td small{color:var(--faint);font:11px var(--font-data);margin-left:4px}
+.an tr.x td{color:var(--ice)}
+.an .tw{overflow-x:auto}
+.an p.n{font-size:11.5px;color:var(--faint);margin-top:6px;line-height:1.5}
+.an h3{font:600 11px var(--font-data);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:18px 0 8px}
+.strip{display:grid;grid-template-columns:120px 30px minmax(0,1fr) 30px;gap:6px;align-items:center;margin-bottom:10px}
+.strip b{font:700 13px var(--font-display)}.strip b.x{color:var(--ice)}.strip b small{display:block;font:400 11px var(--font-data);color:var(--faint);margin-top:2px}
+.strip .sl{padding:0;width:30px;height:30px;font-size:16px}
+.strip .row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin;padding:2px 0 6px;cursor:grab;outline-offset:2px}
+.strip .row.drag{cursor:grabbing}
+.strip figure{flex:0 0 168px;width:168px;min-width:0;margin:0;font:11px var(--font-data);color:var(--dim);line-height:1.4}
+.strip figure span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.strip figure em{font-style:normal;color:var(--starlight)}
+.strip img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;border-radius:4px;border:1px solid var(--line);margin-bottom:3px;user-select:none}
+.ar-side .cr{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;row-gap:2px;align-items:baseline;font-size:12px;margin:0 0 var(--s8,8px)}.ar-side .cr>span:first-child{grid-column:1/-1}
+.ar-side .cr b{font:600 12.5px var(--font-data);white-space:nowrap}.ar-side .cr b.up{color:#5fbf85}.ar-side .cr b.dn{color:#e06666}.ar-side .cr b.nj{font-weight:400;color:var(--faint)}
+.ar-side .cr b small{color:var(--faint);font-weight:400}.ar-side .cr>span:last-child{font:11px var(--font-data);color:var(--dim);text-align:right}
+.ar-side table.pa{width:100%;border-collapse:collapse;margin:6px 0 2px;font-size:11.5px}.ar-side .pa th{font:400 11px var(--font-data);color:var(--faint);text-align:right;padding:0 0 2px 6px}
+.ar-side .pa td{text-align:right;font:600 12px var(--font-data);padding:2px 0 2px 6px;border-top:1px solid var(--line-soft)}.ar-side .pa td:first-child{text-align:left;font:400 11.5px var(--font-ui);color:var(--dim);padding-left:0}
+.ar-side details.how summary{cursor:pointer;color:var(--ice)}.ar-side details.agm{margin-top:var(--s12,12px)}.ar-side details.agm b{color:var(--starlight)}
+.an details{margin-top:8px;font-size:12.5px}.an details summary{cursor:pointer;color:var(--ice)}
+.an details img{display:block;width:100%;margin-top:6px;border-radius:4px}
+@media (max-width:900px){.strip{grid-template-columns:30px minmax(0,1fr) 30px}.strip b{grid-column:1/-1}}
+/* item 81 follow-up: the arena's own text grows gently on large screens, the correspondence page's step: --fz = 0 up to 1,440 px,
+   +1.3 px at 2,560, +2.4 at 3,440, at most +3 px (5,120); sidebar, controls, prompt block and pane headers */
+:root{--fz:clamp(0px,(100vw - 1440px) * .0012,3px)}
+.ar-pr q{font-size:calc(13.5px + var(--fz))}.ar-pr .ar-meta,.ar-pr .ar-meta span{font-size:calc(11px + var(--fz))}.ar-more{font-size:calc(11.5px + var(--fz))}
+.ar-pr .ar-b,.ar-vc .ar-b,.ar-sw .ar-b{font-size:calc(11px + var(--fz))}.ar-pr .ar-next{font-size:calc(13px + var(--fz))}.ar-pr .pk-btn{font-size:calc(13px + var(--fz))}.ar-cnt{font-size:calc(11.5px + var(--fz))}
+.ar-ph .ar-b{font-size:calc(11px + var(--fz))}.ar-lab .f{font-size:calc(15px + var(--fz));line-height:calc(22px + var(--fz))}.ar-pane>.ar-bad{font-size:calc(11px + var(--fz))}
+#arSide .ar-side{font-size:calc(11.5px + var(--fz))}#arSide .ar-side .sm-sec{font-size:calc(11px + var(--fz))}#arSide .ar-note,#arSide .ar-side .pv,#arSide .ar-rt span,#arSide .ar-rt a{font-size:calc(11px + var(--fz))}
+#arSide .ar-gr{font-size:calc(12.5px + var(--fz))}#arSide .ar-gr i{width:calc(10px + var(--fz));height:calc(10px + var(--fz))}#arSide a.run{font-size:calc(11.5px + var(--fz))}
+#arSide .cr{font-size:calc(12px + var(--fz))}#arSide .cr b{font-size:calc(12.5px + var(--fz))}#arSide .cr>span:last-child,#arSide .pa th{font-size:calc(11px + var(--fz))}
+#arSide .pa{font-size:calc(11.5px + var(--fz))}#arSide .pa td{font-size:calc(12px + var(--fz))}#arSide .pa td:first-child{font-size:calc(11.5px + var(--fz))}
+</style>
+</head><body>
+<nav id="site-nav"></nav>
+<main class="pg-frame" id="view"><p class="sub">Loading…</p></main>
+<div class="ar-fs" id="arFs"><div class="h"><span id="arFsT"></span><button class="ar-b" id="arFsX">Close ✕</button></div><iframe sandbox="allow-scripts" title="Full-screen page"></iframe></div>
+<script src="lightbox.js"></script>
+<script src="columns.js"></script>
+<script src="picker.js"></script>
+<script src="arena-final.js"></script>
+<script src="nav.js"></script>
+</body></html>

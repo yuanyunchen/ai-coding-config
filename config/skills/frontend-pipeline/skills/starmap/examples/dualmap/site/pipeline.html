@@ -1,0 +1,183 @@
+<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data pipeline · how a request is routed</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="arena.css">
+<link rel="stylesheet" href="lightbox.css">
+<link rel="stylesheet" href="columns.css">
+<link rel="stylesheet" href="page.css">
+<style>
+/* Pipeline page: tokens, cards and buttons come from arena.css; the map is drawn as on the Correspondence page */
+.vst{max-width:110ch}
+.bar{display:flex;gap:var(--s8) var(--s12);align-items:center;flex-wrap:wrap;margin:0 0 var(--s12);font-size:12.5px;color:var(--dim)}
+.bar .l{font:10px var(--font-data);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.bar select{font:12.5px var(--font-ui);color:var(--starlight);background:var(--void-2);border:1px solid var(--line-strong);border-radius:7px;padding:6px 8px;max-width:min(460px,90vw)}
+.bar .b{padding:6px 11px}.bar .ctrl .b{min-width:34px;text-align:center}
+.rel{margin-top:-4px;gap:4px 6px}.rel>b{color:var(--starlight)}.rel .rc{display:inline-flex;flex-wrap:wrap;max-width:100%;align-items:center;gap:6px;border:0;border-left:1px solid var(--line);border-radius:0;padding:2px 8px}
+.rel .rc span{color:var(--dim)}.rel .rc b{font:600 12.5px var(--font-data);color:var(--starlight)}.rel small{color:var(--faint);font-size:11px}.rel .ar{color:var(--faint)}
+.vst{flex-basis:100%;font-size:12px;color:var(--dim);line-height:1.5}.vst b{color:var(--starlight);font-weight:600}
+.rel .rc small.pend{color:var(--ember)}
+.rd{font-size:12px}.rd summary{cursor:pointer;color:var(--ice);list-style:none}.rd summary::-webkit-details-marker{display:none}.rd summary::after{content:' ›'}.rd[open]{flex-basis:100%;color:var(--dim);line-height:1.6}.rd b{color:var(--starlight);font-weight:600}
+/* item 81: page.css's frame and breakpoints. Three columns from 1304 px: structure | continuous map | panel (--side); two from 784: the two maps
+   side by side, the panel under them; one below 784. The grid is the working area (.pg-work via PgFrame.fit): it fills the viewport. */
+.pgrid{display:grid;grid-template-columns:minmax(300px,1.15fr) 24px minmax(260px,1fr) 24px var(--side);gap:0;margin-top:var(--s24);height:var(--work-h);min-height:var(--work-min)}
+@media (min-width:784px) and (max-width:1303px){.pgrid{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr)!important;grid-template-rows:var(--work-h) auto;height:auto}.pgrid>#split2{display:none}.pgrid>#side{grid-column:1/-1;max-height:70vh;margin-top:var(--s24)}}
+@media (min-width:2400px){#sidec .ex:not(.one):not(.fine-ex){grid-template-columns:repeat(3,minmax(0,1fr))}#sidec .ex figure.more:nth-of-type(-n+6){display:block}#sidec .ex:not(:has(figure:nth-of-type(7))) .mo{display:none}}   /* wide: example grids 3 x 2 */
+/* examples of an intermediate node: the routing condition, real requests, real pages */
+.cond{font-size:12.5px;color:var(--starlight)!important;line-height:1.45;border-left:2px solid var(--ice);padding-left:9px;margin-top:2px!important}
+details.cmore{font-size:12px;color:var(--dim);margin:2px 0 0 11px}details.cmore summary{cursor:pointer;color:var(--ice);font-size:11.5px}details.cmore p{font-size:12px}
+.wdr{border-left:2px solid var(--faint);padding-left:9px;color:var(--dim)!important}.tag.wd{color:var(--faint);border-style:dashed}.tr.wd{opacity:.5}
+.sct{font:10.5px var(--font-data);color:var(--lime);border:1px solid rgba(127,211,160,.5);border-radius:4px;padding:0 5px;margin-left:6px;white-space:nowrap}
+.hdepth{flex-basis:100%;font:12px var(--font-ui);color:var(--starlight)}.hdepth b{font-weight:600}
+.hwd{font-size:11.5px;color:var(--dim);margin:2px 2px 0}.hwd a{color:var(--ice)}
+/* a run's generated pages: the arm as a large label above each page */
+.arm .al{padding:6px 8px 5px;border-bottom:2px solid var(--ac);line-height:1.25}.arm .al b{font:700 14px var(--font-display,var(--font-ui));letter-spacing:.06em;color:var(--ac)}.arm .al small{display:block;font-size:11.5px;color:var(--dim);margin-top:1px}.arm .al svg{vertical-align:-1px;margin-right:6px}
+.arm .al small.i{display:inline}.arms.n3 .arm .al b{font-size:12px;letter-spacing:.03em}.arm{border-color:var(--ac,var(--line))}
+.cond b{color:var(--ice)!important}
+ul.kinds{list-style:none;margin:4px 0 0;padding:0;font-size:12px;color:var(--dim)}ul.kinds li{padding:2px 0;border-top:1px solid var(--line-soft);display:flex;justify-content:space-between;gap:8px}
+ul.kinds li a{color:var(--starlight);cursor:pointer;border-bottom:1px dotted var(--line-strong)}ul.kinds li .to{font:11px var(--font-data);color:var(--faint);white-space:nowrap}ul.kinds li .to.kl{color:#b9a4ff}
+ol.rq{margin:2px 0 0;padding:0;list-style:none}
+ol.rq li{display:flex;gap:8px;align-items:baseline;font-size:12.5px;line-height:1.4;padding:3px 0;border-top:1px solid var(--line-soft);color:var(--starlight)}
+ol.rq li span{flex:1;min-width:0;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ol.rq li small{flex:none;font:10.5px var(--font-data);color:var(--faint);white-space:nowrap}ol.rq li small.r{color:var(--ice)}
+.ex{position:relative}.ex figure.more{display:none}.ex.pg3 figcaption{color:var(--dim)}
+.ex .mo{position:absolute;right:6px;bottom:22px;font:600 12px var(--font-ui);color:var(--starlight);background:rgba(6,9,19,.82);border:1px solid var(--line-strong);border-radius:999px;padding:3px 10px;cursor:zoom-in}
+.ex .mo:hover,.ex .mo:focus-visible{border-color:var(--ice);color:var(--ice)}
+.ex.one,.arms.one{grid-template-columns:minmax(0,1fr)}.arms.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ex.one img,.arms.one img{aspect-ratio:auto;max-height:none}
+.col{overflow:auto;padding:var(--pad);min-height:0}
+.h3{font:600 11px var(--font-data);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:2px 4px 8px}
+/* structure: a radial map of the folder tree, or the same tree as an indented list */
+.hier{display:flex;flex-direction:column;min-height:0;min-width:0;padding:var(--pad)}
+.hh{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}.hh .h3{margin:0 6px 0 0}
+.hh .seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:7px;overflow:hidden}
+.hh .seg button{font:11.5px var(--font-ui);color:var(--dim);background:none;border:0;padding:4px 8px;cursor:pointer}.hh .seg button+button{border-left:1px solid var(--line)}
+.hh .seg button.on,.hh .seg button:hover{color:var(--ice);background:var(--ice-soft)}
+#hq{font:12px var(--font-ui);color:var(--starlight);background:var(--void-2);border:1px solid var(--line-strong);border-radius:7px;padding:4px 8px;width:88px}
+#hoptb .hdl{font-size:11.5px;color:var(--dim);margin-top:10px}#hoptb .hdl .seg{margin-left:6px}#hdepth[hidden]{display:none}
+#hqn{display:none}
+.hc{display:flex;flex-wrap:wrap;gap:4px 12px;font:11.5px var(--font-data);color:var(--dim);margin:8px 2px 2px}.hc b{color:var(--starlight);font-weight:600}
+.hc .pos b{color:var(--lime)}.hc .neg b{color:var(--rose)}.hc .kl b{color:#b9a4ff}
+.hf{font-size:11.5px;color:var(--faint);margin:2px 2px 0;min-height:16px}.hf b{color:var(--ice);font-weight:600}.hf a{color:var(--ice)}
+.cvw{position:relative;flex:1;min-height:320px;margin-top:4px}.cvw>canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#treeC{flex:1;overflow:auto;min-height:0;margin-top:6px}
+#hcw[hidden],#treeC[hidden]{display:none}
+#hleg{display:flex;flex-direction:column;gap:6px;font-size:11.5px;color:var(--dim);line-height:1.45}
+/* item 71: one controls row; options and legend in popovers; one line of levels and one status line above the map */
+.hpop{position:relative}.hpop>summary{list-style:none;cursor:pointer;font:11.5px var(--font-ui);color:var(--dim);border:1px solid var(--line-strong);border-radius:7px;padding:4px 8px}.hpop>summary::-webkit-details-marker{display:none}
+.hpop>summary::after{content:' ▾';font-size:9px}.hpop[open]>summary,.hpop>summary:hover{color:var(--ice);border-color:var(--ice)}
+.hpop>div{position:absolute;z-index:30;top:calc(100% + 6px);left:0;width:min(360px,80vw);background:var(--void,#060913);border:1px solid var(--line-strong);border-radius:8px;padding:10px 12px;box-shadow:0 12px 32px rgba(0,0,0,.5)}
+.hpop>div{left:auto;right:0}.hier{position:relative;z-index:4}#hoptb .tg{display:block;margin-bottom:8px}#hoptb .hwd{margin:0}
+.hc{display:block!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hf{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hleg i{display:inline-block;vertical-align:-1px;margin-right:5px}#hleg code{font:10.5px var(--font-data);color:#b9a4ff}
+.tr.hit .nm{color:var(--ember)}
+.tg{display:inline-flex;align-items:center;gap:5px;color:var(--dim);font-size:12px;cursor:pointer}.tg input{accent-color:var(--rose)}
+ol.crumbs{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:2px 0;font:11.5px var(--font-data);color:var(--dim)}
+ol.crumbs li+li::before{content:'›';margin:0 6px;color:var(--faint)}ol.crumbs a{color:var(--starlight);cursor:pointer;border-bottom:1px dotted var(--line-strong)}ol.crumbs li.cur a{color:var(--ice)}ol.crumbs span{color:var(--faint)}
+.kl{color:#b9a4ff!important}
+.acts{display:flex;gap:6px;margin-top:8px}.acts .b{padding:4px 10px;font-size:12px}
+.sg.pb b{color:var(--rose);font-weight:500}.pbt{border-left:2px solid var(--rose);padding-left:8px;color:var(--starlight)!important}
+.arm.bad{border-color:var(--rose)}.arm .in{color:var(--rose)}
+.tag.neg{color:var(--rose);border-color:var(--rose)}.ex figcaption.neg{color:var(--rose)}
+/* list rows */
+.tr{display:flex;align-items:center;gap:6px;width:100%;border:0;background:none;color:var(--starlight);font:12.5px var(--font-ui);text-align:left;padding:3px 6px;border-radius:6px;cursor:pointer;position:relative}
+.tr:hover{background:var(--line-soft)}.tr.sel{background:var(--ice-soft);color:var(--ice)}
+.tr .cr{width:12px;flex:none;color:var(--faint);font-size:10px}
+.tr .gl{flex:none;display:grid;place-items:center;width:20px}
+.tr .gl i{display:block;border-radius:50%}
+.tr .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr .mt{flex:none;font:11.5px var(--font-data);color:var(--dim)}
+.tr .mt.pos{color:var(--lime)}.tr .mt.neg{color:var(--rose)}.tr .mt.lean{opacity:.7}
+.tr.lv-category .nm{font-weight:600}.tr.lv-root .nm{font-weight:700;font-family:var(--font-display)}
+.tr.on{background:rgba(143,198,255,.08)}.tr.on .nm{color:var(--ice)}
+.tr.cur{background:rgba(143,198,255,.24)}.tr.cur .nm{color:var(--starlight)}
+.tr.sug .gl i{box-shadow:0 0 0 2px var(--void),0 0 0 3.5px var(--ice)}
+.tr.cho .gl i{box-shadow:0 0 0 2px var(--void),0 0 0 3.5px var(--ember)}.tr.cho .nm{color:var(--ember)}
+/* map */
+.mapc{padding:var(--pad);display:flex;flex-direction:column;min-height:0}
+.cap{font-size:13.5px;line-height:1.45;min-height:40px}.cap b{color:var(--ice);font-weight:600}.cap small{display:block;font-size:12px;color:var(--dim)}
+#mcw{min-height:300px;margin-top:6px}#map{border-radius:6px}
+.under{font-size:11.5px;color:var(--dim);margin-top:6px;line-height:1.6}
+.under span{white-space:nowrap;margin-right:12px}.under span.lg{display:block;white-space:normal;margin:0 0 4px}
+.under svg{vertical-align:-2px;margin-right:4px}
+.tip{position:fixed;z-index:70;pointer-events:none;background:var(--panel-2);border:1px solid var(--line-strong);border-radius:8px;padding:6px;width:260px;font-size:12px;color:var(--starlight);display:none}
+.tip img{display:block;width:100%;border-radius:4px;margin-top:4px}
+/* side: run trace and the selected file */
+#hslot{min-height:min(560px,70vh)}#hslot .ex figcaption{font-size:11px}
+.side h2{font:700 16px var(--font-display);margin:2px 0 4px;line-height:1.3}
+.side .sec{font:600 11px var(--font-data);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:var(--s24) 0 var(--s12)}
+.side p{font-size:12.5px;color:var(--dim);line-height:1.5;margin-top:4px}
+.side p b{color:var(--starlight);font-weight:600}
+.q{font-size:13px;line-height:1.5;max-height:7.5em;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border-left:2px solid var(--line-strong);padding-left:9px;color:var(--starlight)}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.chips span{font:11.5px var(--font-data);border:1px solid var(--line-strong);border-radius:5px;padding:2px 7px;color:var(--dim)}
+.chips span b{color:var(--starlight);font-weight:500}
+.chips span.new{border-color:var(--ice);color:var(--ice)}
+ol.files{margin:2px 0 0;padding-left:20px;font:12px var(--font-data);color:var(--dim)}
+ol.files li{padding:3px 0}ol.files .fh{font-family:var(--font-ui);color:var(--starlight)}ol.files .fg{margin:4px 0 8px;padding-left:9px;border-left:2px solid var(--ice-soft,rgba(143,198,255,.3));font-family:var(--font-ui)}ol.files .fg p{font-size:12.5px;line-height:1.5;color:var(--dim);margin:0 0 3px}
+:root{--fz:clamp(0px,(100vw - 1440px) * .0012,3px)}.hh .seg button,.hpop>summary,#hq{font-size:calc(11.5px + var(--fz))}.hc,.hf{font-size:calc(12px + var(--fz))}.mapc .cap{font-size:calc(14px + var(--fz))}   /* item 89: the structure controls and the map caption grow gently with the screen */
+ol.files li{padding:2px 0}ol.files li.cur{color:var(--ice)}ol.files a{color:inherit;text-decoration:none;border-bottom:1px dotted currentColor;cursor:pointer}
+.sg{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:3px 0;border-top:1px solid var(--line-soft);cursor:pointer}
+.sg:hover{color:var(--ice)}.sg .ef{font:11.5px var(--font-data);color:var(--dim);white-space:nowrap}.sg.cho b{color:var(--ember)}
+.arms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:4px}
+.arm{border:1px solid var(--line);border-radius:6px;overflow:hidden;font-size:11.5px;color:var(--dim)}
+.arm img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;background:var(--void-2)}
+.arm div{padding:4px 6px;line-height:1.35}.arm b{color:var(--starlight);font-weight:600}
+.stop{border:1px dashed var(--ember);color:var(--ember);border-radius:6px;padding:6px 9px;font-size:12.5px;margin-top:6px}
+.ex{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+.ex figure{margin:0}.ex img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;border-radius:4px;background:var(--void-2)}
+.ex figcaption{font:10.5px var(--font-data);color:var(--ember);margin:2px 0 4px}
+table.pf2{border-collapse:collapse;width:100%;font-size:12px;margin-top:2px}
+table.pf2 td,table.pf2 th{padding:3px 4px;border-top:1px solid var(--line-soft);text-align:right;color:var(--starlight);font-weight:400}
+table.pf2 th{color:var(--faint);font:10.5px var(--font-data)}table.pf2 td:first-child,table.pf2 th:first-child{text-align:left}
+.links a{display:inline-block;font-size:12px;margin:2px 8px 2px 0}
+.md{font-size:12.5px;line-height:1.5;color:var(--starlight);border:1px solid var(--line-soft);border-radius:6px;padding:8px 10px;margin-top:4px;max-height:340px;overflow:auto;background:rgba(6,9,19,.4)}
+.md h4{font:600 13px var(--font-ui);margin:8px 0 3px}.md h5{font:600 12px var(--font-ui);color:var(--dim);margin:8px 0 3px}.md h4:first-child,.md h5:first-child{margin-top:0}
+.md ul{margin:2px 0 4px 16px;padding:0}.md li{margin:2px 0}.md p{color:var(--starlight);font-size:12.5px;margin:4px 0}
+.md pre{font:11px var(--font-data);white-space:pre-wrap;color:var(--dim);margin:4px 0}.md code{font:11.5px var(--font-data);color:var(--ice)}
+.md hr{border:0;border-top:1px solid var(--line);margin:10px 0}
+.tag{font:10.5px var(--font-data);border:1px solid var(--line-strong);border-radius:4px;padding:1px 6px;color:var(--dim);margin-left:6px;vertical-align:2px}
+.tag.pos{color:var(--lime);border-color:var(--lime)}.tag.lean{border-style:dashed}
+.none{font-size:12.5px;color:var(--dim)}
+.fine{border-top:1px solid var(--line-soft);padding:var(--s8) 0;cursor:pointer}.fine:hover .fine-h b{color:var(--ice)}
+.fine-h{display:flex;justify-content:space-between;gap:var(--s8);font-size:12.5px}.fine-h b{font-weight:600}.fine .ef{font:11.5px var(--font-data);white-space:nowrap}.fine .ef.pos{color:var(--lime)}.fine .ef.neg{color:var(--rose)}
+.fine-ex{margin-top:var(--s8)}.fine.bound{opacity:.55}.fine.bound .fine-h .ef{color:var(--dim)}
+@media (max-width:783px){.pgrid{grid-template-columns:minmax(0,1fr)!important;gap:12px;height:auto}.col{max-height:460px}#mcw{height:420px;flex:none}.hier{max-height:none}#hcw{height:min(92vw,560px);flex:none}#treeC{max-height:420px;flex:none}#hq{width:120px}}
+@media (max-width:600px){.under span{white-space:normal}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head><body>
+<nav id="site-nav"></nav>
+<main class="pg-frame" id="view">
+  <header class="pg-head">
+    <h1 class="pg-title">Data pipeline: how a request is <em>routed through the skill</em> to a style.</h1>
+    <div class="pg-note" id="pgnote"></div>
+  </header>
+  <div class="bar" id="bar"></div>
+  <div class="bar rel" id="rel"></div>
+  <div class="pgrid">
+    <section class="card hier" aria-label="Structure">
+      <div class="hh"><span class="h3">Structure</span>
+        <span class="seg" id="hview" role="group" aria-label="View"><button data-v="map" class="on" title="The whole tree as a radial overview">Radial</button><button data-v="list">List</button></span>
+        <span class="seg" id="hdepth" hidden role="group" aria-label="Open to level"><button data-d="category" title="Categories only">Cat</button><button data-d="scenario" title="Down to scenarios">Scen</button><button data-d="style" title="Down to styles">Styles</button><button data-d="all" title="Everything, problems included">All</button></span>
+        <input id="hq" type="search" placeholder="Search files, styles…" aria-label="Search the structure"><span id="hqn" aria-live="polite"></span>
+        <details class="hpop" id="hopt"><summary>Options</summary><div id="hoptb"><div class="hwd" id="hwd"></div><div class="hdl">Open to level </div></div></details>
+        <details class="hpop rt" id="hlegd"><summary>Key</summary><div><div id="hleg"></div></div></details></div>
+      <div class="hc" id="hcount"></div><div class="hf" id="hfocus" aria-live="polite"></div>
+      <div class="cvw" id="hcw"><canvas id="hmap" role="img" aria-label="The skill's folder tree as a radial map"></canvas></div><div id="treeC" hidden></div>
+      </section>
+    <div id="split1" aria-label="Resize the structure and map columns (arrow keys; double click resets)"></div>
+    <section class="card mapc" aria-label="Map"><div class="cap" id="cap"></div><div class="cvw" id="mcw"><canvas id="map" role="img" aria-label="Continuous DINO map"></canvas></div><div class="under" id="under"></div></section>
+    <div id="split2" aria-label="Resize the map and panel columns (arrow keys; double click resets)"></div>
+    <section class="card col side" id="side" aria-label="Run and file"><div id="sidec"></div></section>
+  </div>
+</main>
+<div class="tip" id="tip"></div>
+<script src="lightbox.js"></script>
+<script src="columns.js"></script>
+<script src="panzoom.js"></script>
+<script src="picker.js"></script>
+<script src="hoverslot.js"></script>
+<script src="pipeline.js"></script>
+<script src="nav.js"></script>
+</body></html>

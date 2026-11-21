@@ -676,6 +676,17 @@ class TestReturnsAndFollowups(WsTestCase):
         p.unlink()
         self.assertIn("回来了", self.ws.return_note(s1))
 
+    def test_followup_rotation_hint_from_the_eighth(self):
+        _, nid = self.ws.new_task("x")
+        s, sid = self.ws.dispatch(nid, "w")
+        for i in range(wslib.FOLLOWUP_ROTATE - 1):
+            self.ws.followup(sid, f"追加 {i}")
+        self.assertIsNone(self.ws.followup_hint(s))  # seven follow-ups: no hint yet
+        self.ws.followup(sid, "第八次")
+        hint = self.ws.followup_hint(s)
+        self.assertIn(f"已续接 {wslib.FOLLOWUP_ROTATE} 次", hint)
+        self.assertIn("handoff.md", hint)
+
     def test_followup_while_still_running(self):
         _, nid = self.ws.new_task("x")
         s, sid = self.ws.dispatch(nid, "w")

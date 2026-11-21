@@ -1,0 +1,12 @@
+/* Shared column dividers and map zoom buttons: see columns.js and panzoom.js */
+.colsplit{cursor:col-resize;position:relative;touch-action:none;outline:none;min-width:24px}   /* the 24 px gap between columns is the handle */
+.colsplit::before{content:'';position:absolute;top:0;bottom:0;left:11px;width:2px;border-radius:2px;background:var(--line,rgba(148,178,255,.14));transition:background .15s}
+.colsplit::after{content:'⋮';position:absolute;top:50%;left:6px;width:12px;transform:translateY(-50%);text-align:center;font-size:14px;line-height:1;color:var(--faint,#6b7799);background:var(--void,#060913);padding:4px 0}
+.colsplit:hover::before,.colsplit:focus-visible::before,.colsplit.drag::before{background:var(--ice,#8fc6ff)}.colsplit:focus-visible::after,.colsplit.drag::after{color:var(--ice,#8fc6ff)}
+body.resizing{cursor:col-resize;user-select:none}
+.pz-host{position:relative}
+.pz-btns{position:absolute;right:16px;bottom:16px;z-index:3;display:flex;gap:4px}
+.pz-btns button{min-width:30px;height:28px;padding:0 8px;border-radius:7px;border:1px solid var(--line-strong,rgba(148,178,255,.3));background:var(--panel-2,rgba(13,19,38,.9));color:var(--starlight,#e9eefb);font:600 14px/1 var(--font-ui,sans-serif);cursor:pointer}
+.pz-btns button[data-pz=fit]{font-size:12px}
+.pz-btns button:hover,.pz-btns button:focus-visible{border-color:var(--ice,#8fc6ff);color:var(--ice,#8fc6ff);outline:none}
+@media (max-width:1100px){.colsplit{display:none}}

@@ -1,0 +1,41 @@
+<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Full network · staging</title>
+<link rel="icon" href="data:,">
+<!-- Staging page of the Full network mode (fullnet.js): the shared modules and the live data, mounted the way graph2.js mounts it.
+     Not linked from the site. Query: ?task=… &kind=… &model=1 &node=<id> -->
+<link rel="stylesheet" href="vendor/starmap.css">
+<link rel="stylesheet" href="page.css">
+<link rel="stylesheet" href="dualmap.css">
+<link rel="stylesheet" href="lightbox.css">
+<link rel="stylesheet" href="hovercard.css">
+<link rel="stylesheet" href="fullnet.css">
+<style>.stg-row{display:flex;align-items:center;gap:10px;min-height:44px;flex-wrap:nowrap}.stg-row>*{flex:none}.stg-row>.fn-row{flex:1 1 auto;min-width:0}.stg-row .fn-row{min-height:0}</style>
+</head><body>
+<nav id="site-nav"></nav>
+<div class="pg-frame">
+<header class="pg-head">
+  <h1 class="pg-title">Concept graph: how design elements combine into looks, and <em>what voters reward at each step</em>.</h1>
+  <div class="pg-note" id="note">Staging page of the Full network. Loading…</div>
+</header>
+<div class="stg-row" id="row"><button class="hbtn" id="reset">Reset view</button><span class="seg"><a class="hbtn" href="index.html?view=graph">Network</a><a class="hbtn on" href="#">Full network</a><a class="hbtn" href="index.html?view=graph&amp;mode=full">Details</a></span></div>
+<div id="fullnet"></div>
+</div>
+<script src="lightbox.js"></script>
+<script src="panzoom.js"></script>
+<script src="picker.js"></script>
+<script src="hovercard.js"></script>
+<script src="nav.js"></script>
+<script src="fullnet.js"></script>
+<script>
+(async()=>{
+  const q=new URLSearchParams(location.search);
+  const [G,A]=await Promise.all([fetch('data/graph_v2/graph.json').then(r=>r.json()),fetch('data/pilot/cluster_audit.json').then(r=>r.ok?r.json():{}).catch(()=>({}))]);
+  document.getElementById('note').innerHTML=`${G.N.toLocaleString()} labelled pages; all ${G.nodes.length.toLocaleString()} nodes of the structure in their sub-layers, render failures behind Filters. Colour = effect on votes: solid when the 95 % interval excludes zero, lighter at 80 %. Zoom in to read names; hover a node for examples; a ring marks the Network view's nodes.`;
+  const api=DualModes.fullnet.mount(document.getElementById('fullnet'),{G,audit:A,task:q.get('task'),kind:q.get('kind'),model:q.get('model')==='1',node:q.get('node'),
+    row:document.getElementById('row'),onFilter:f=>{ const u=new URLSearchParams(location.search); ['task','kind'].forEach(k=>f[k]?u.set(k,f[k]):u.delete(k)); f.model?u.set('model','1'):u.delete('model'); history.replaceState(null,'','?'+u); }});
+  document.getElementById('reset').onclick=()=>api.reset();
+  window.FN=api;
+})();
+</script>
+</body></html>

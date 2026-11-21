@@ -1,0 +1,10 @@
+/* Shared hover card for page points on the maps: see hovercard.js */
+.hcard{position:fixed;z-index:40;pointer-events:none;box-sizing:border-box;padding:8px;border-radius:10px;background:var(--tipbg,rgba(6,9,19,.94));
+  border:1px solid var(--line-strong,rgba(148,178,255,.3));box-shadow:0 12px 32px var(--shadow,rgba(0,0,0,.5));color:var(--starlight,#e9eefb);
+  font:12px/1.5 var(--font-ui,'Space Grotesk',-apple-system,sans-serif)}
+.hcard[hidden]{display:none}
+.hcard img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;border-radius:6px;margin-bottom:8px;background:var(--void-2,#0b1020)}
+.hc-t{font-weight:600;font-size:13px}
+.hc-s{font:11.5px/1.5 var(--font-data,ui-monospace,monospace);color:var(--dim,#9aa7c9)}
+.hc-x{margin-top:6px;padding-top:6px;border-top:1px solid var(--line,rgba(148,178,255,.14));font-size:12px}
+.hc-x[hidden]{display:none}

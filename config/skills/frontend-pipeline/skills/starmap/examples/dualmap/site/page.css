@@ -1,0 +1,82 @@
+/* One page frame, one spacing scale and one header pattern for every page of the site (T02.05.06.01 items 47-53).
+   Frame (item 81, responsive; supersedes the 1680 px cap): <main class="pg-frame">: side gutter g = --pg-g = clamp(16px, 4vw, 96px),
+   content width 100% - 2g with NO pixel cap. Readable text keeps a measure instead: the heading --measure-title (90ch), the note and
+   panel prose --measure (70ch). Maps, graphs, grids and page panes take the width.
+   Main working area: the element with class .pg-work (the page's map grid / panes); its height is --work-h = 100dvh minus what is
+   above it, at least --work-min (480px); a page sets --work-top (px above the area, measured by script) or uses PgFrame.fit(el).
+   Columns by viewport width (media queries cannot read variables, so these numbers are the shared breakpoints):
+     one column  max-width:783px   (content < 720)       two columns  784px-1303px (content 720-1200)
+     three       min-width:1304px  (content > 1200)      wide         min-width:2400px (content > ~2200: use the room, not stretch)
+   Side panels --side = clamp(300px, 22vw, 520px); the main map or graph takes the rest. Base type --fs-base = clamp(14px, .55vw + 8px,
+   18px); heading --fs-title, note --fs-note scale gently too. The navigation bar (nav.js loads this file on every page) puts its items and
+   its update stamp on the same edges. No page or bar keeps its own width or side padding.
+   Spacing scale, used instead of ad hoc values: --s4 --s8 --s12 --s16 --s24 --s32 --s48. Navigation to heading 24; heading to note 4;
+   header block to the controls 16; controls to the main grid 24; between columns 24 (the divider handle is the gap:
+   columns.css makes .colsplit 24 px wide); panel padding 20-24 (--pad); between sections inside a panel 24; a heading to its content 12;
+   48 at the bottom of the page. Maps and graphs keep at least 16 px inside their frame.
+   Header: <header class="pg-head">
+             <h1 class="pg-title">Page name: the sentence, at most 16 words, its <em>key phrase</em> in the emphasis colour.</h1>
+             <div class="pg-note">One or two lines (up to ~140 characters each): what data and how much; how the colour or effect is
+               measured, with the threshold that matters; how to use the page. Numbers filled in from the page data.
+               <details class="pg-more"><summary>Details</summary><div>…the longer method text…</div></details></div>
+           </header>   (below 900 px the note is clamped to two lines with "more", added by nav.js)
+   Two type sizes in the header: heading 22, note 12 (all >= 11 px). No kicker line above the title. */
+:root{--s4:4px;--s8:8px;--s12:12px;--s16:16px;--s24:24px;--s32:32px;--s48:48px;--pad:20px;
+  --pg-g:clamp(16px,4vw,96px);--pg-w:calc(100% - 2 * var(--pg-g));--pg-pad:var(--pg-g);
+  --side:clamp(300px,22vw,520px);--measure:70ch;--measure-title:90ch;--work-min:480px;--work-h:max(var(--work-min),calc(100dvh - var(--work-top,280px)));
+  --fs-base:clamp(14px,.55vw + 8px,18px);--fs-title:clamp(20px,.45vw + 15.5px,30px);--fs-note:clamp(12px,.12vw + 10.3px,15px)}
+body{font-size:var(--fs-base)}
+.pg-work{--work-h:max(var(--work-min),calc(100dvh - var(--work-top,280px)));height:var(--work-h);min-height:var(--work-min);min-width:0}   /* item 83: declared on the element, so its own --work-top (set by PgFrame.fit) is the one read */
+.pg-frame p{max-width:var(--measure)}
+@media (max-width:783px){.pg-work{height:auto}}
+.pg-frame{width:var(--pg-w);max-width:none;margin:0 auto;padding:var(--s24) 0 var(--s48);box-sizing:border-box}
+#site-nav:not(.float),#arena-switch:not(.float){padding-left:var(--pg-pad)!important;padding-right:var(--pg-pad)!important}
+/* header (item 58, final): one heading "<Page name>: <the sentence>" in the site's original heading style (22 px, bold, the key phrase in
+   the emphasis colour), then the note under it in small quiet type across the width (up to ~140 characters a line, at most two lines),
+   with "Details" as a link at its end (opens as an overlay). Nothing beside the heading; the page's controls go in the row under it. */
+.pg-head{display:block;margin:0 0 var(--s16);position:relative}
+.pg-title{max-width:var(--measure-title);font:700 var(--fs-title)/1.3 var(--font-display,var(--font-ui,'Space Grotesk',-apple-system,sans-serif));color:var(--starlight,#e9eefb);margin:0 0 var(--s4);letter-spacing:.005em}
+.pg-title em{font-style:normal;color:var(--ice,#8fc6ff)}
+.pg-note{font-size:var(--fs-note);line-height:1.5;color:var(--dim,#9aa7c9);margin:0;max-width:var(--measure)}
+.pg-note b{font-weight:600;color:var(--starlight,#e9eefb)}
+.pg-more{display:inline;font-size:12px}
+.pg-more summary{display:inline;cursor:pointer;color:var(--ice,#8fc6ff);list-style:none;white-space:nowrap}
+.pg-more summary::-webkit-details-marker{display:none}
+.pg-more summary::after{content:' ›'}
+.pg-more[open]>:not(summary){position:absolute;left:0;top:100%;z-index:40;width:min(80ch,100%);box-sizing:border-box;padding:var(--s16);margin-top:var(--s8);
+  background:var(--panel-2,rgba(13,19,38,.97));border:1px solid var(--line-strong,rgba(148,178,255,.3));border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.45);color:var(--starlight,#e9eefb);font-size:12.5px;line-height:1.55}
+@media (max-width:900px){.pg-note:not(.open){display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .pg-note-more{background:none;border:0;padding:0;color:var(--ice,#8fc6ff);font-size:12px;cursor:pointer}}
+.pg-more p{margin:0}
+/* shared dark picker (picker.js, item 61) */
+.pk{position:relative;display:inline-block;max-width:100%}
+.pk-btn{display:inline-flex;align-items:center;gap:var(--s8);max-width:min(560px,100%);min-width:220px;padding:6px 10px;border:1px solid var(--line-strong,rgba(148,178,255,.3));border-radius:8px;
+  background:var(--void-2,#0b1020);color:var(--starlight,#e9eefb);font:13px var(--font-ui,'Space Grotesk',-apple-system,sans-serif);cursor:pointer;text-align:left}
+.pk-btn:hover,.pk-btn:focus-visible,.pk-btn[aria-expanded=true]{border-color:var(--ice,#8fc6ff);outline:none}
+.pk-cur{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pk-car{color:var(--faint,#6b7799);font-size:11px}
+.pk-pan{position:absolute;z-index:80;left:0;top:calc(100% + 6px);width:min(560px,90vw);max-height:60vh;display:flex;flex-direction:column;
+  background:var(--panel-2,rgba(13,19,38,.98));border:1px solid var(--line-strong,rgba(148,178,255,.3));border-radius:10px;box-shadow:0 14px 36px rgba(0,0,0,.5);overflow:hidden}
+.pk-pan[hidden]{display:none}
+.pk-q{margin:var(--s8);padding:6px 10px;border:1px solid var(--line-strong,rgba(148,178,255,.3));border-radius:7px;background:var(--void-2,#0b1020);color:var(--starlight,#e9eefb);font:12.5px var(--font-ui,sans-serif)}
+.pk-q[hidden]{display:none}
+.pk-list{overflow:auto;padding:var(--s4) 0 var(--s8);outline:none}
+.pk-grp{font:600 11px var(--font-data,ui-monospace,monospace);letter-spacing:.1em;text-transform:uppercase;color:var(--faint,#6b7799);padding:var(--s12) var(--s12) var(--s4)}
+.pk-row{display:flex;align-items:center;gap:var(--s8);padding:6px var(--s12);font-size:12.5px;color:var(--starlight,#e9eefb);cursor:pointer}
+.pk-row.act{background:var(--ice-soft,rgba(143,198,255,.16))}.pk-row.sel .pk-txt{color:var(--ice,#8fc6ff)}
+.pk-txt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-tag{flex:none;font:11px var(--font-data,ui-monospace,monospace);color:var(--dim,#9aa7c9);border:1px solid var(--line,rgba(148,178,255,.14));border-radius:4px;padding:0 5px}
+.pk-meta{flex:none;font:11px var(--font-data,ui-monospace,monospace);color:var(--faint,#6b7799)}
+.pk-star{flex:none;color:var(--ember,#ffb36b);font-size:12px}
+.pk-none{padding:var(--s12);color:var(--dim,#9aa7c9);font-size:12.5px}
+@media (max-width:600px){.pk-pan{position:fixed;left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:70vh}}
+.pk-foot{border-top:1px solid var(--line,rgba(148,178,255,.14));padding:var(--s8) var(--s12);font-size:11.5px;color:var(--dim,#9aa7c9)}.pk-foot:empty{display:none}.pk-foot a{color:var(--ice,#8fc6ff)}
+/* a single page's own placement in its tournament (item 64), shared by every page that draws single pages; also tell the reader the
+   number (1st of 4), colour alone must not carry it. Distinct in lightness as well as hue. */
+:root{--place-1:#2fbf71;--place-2:#9fe0b8;--place-3:#f2a7a0;--place-4:#d9443a;--place-none:#7d869c}
+.place-1{color:var(--place-1)}.place-2{color:var(--place-2)}.place-3{color:var(--place-3)}.place-4{color:var(--place-4)}.place-none{color:var(--place-none)}
+.place-sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+/* the "Under the pointer" slot at the top of a side panel (hoverslot.js) */
+.hslot{margin:0 0 var(--s24);padding-bottom:var(--s16);border-bottom:1px solid var(--line,rgba(148,178,255,.14))}.hslot[hidden]{display:none}
+.hslot-t{font:600 11px var(--font-data,ui-monospace,monospace);letter-spacing:.14em;text-transform:uppercase;color:var(--faint,#5d6a8f);margin:0 0 var(--s12)}
+.hslot img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;border-radius:6px;margin:0 0 var(--s8);background:var(--void-2,#0b1020)}
+.hslot p{font-size:12.5px;color:var(--dim,#9aa7c9);line-height:1.5;margin:2px 0 0}

@@ -62,6 +62,7 @@ RESULT_REF_RE = re.compile(r"\.agents/task/(?:[^\s/\"'`<>()]+/)+?subagent/\d{2,}
 LOG_DISPATCH_RE = re.compile(r"^- (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) \[dispatch\] (T[\d.]+/S\d+) (.*)$", re.M)
 NON_WAVE_PREFIXES = ("续派：", "（外部）", "没有自己写 result.md")
 DUP_MIN_CHARS = 120  # a paragraph this long repeated across dispatch briefs belongs in memory or brief.md
+FOLLOWUP_ROTATE = 8  # from this many follow-ups on, one executor carries too much: hand over to a new dispatch
 OLD_INBOX_HEAD_RE = re.compile(r"^## (p[0-9a-f]{8}) · ([0-9: -]+) · session (\S*)$", re.M)  # v4.0, for migrate
 # conversation.md: structural lines start at column 0, every content line is indented by INDENT,
 # so headings or rules inside a reply can never be mistaken for structure (and stay visually nested).
@@ -621,6 +622,14 @@ class Workspace:
                 (s / "result.md").rename(s / moved)
         self.log(self.node_id(s.parent.parent), f"{sid} 续派：{_norm(body)[:60]}", tag="dispatch")
         return s, moved
+
+    def followup_hint(self, s: Path) -> str | None:
+        """Past FOLLOWUP_ROTATE follow-ups the executor's context is the bottleneck: say so before the prompt."""
+        n = len(re.findall(r"^## 追加 ", (s / "task.md").read_text(), flags=re.M))
+        if n < FOLLOWUP_ROTATE:
+            return None
+        return (f"提示：这个派发已续接 {n} 次。执行者的上下文越长越慢、越容易漏要求：让它在派发目录写 handoff.md"
+                f"（当前状态、未完成项、踩过的坑、检查命令），余下的工作开新派发，必读里引用那份 handoff.md。")
 
     def repeated_paragraphs(self, d: Path, body: str) -> list[tuple[str, list[str]]]:
         """Long paragraphs of a new dispatch brief that already appear in earlier briefs (path lists excluded)."""
@@ -1435,6 +1444,8 @@ def main(argv=None) -> int:
             s, moved = ws.followup(args.id, Path(args.file).read_text() if args.file else sys.stdin.read())
             ws.index()
             print(f"{args.id} 的 task.md 已追加新要求" + (f"；旧结果改名为 {moved}" if moved else ""))
+            if hint := ws.followup_hint(s):
+                print(hint)
             print("续接消息（SendMessage 原样发出；原执行者已结束时改用 Agent 派发同一句）：")
             print(followup_prompt(s, moved))
         elif args.cmd == "req":

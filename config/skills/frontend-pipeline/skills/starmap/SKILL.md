@@ -18,7 +18,7 @@ Use these alternatives when appropriate:
 - For trends, distributions, or comparisons, use a chart (for example a bar, line, or scatter plot).
 - For a collection of unrelated records, use a table.
 - When the reader cares about a single path, use a flowchart.
-- Above 300 nodes, the canvas becomes too crowded. Aggregate first or provide two levels with drill-down.
+- Above 300 nodes, one canvas becomes too crowded. Aggregate first, provide two levels with drill-down, or give the same structure three views: a selective network (a few hundred nodes chosen by closure), the full network in sub-layers, and lists by level. `examples/dualmap/` does the last for 4,893 nodes.
 
 When uncertain, ask: **Would the diagram still make sense if all the edges disappeared?** If yes, choose a different format.
 
@@ -70,6 +70,16 @@ Put the fonts in the directory passed to `--fonts`: `syne-latin.woff2` / `grotes
 
 Many preview environments throttle `requestAnimationFrame` to 0, so animations never run. Check motion in an actual browser. Work through each item below.
 
+## Iterating on a view with the user
+
+Visual feedback is short and easy to misread; five changes in one project were built and then withdrawn (a regular lattice, glowing chains, a spread outer ring, a left-to-right tree, a two-column header).
+
+- Before changing anything, say in one sentence what you understood and what will look different. Build after that sentence, not before it.
+- Keep a named baseline (the last version the user accepted). "Not what I wanted" means return to it and change one thing, not push further in the same direction.
+- Change one dimension per round: which nodes are shown, where they sit, or how strongly they are drawn.
+- Tell the user at every publish whether the page is in an interim or a finished state. A page that changes in front of them without that line reads as broken.
+- Turn each complaint into an assertion in the check script the same day (see the checklist and `examples/dualmap/tools/interaction_check.py`), so the next round cannot bring it back.
+
 ## Acceptance checklist
 
 **Visuals**
@@ -85,6 +95,9 @@ Many preview environments throttle `requestAnimationFrame` to 0, so animations n
 - [ ] 0 back edges, as few crossings as possible, and aspect ratio 2.0–3.0.
 - [ ] No labels overlap in the overview and the automatic zoom factor k ≥ 0.55.
 - [ ] Nodes settle into fixed positions after the entrance animation. Refresh twice and confirm the positions match.
+- [ ] The fitted view uses the frame in both directions at 1440x900, 2560x1080, 3440x1440 and 5120x1440: on an ultrawide screen the graph spans the width and labels use the room, it does not sit in the middle third.
+- [ ] In a dense view the links at rest are a quiet texture: about 1.5 per shown node (each node's strongest link toward each neighbouring level plus the strongest few percent), thin, opacity near 0.10 to 0.14 and at most about 0.3. Hover and selection light the full chain.
+- [ ] Example pages or records shown for one node never repeat each other.
 
 **Interaction**
 
@@ -94,6 +107,10 @@ Many preview environments throttle `requestAnimationFrame` to 0, so animations n
 - [ ] The drawer width is adjustable by dragging, and automatic framing makes room for the open drawer.
 - [ ] Click the minimap to recenter and double-click for the overview. A white rectangle marks the current viewport.
 - [ ] Edges are clickable and have a dedicated relationship panel.
+- [ ] A node responds only within its drawn mark plus about 4 px. A pointer on a link, or on a node's label, shows no card.
+- [ ] Clicking a node, and clearing the selection, moves no other node and no frame (0 px). Text that changes with the selection sits in an area of fixed height.
+- [ ] Three wheel notches change the scale on the live page, in every mode. A hidden canvas left in the layout swallows the wheel.
+- [ ] The page keeps its state when the reader leaves and comes back (mode, pan and zoom, selection, filters); Reset view clears it; explicit URL parameters win.
 
 **Content**
 
@@ -156,6 +173,9 @@ assets/
   starmap.js             Camera, layout, drag springs, rendering, minimap, and interaction engine
   example.html           Verified and runnable complete implementation. Start here.
   shell.template.html    Bare skeleton, only for building from scratch
+examples/
+  dualmap/               Five-page explorer over one dataset: shared frame and modules, a 4,893-node graph in three
+                         views, state kept across pages, a Playwright check. Read its README.md first.
 scripts/
   build_page.py          Assemble a single HTML file with inline CSS, JS, and fonts
   check_layout.py        Measure layout quality and sweep parameters

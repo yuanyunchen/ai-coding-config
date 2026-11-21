@@ -22,6 +22,7 @@ Each AI coding tool keeps its own configuration tree (`~/.claude`, `~/.cursor`, 
                  deploy                      sync
   config/  ─────────────────▶  ~/.claude  ─────────────────▶  ~/.cursor
  (Git snapshot) ◀─────────────── (canonical)                    ~/.codex
+                  pull
 ```
 
 | Command | Direction | Purpose |

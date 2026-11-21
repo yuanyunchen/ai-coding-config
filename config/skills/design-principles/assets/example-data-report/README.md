@@ -14,6 +14,6 @@ Two self-contained pages built from one source: `core.html` (the decision view) 
 | Every card's last line | "Data … Model …" small print |
 | 7.1 | what did not replicate |
 
-Known weak spots, kept as they are: the held-out check covers 10 of 13 models; the prompted judge covers 62% of tasks; in 2.1 two sub-labels touch the first axis at 1280 px.
+Known weak spots, kept as they are: the held-out check covers 10 of 13 placements and is marked provisional; the prompted judge covers 62% of tasks. A fifth review round after the held-out rows were added still found three blockers (a stale definition card, a wrong unit, a conclusion contradicting its own table): re-review whenever a late result changes the headline.
 
 The numbers are internal to that project. Do not quote them elsewhere.
